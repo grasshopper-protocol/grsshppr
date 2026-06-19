@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { getGoalById, updateGoal, deleteGoal } from "@/modules/goals/queries";
 import { z } from "zod";
+import { safeJson, uuidParam } from "@/lib/api-utils";
 
 const updateSchema = z.object({
   title: z.string().min(1).max(200).optional(),
@@ -27,10 +28,16 @@ export async function PATCH(
   { params }: { params: Params }
 ) {
   const { id } = await params;
+  if (!uuidParam.safeParse(id).success) {
+    return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+  }
+
   const ctx = await authorizeGoal(id);
   if (!ctx) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const body = await request.json();
+  const { data: body, error } = await safeJson(request);
+  if (error) return error;
+
   const parsed = updateSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
@@ -45,6 +52,10 @@ export async function DELETE(
   { params }: { params: Params }
 ) {
   const { id } = await params;
+  if (!uuidParam.safeParse(id).success) {
+    return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+  }
+
   const ctx = await authorizeGoal(id);
   if (!ctx) return NextResponse.json({ error: "Not found" }, { status: 404 });
 

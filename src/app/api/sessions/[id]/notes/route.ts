@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { getSessionById } from "@/core/booking/queries";
 import { getNoteBySessionId, upsertNote } from "@/modules/notes/queries";
 import { z } from "zod";
+import { safeJson, uuidParam } from "@/lib/api-utils";
 
 type Params = Promise<{ id: string }>;
 
@@ -26,6 +27,10 @@ export async function GET(
   { params }: { params: Params }
 ) {
   const { id } = await params;
+  if (!uuidParam.safeParse(id).success) {
+    return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+  }
+
   if (!(await authorize(id))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -43,11 +48,17 @@ export async function PUT(
   { params }: { params: Params }
 ) {
   const { id } = await params;
+  if (!uuidParam.safeParse(id).success) {
+    return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+  }
+
   if (!(await authorize(id))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = await request.json();
+  const { data: body, error } = await safeJson(request);
+  if (error) return error;
+
   const parsed = noteSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });

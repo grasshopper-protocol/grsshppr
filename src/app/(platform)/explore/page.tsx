@@ -17,8 +17,8 @@ export default async function ExplorePage({
 }) {
   const params = await searchParams;
   const mentors = await getMentors({
-    search: params.search,
-    expertise: params.expertise,
+    search: params.search?.slice(0, 200),
+    expertise: params.expertise?.slice(0, 100),
     available: params.available === "true",
   });
 
