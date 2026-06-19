@@ -95,6 +95,12 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for setup instructions, code conventions,
 
 AI agents: read [AGENTS.md](AGENTS.md) before writing any code.
 
+## Contributors
+
+<a href="https://github.com/grasshopper-protocol/grasshopper/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=grasshopper-protocol/grasshopper" />
+</a>
+
 ## License
 
-MIT
+[MIT](LICENSE)
