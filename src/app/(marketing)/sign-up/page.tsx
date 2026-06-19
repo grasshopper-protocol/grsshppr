@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,9 +17,9 @@ import {
 import { GithubLogo, GoogleLogo } from "@phosphor-icons/react";
 
 export default function SignUpPage() {
-  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [verificationSent, setVerificationSent] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -44,7 +43,23 @@ export default function SignUpPage() {
       return;
     }
 
-    router.push("/dashboard");
+    setVerificationSent(true);
+    setLoading(false);
+  }
+
+  if (verificationSent) {
+    return (
+      <div className="flex min-h-[calc(100vh-3.5rem)] items-center justify-center px-4">
+        <Card className="w-full max-w-sm">
+          <CardHeader className="text-center">
+            <CardTitle className="text-xl">Check your email</CardTitle>
+            <CardDescription>
+              We sent a verification link. Click it to activate your account.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
+    );
   }
 
   return (
