@@ -1,0 +1,46 @@
+import Link from "next/link";
+import { ThemeToggle } from "@/components/theme-toggle";
+
+export default function MarketingLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <>
+      <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-sm">
+        <nav className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
+          <Link
+            href="/"
+            className="text-base font-semibold tracking-tight text-foreground"
+          >
+            Grasshopper
+          </Link>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <Link
+              href="/sign-in"
+              className="inline-flex h-9 items-center rounded-md px-3 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Sign in
+            </Link>
+          </div>
+        </nav>
+      </header>
+      <main className="flex-1">{children}</main>
+      <footer className="border-t border-border py-6">
+        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 text-sm text-muted-foreground">
+          <p>Open source · MIT License</p>
+          <a
+            href="https://github.com/grasshopper-protocol/grasshopper"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-foreground"
+          >
+            GitHub
+          </a>
+        </div>
+      </footer>
+    </>
+  );
+}
