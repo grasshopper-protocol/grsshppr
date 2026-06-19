@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { upsertProfile, getProfileByUserId } from "@/core/profiles/queries";
 import { z } from "zod";
+import { safeJson } from "@/lib/api-utils";
 
 const profileSchema = z.object({
   role: z.enum(["mentor", "mentee"]),
@@ -24,7 +25,9 @@ export async function POST(request: NextRequest) {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const body = await request.json();
+  const { data: body, error } = await safeJson(request);
+  if (error) return error;
+
   const parsed = profileSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
