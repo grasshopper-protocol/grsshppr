@@ -54,6 +54,11 @@ const seedMentors = [
 ];
 
 async function seed() {
+  if (process.env.NODE_ENV === "production") {
+    console.error("Seed script cannot run in production.");
+    process.exit(1);
+  }
+
   console.log("Seeding database…");
 
   for (const mentor of seedMentors) {

@@ -8,7 +8,8 @@ export async function middleware(request: NextRequest) {
   const isProtected = protectedPaths.some((p) => pathname.startsWith(p));
   if (!isProtected) return NextResponse.next();
 
-  // Better Auth stores session in a cookie — check for it
+  // ponytail: redirect-only guard, not a security boundary.
+  // Every API route and RSC page validates the session independently via auth.api.getSession().
   const sessionCookie = request.cookies.get("better-auth.session_token");
   if (!sessionCookie?.value) {
     const signInUrl = new URL("/sign-in", request.url);
