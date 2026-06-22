@@ -54,9 +54,9 @@ export default async function SessionPage({
       </Link>
 
       <div className="mt-6 flex items-start gap-4">
-        <Avatar className="h-12 w-12">
+        <Avatar className="h-16 w-16">
           <AvatarImage src={partner.image ?? undefined} alt={partner.name} />
-          <AvatarFallback>{initials}</AvatarFallback>
+          <AvatarFallback className="text-lg">{initials}</AvatarFallback>
         </Avatar>
         <div>
           <h1 className="text-xl font-semibold tracking-tight">

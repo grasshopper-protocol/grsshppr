@@ -42,8 +42,10 @@ export const profiles = pgTable("profiles", {
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
   role: roleEnum("role").notNull(),
+  headline: text("headline"),
   bio: text("bio"),
   expertise: text("expertise").array(),
+  links: text("links").array(),
   experienceYears: integer("experience_years"),
   available: boolean("available").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -66,6 +68,21 @@ export const sessions = pgTable("sessions", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+// --- Core: Availability ---
+
+export const availability = pgTable("availability", {
+  id: text("id").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  dayOfWeek: integer("day_of_week").notNull(), // 0=Sunday, 6=Saturday
+  startTime: text("start_time").notNull(), // "HH:mm"
+  endTime: text("end_time").notNull(), // "HH:mm"
+  timezone: text("timezone").notNull().default("UTC"),
+  sessionDuration: integer("session_duration").notNull().default(30), // minutes
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 // --- Module: Notes ---
 
 export const notes = pgTable("notes", {
@@ -84,9 +101,11 @@ export const goals = pgTable("goals", {
   menteeId: text("mentee_id")
     .notNull()
     .references(() => users.id),
+  mentorId: text("mentor_id").references(() => users.id), // mentor who helped with this goal
   title: text("title").notNull(),
   description: text("description"),
   status: goalStatusEnum("status").notNull().default("active"),
+  targetDate: timestamp("target_date"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

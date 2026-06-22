@@ -1,4 +1,4 @@
-import { eq, or, and, desc } from "drizzle-orm";
+import { eq, or, and, desc, count } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { sessions, users } from "@/lib/db/schema";
 
@@ -71,6 +71,14 @@ export async function getSessionsForUser(userId: string) {
   return enriched;
 }
 
+export async function getCompletedSessionCount(userId: string) {
+  const [row] = await db
+    .select({ count: count() })
+    .from(sessions)
+    .where(and(eq(sessions.mentorId, userId), eq(sessions.status, "completed")));
+  return row?.count ?? 0;
+}
+
 export async function updateSessionStatus(
   id: string,
   status: "confirmed" | "completed" | "cancelled"
@@ -81,4 +89,18 @@ export async function updateSessionStatus(
     .where(eq(sessions.id, id))
     .returning();
   return updated;
+}
+
+/** Distinct mentors a mentee has had at least one session with */
+export async function getMentorsForMentee(menteeId: string) {
+  const rows = await db
+    .selectDistinctOn([sessions.mentorId], {
+      mentorId: sessions.mentorId,
+      name: users.name,
+      image: users.image,
+    })
+    .from(sessions)
+    .innerJoin(users, eq(sessions.mentorId, users.id))
+    .where(eq(sessions.menteeId, menteeId));
+  return rows;
 }
