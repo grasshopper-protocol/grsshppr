@@ -122,7 +122,7 @@ function SessionRow({
       href={`/session/${s.id}`}
       className="flex items-center gap-3 rounded-lg border border-border p-3 transition-colors hover:border-foreground/20"
     >
-      <Avatar className="h-9 w-9">
+      <Avatar className="h-11 w-11">
         <AvatarImage src={partner.image ?? undefined} alt={partner.name} />
         <AvatarFallback className="text-xs">{initials}</AvatarFallback>
       </Avatar>

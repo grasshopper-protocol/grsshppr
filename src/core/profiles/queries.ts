@@ -1,6 +1,6 @@
-import { eq, and, ilike, sql } from "drizzle-orm";
+import { eq, and, or, ilike, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { profiles, users } from "@/lib/db/schema";
+import { profiles, users, sessions, availability, goals } from "@/lib/db/schema";
 
 export async function getProfileByUserId(userId: string) {
   const result = await db
@@ -28,8 +28,10 @@ export async function upsertProfile(
   userId: string,
   data: {
     role: "mentor" | "mentee";
+    headline?: string;
     bio?: string;
     expertise?: string[];
+    links?: string[];
     experienceYears?: number;
     available?: boolean;
   }
@@ -51,6 +53,19 @@ export async function upsertProfile(
     .values({ id, userId, ...data })
     .returning();
   return created;
+}
+
+export async function deleteProfile(userId: string) {
+  // ponytail: sessions/goals don't cascade on user delete, clean up explicitly
+  // auth tables (auth_sessions, accounts, passkey) cascade from users FK
+  await db.delete(goals).where(eq(goals.menteeId, userId));
+  await db
+    .delete(sessions)
+    .where(or(eq(sessions.mentorId, userId), eq(sessions.menteeId, userId)));
+  await db.delete(availability).where(eq(availability.userId, userId));
+  await db.delete(profiles).where(eq(profiles.userId, userId));
+  // nuke the user row last — cascades auth_sessions, accounts, passkeys
+  await db.delete(users).where(eq(users.id, userId));
 }
 
 export type ExploreFilters = {

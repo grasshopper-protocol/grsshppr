@@ -59,12 +59,12 @@ export default async function ExplorePage({
                 className="group rounded-lg border border-border p-4 transition-colors hover:border-foreground/20"
               >
                 <div className="flex gap-3">
-                  <Avatar className="h-10 w-10">
+                  <Avatar className="h-14 w-14">
                     <AvatarImage
                       src={user.image ?? undefined}
                       alt={user.name}
                     />
-                    <AvatarFallback className="text-xs">
+                    <AvatarFallback className="text-sm">
                       {initials}
                     </AvatarFallback>
                   </Avatar>
@@ -72,12 +72,16 @@ export default async function ExplorePage({
                     <p className="font-medium text-foreground group-hover:underline">
                       {user.name}
                     </p>
-                    {profile.experienceYears != null && (
+                    {profile.headline ? (
+                      <p className="text-sm text-muted-foreground">
+                        {profile.headline}
+                      </p>
+                    ) : profile.experienceYears != null ? (
                       <p className="text-sm text-muted-foreground">
                         {profile.experienceYears} yr
                         {profile.experienceYears !== 1 ? "s" : ""} experience
                       </p>
-                    )}
+                    ) : null}
                   </div>
                   {profile.available && (
                     <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-emerald-500" />
