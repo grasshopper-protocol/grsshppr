@@ -1,7 +1,11 @@
 import Link from "next/link";
 import { ArrowRight, MagnifyingGlass, CalendarCheck, Target } from "@phosphor-icons/react/dist/ssr";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 
-export default function Home() {
+export default async function Home() {
+  const session = await auth.api.getSession({ headers: await headers() });
+
   return (
     <div className="flex min-h-[calc(100vh-3.5rem)] flex-col items-center justify-center px-6">
       <main className="flex w-full max-w-2xl flex-col items-center gap-16 py-24 text-center">
@@ -45,19 +49,39 @@ export default function Home() {
         </div>
 
         <div className="flex gap-3">
-          <Link
-            href="/sign-up"
-            className="inline-flex items-center gap-2 rounded-md bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            Get started
-            <ArrowRight size={16} />
-          </Link>
-          <Link
-            href="/explore"
-            className="inline-flex items-center rounded-md border border-border px-5 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
-          >
-            Explore mentors
-          </Link>
+          {session ? (
+            <>
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center gap-2 rounded-md bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+              >
+                Go to dashboard
+                <ArrowRight size={16} />
+              </Link>
+              <Link
+                href="/explore"
+                className="inline-flex items-center rounded-md border border-border px-5 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+              >
+                Explore mentors
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/sign-up"
+                className="inline-flex items-center gap-2 rounded-md bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+              >
+                Get started
+                <ArrowRight size={16} />
+              </Link>
+              <Link
+                href="/explore"
+                className="inline-flex items-center rounded-md border border-border px-5 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+              >
+                Explore mentors
+              </Link>
+            </>
+          )}
         </div>
       </main>
     </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -10,11 +11,22 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { SignOut, Gear, User } from "@phosphor-icons/react";
+import { SignOut, Gear, CalendarDots } from "@phosphor-icons/react";
 
 export function UserMenu() {
   const router = useRouter();
   const { data: session } = authClient.useSession();
+  const [isMentor, setIsMentor] = useState(false);
+
+  useEffect(() => {
+    if (!session?.user) return;
+    fetch("/api/profile")
+      .then((r) => r.json())
+      .then(({ profile }) => {
+        if (profile?.role === "mentor") setIsMentor(true);
+      })
+      .catch(() => {});
+  }, [session?.user]);
 
   if (!session?.user) return null;
 
@@ -43,6 +55,12 @@ export function UserMenu() {
           <Gear size={16} />
           Settings
         </DropdownMenuItem>
+        {isMentor && (
+          <DropdownMenuItem onClick={() => router.push("/settings/availability")}>
+            <CalendarDots size={16} />
+            Availability
+          </DropdownMenuItem>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={async () => {

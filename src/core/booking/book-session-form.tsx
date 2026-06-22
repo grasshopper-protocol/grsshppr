@@ -1,82 +1,156 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { CaretLeft, CaretRight } from "@phosphor-icons/react";
+
+type Slot = { startsAt: string; endsAt: string };
+
+function getMonday(date: Date): Date {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  d.setDate(d.getDate() + diff);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+function formatTime(iso: string): string {
+  return new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
+function formatDayLabel(iso: string): string {
+  const d = new Date(iso);
+  return d.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" });
+}
 
 export function BookSessionForm({ mentorId }: { mentorId: string }) {
   const router = useRouter();
-  const [date, setDate] = useState("");
-  const [time, setTime] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [weekStart, setWeekStart] = useState(() => getMonday(new Date()));
+  const [slots, setSlots] = useState<Slot[]>([]);
+  const [selected, setSelected] = useState<Slot | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
+  useEffect(() => {
     setLoading(true);
+    setSelected(null);
+    const weekStr = weekStart.toISOString().split("T")[0];
+    fetch(`/api/availability/${mentorId}?week=${weekStr}`)
+      .then((r) => r.json())
+      .then((data) => setSlots(data.slots ?? []))
+      .finally(() => setLoading(false));
+  }, [mentorId, weekStart]);
 
-    const startsAt = new Date(`${date}T${time}`);
-    const endsAt = new Date(startsAt.getTime() + 30 * 60 * 1000); // ponytail: 30-min default — make configurable later
+  async function handleBook() {
+    if (!selected) return;
+    setError(null);
+    setSubmitting(true);
 
     const res = await fetch("/api/sessions", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         mentorId,
-        startsAt: startsAt.toISOString(),
-        endsAt: endsAt.toISOString(),
+        startsAt: selected.startsAt,
+        endsAt: selected.endsAt,
       }),
     });
 
     if (!res.ok) {
       const { error } = await res.json();
       setError(typeof error === "string" ? error : "Something went wrong");
-      setLoading(false);
+      setSubmitting(false);
       return;
     }
 
     router.push("/dashboard");
   }
 
-  // Minimum date: tomorrow
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const minDate = tomorrow.toISOString().split("T")[0];
+  function prevWeek() {
+    const d = new Date(weekStart);
+    d.setDate(d.getDate() - 7);
+    if (d >= getMonday(new Date())) setWeekStart(d);
+  }
+
+  function nextWeek() {
+    const d = new Date(weekStart);
+    d.setDate(d.getDate() + 7);
+    setWeekStart(d);
+  }
+
+  // Group slots by day
+  const slotsByDay = slots.reduce<Record<string, Slot[]>>((acc, slot) => {
+    const day = slot.startsAt.split("T")[0];
+    if (!acc[day]) acc[day] = [];
+    acc[day].push(slot);
+    return acc;
+  }, {});
+
+  const isCurrentWeek = weekStart.getTime() === getMonday(new Date()).getTime();
 
   return (
-    <form onSubmit={handleSubmit} className="mt-8 space-y-4 rounded-lg border border-border p-4">
-      <h2 className="text-sm font-medium">Request a session</h2>
-      <div className="flex gap-3">
-        <div className="flex-1 space-y-1.5">
-          <Label htmlFor="date">Date</Label>
-          <Input
-            id="date"
-            type="date"
-            required
-            min={minDate}
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-          />
-        </div>
-        <div className="flex-1 space-y-1.5">
-          <Label htmlFor="time">Time</Label>
-          <Input
-            id="time"
-            type="time"
-            required
-            value={time}
-            onChange={(e) => setTime(e.target.value)}
-          />
+    <div className="mt-8 space-y-4 rounded-lg border border-border p-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-sm font-medium">Pick a time</h2>
+        <div className="flex items-center gap-1">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={prevWeek}
+            disabled={isCurrentWeek}
+          >
+            <CaretLeft size={14} />
+          </Button>
+          <span className="text-xs text-muted-foreground">
+            {weekStart.toLocaleDateString([], { month: "short", day: "numeric" })}
+          </span>
+          <Button type="button" variant="ghost" size="sm" onClick={nextWeek}>
+            <CaretRight size={14} />
+          </Button>
         </div>
       </div>
-      <p className="text-xs text-muted-foreground">30-minute session</p>
+
+      {loading && <p className="text-sm text-muted-foreground">Loading slots…</p>}
+
+      {!loading && slots.length === 0 && (
+        <p className="text-sm text-muted-foreground">No available slots this week.</p>
+      )}
+
+      {!loading && Object.entries(slotsByDay).map(([day, daySlots]) => (
+        <div key={day}>
+          <p className="text-xs font-medium text-muted-foreground">
+            {formatDayLabel(daySlots[0].startsAt)}
+          </p>
+          <div className="mt-1 flex flex-wrap gap-1.5">
+            {daySlots.map((slot) => (
+              <Button
+                key={slot.startsAt}
+                type="button"
+                variant={selected?.startsAt === slot.startsAt ? "default" : "outline"}
+                size="sm"
+                className="text-xs"
+                onClick={() => setSelected(slot)}
+              >
+                {formatTime(slot.startsAt)}
+              </Button>
+            ))}
+          </div>
+        </div>
+      ))}
+
       {error && <p className="text-sm text-destructive">{error}</p>}
-      <Button type="submit" disabled={loading} className="w-full">
-        {loading ? "Requesting…" : "Send request"}
+
+      <Button
+        onClick={handleBook}
+        disabled={!selected || submitting}
+        className="w-full"
+      >
+        {submitting ? "Requesting…" : selected ? `Request ${formatTime(selected.startsAt)}` : "Select a slot"}
       </Button>
-    </form>
+    </div>
   );
 }
