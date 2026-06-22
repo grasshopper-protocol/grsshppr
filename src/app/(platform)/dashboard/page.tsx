@@ -10,6 +10,7 @@ import { availability } from "@/lib/db/schema";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { GoalsList } from "@/modules/goals/goals-list";
+import { PendingRequestRow } from "@/core/booking/pending-request-row";
 import { CalendarDots, PencilSimple } from "@phosphor-icons/react/dist/ssr";
 
 const statusColors: Record<string, string> = {
@@ -35,8 +36,14 @@ export default async function DashboardPage() {
   const isMentor = profile.role === "mentor";
 
   const now = new Date();
+  const pendingRequests = isMentor
+    ? allSessions.filter((s) => s.session.status === "requested")
+    : [];
   const upcoming = allSessions.filter(
-    (s) => s.session.status !== "cancelled" && new Date(s.session.startsAt) >= now
+    (s) =>
+      s.session.status !== "cancelled" &&
+      s.session.status !== "requested" &&
+      new Date(s.session.startsAt) >= now
   );
   const past = allSessions.filter(
     (s) => s.session.status === "cancelled" || new Date(s.session.startsAt) < now
@@ -49,7 +56,20 @@ export default async function DashboardPage() {
         Your sessions at a glance.
       </p>
 
-      <section className="mt-8">
+      {pendingRequests.length > 0 && (
+        <section className="mt-8">
+          <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+            Pending requests
+          </h2>
+          <div className="mt-3 space-y-2">
+            {pendingRequests.map(({ session: s, partner }) => (
+              <PendingRequestRow key={s.id} session={s} partner={partner} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      <section className={pendingRequests.length > 0 ? "mt-10" : "mt-8"}>
         <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
           Upcoming
         </h2>
