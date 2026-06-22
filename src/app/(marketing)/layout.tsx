@@ -1,11 +1,15 @@
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 
-export default function MarketingLayout({
+export default async function MarketingLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await auth.api.getSession({ headers: await headers() });
+
   return (
     <>
       <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-sm">
@@ -18,12 +22,21 @@ export default function MarketingLayout({
           </Link>
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <Link
-              href="/sign-in"
-              className="inline-flex h-9 items-center rounded-md px-3 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-            >
-              Sign in
-            </Link>
+            {session ? (
+              <Link
+                href="/dashboard"
+                className="inline-flex h-9 items-center rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+              >
+                Dashboard
+              </Link>
+            ) : (
+              <Link
+                href="/sign-in"
+                className="inline-flex h-9 items-center rounded-md px-3 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Sign in
+              </Link>
+            )}
           </div>
         </nav>
       </header>
