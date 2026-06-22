@@ -4,13 +4,30 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Check, Pause, Play, Trash, Plus } from "@phosphor-icons/react";
+import {
+  Check,
+  Pause,
+  Play,
+  Trash,
+  Plus,
+  PencilSimple,
+  UserCircle,
+  X,
+} from "@phosphor-icons/react";
 
 type Goal = {
   id: string;
   title: string;
   description: string | null;
   status: "active" | "completed" | "paused";
+  mentorId: string | null;
+  targetDate: string | null;
+};
+
+type Mentor = {
+  mentorId: string;
+  name: string;
+  image: string | null;
 };
 
 const statusIcon: Record<string, React.ReactNode> = {
@@ -27,13 +44,20 @@ const statusColor: Record<string, string> = {
 
 export function GoalsList() {
   const [goals, setGoals] = useState<Goal[]>([]);
+  const [mentors, setMentors] = useState<Mentor[]>([]);
   const [newTitle, setNewTitle] = useState("");
   const [adding, setAdding] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
 
   useEffect(() => {
     fetch("/api/goals")
       .then((r) => r.json())
-      .then(({ goals }) => setGoals(goals ?? []));
+      .then(({ goals, mentors }) => {
+        setGoals(goals ?? []);
+        setMentors(mentors ?? []);
+      });
   }, []);
 
   async function addGoal(e: React.FormEvent) {
@@ -55,28 +79,32 @@ export function GoalsList() {
     setAdding(false);
   }
 
-  async function cycleStatus(goal: Goal) {
-    const next =
-      goal.status === "active"
-        ? "completed"
-        : goal.status === "completed"
-          ? "paused"
-          : "active";
-
-    const res = await fetch(`/api/goals/${goal.id}`, {
+  async function patchGoal(id: string, data: Record<string, unknown>) {
+    const res = await fetch(`/api/goals/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: next }),
+      body: JSON.stringify(data),
     });
-
     if (res.ok) {
-      setGoals(goals.map((g) => (g.id === goal.id ? { ...g, status: next } : g)));
+      const { goal } = await res.json();
+      setGoals(goals.map((g) => (g.id === id ? goal : g)));
     }
   }
 
   async function removeGoal(id: string) {
     await fetch(`/api/goals/${id}`, { method: "DELETE" });
     setGoals(goals.filter((g) => g.id !== id));
+  }
+
+  function startEdit(goal: Goal) {
+    setEditingId(goal.id);
+    setEditTitle(goal.title);
+    setEditDescription(goal.description ?? "");
+  }
+
+  async function saveEdit(id: string) {
+    await patchGoal(id, { title: editTitle, description: editDescription || undefined });
+    setEditingId(null);
   }
 
   return (
@@ -95,33 +123,105 @@ export function GoalsList() {
           {goals.map((goal) => (
             <div
               key={goal.id}
-              className="flex items-center gap-2 rounded-md border border-border px-3 py-2"
+              className="rounded-md border border-border px-3 py-2"
             >
-              <button
-                onClick={() => cycleStatus(goal)}
-                className="shrink-0"
-                title={`Status: ${goal.status}. Click to cycle.`}
-              >
-                <Badge
-                  variant="secondary"
-                  className={`gap-1 text-xs ${statusColor[goal.status]}`}
-                >
-                  {statusIcon[goal.status]}
-                  {goal.status}
-                </Badge>
-              </button>
-              <span
-                className={`flex-1 text-sm ${goal.status === "completed" ? "line-through text-muted-foreground" : ""}`}
-              >
-                {goal.title}
-              </span>
-              <button
-                onClick={() => removeGoal(goal.id)}
-                className="text-muted-foreground hover:text-destructive"
-                title="Delete goal"
-              >
-                <Trash size={14} />
-              </button>
+              {editingId === goal.id ? (
+                /* Inline edit mode */
+                <div className="space-y-2">
+                  <Input
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                    maxLength={200}
+                    className="h-8"
+                    autoFocus
+                  />
+                  <Input
+                    value={editDescription}
+                    onChange={(e) => setEditDescription(e.target.value)}
+                    placeholder="Description (optional)"
+                    maxLength={1000}
+                    className="h-8"
+                  />
+                  <div className="flex gap-1">
+                    <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => saveEdit(goal.id)}>
+                      Save
+                    </Button>
+                    <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => setEditingId(null)}>
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                /* Display mode */
+                <div className="flex items-center gap-2">
+                  <Badge
+                    variant="secondary"
+                    className={`gap-1 text-xs shrink-0 ${statusColor[goal.status]}`}
+                  >
+                    {statusIcon[goal.status]}
+                    {goal.status}
+                  </Badge>
+                  <div className="flex-1 min-w-0">
+                    <span
+                      className={`text-sm ${goal.status === "completed" ? "line-through text-muted-foreground" : ""}`}
+                    >
+                      {goal.title}
+                    </span>
+                    {goal.description && (
+                      <p className="text-xs text-muted-foreground truncate">{goal.description}</p>
+                    )}
+                    {goal.mentorId && (
+                      <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                        <UserCircle size={12} />
+                        {mentors.find((m) => m.mentorId === goal.mentorId)?.name ?? "Mentor"}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0">
+                    {/* Status actions */}
+                    {goal.status === "active" && (
+                      <>
+                        <button onClick={() => patchGoal(goal.id, { status: "completed" })} className="text-muted-foreground hover:text-emerald-600" title="Mark complete">
+                          <Check size={14} />
+                        </button>
+                        <button onClick={() => patchGoal(goal.id, { status: "paused" })} className="text-muted-foreground hover:text-yellow-600" title="Pause">
+                          <Pause size={14} />
+                        </button>
+                      </>
+                    )}
+                    {goal.status === "paused" && (
+                      <button onClick={() => patchGoal(goal.id, { status: "active" })} className="text-muted-foreground hover:text-blue-600" title="Resume">
+                        <Play size={14} />
+                      </button>
+                    )}
+                    {goal.status === "completed" && (
+                      <button onClick={() => patchGoal(goal.id, { status: "active" })} className="text-muted-foreground hover:text-blue-600" title="Reopen">
+                        <Play size={14} />
+                      </button>
+                    )}
+                    {/* Mentor link */}
+                    {mentors.length > 0 && (
+                      <select
+                        value={goal.mentorId ?? ""}
+                        onChange={(e) => patchGoal(goal.id, { mentorId: e.target.value || null })}
+                        className="h-6 text-xs bg-transparent border-0 text-muted-foreground cursor-pointer max-w-[80px]"
+                        title="Link mentor"
+                      >
+                        <option value="">No mentor</option>
+                        {mentors.map((m) => (
+                          <option key={m.mentorId} value={m.mentorId}>{m.name}</option>
+                        ))}
+                      </select>
+                    )}
+                    <button onClick={() => startEdit(goal)} className="text-muted-foreground hover:text-foreground" title="Edit">
+                      <PencilSimple size={14} />
+                    </button>
+                    <button onClick={() => removeGoal(goal.id)} className="text-muted-foreground hover:text-destructive" title="Delete">
+                      <Trash size={14} />
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           ))}
         </div>

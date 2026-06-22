@@ -1,6 +1,6 @@
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { goals } from "@/lib/db/schema";
+import { goals, users } from "@/lib/db/schema";
 
 export async function getGoalsForUser(userId: string) {
   return db
@@ -23,6 +23,8 @@ export async function createGoal(data: {
   menteeId: string;
   title: string;
   description?: string;
+  mentorId?: string;
+  targetDate?: Date;
 }) {
   const id = crypto.randomUUID();
   const [goal] = await db
@@ -38,6 +40,8 @@ export async function updateGoal(
     title?: string;
     description?: string;
     status?: "active" | "completed" | "paused";
+    mentorId?: string | null;
+    targetDate?: Date | null;
   }
 ) {
   const [updated] = await db
@@ -50,4 +54,19 @@ export async function updateGoal(
 
 export async function deleteGoal(id: string) {
   await db.delete(goals).where(eq(goals.id, id));
+}
+
+/** Completed goals attributed to a specific mentor (for their profile "Impact" section) */
+export async function getCompletedGoalsForMentor(mentorId: string) {
+  return db
+    .select({
+      id: goals.id,
+      title: goals.title,
+      updatedAt: goals.updatedAt,
+      menteeName: users.name,
+    })
+    .from(goals)
+    .innerJoin(users, eq(goals.menteeId, users.id))
+    .where(and(eq(goals.mentorId, mentorId), eq(goals.status, "completed")))
+    .orderBy(goals.updatedAt);
 }

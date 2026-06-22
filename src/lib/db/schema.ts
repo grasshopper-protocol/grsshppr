@@ -42,8 +42,10 @@ export const profiles = pgTable("profiles", {
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
   role: roleEnum("role").notNull(),
+  headline: text("headline"),
   bio: text("bio"),
   expertise: text("expertise").array(),
+  links: text("links").array(),
   experienceYears: integer("experience_years"),
   available: boolean("available").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -99,9 +101,11 @@ export const goals = pgTable("goals", {
   menteeId: text("mentee_id")
     .notNull()
     .references(() => users.id),
+  mentorId: text("mentor_id").references(() => users.id), // mentor who helped with this goal
   title: text("title").notNull(),
   description: text("description"),
   status: goalStatusEnum("status").notNull().default("active"),
+  targetDate: timestamp("target_date"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
