@@ -10,7 +10,10 @@ export async function proxy(request: NextRequest) {
 
   // ponytail: redirect-only guard, not a security boundary.
   // Every API route and RSC page validates the session independently via auth.api.getSession().
-  const sessionCookie = request.cookies.get("better-auth.session_token");
+  // Better Auth uses __Secure- prefix on HTTPS (production), plain name on HTTP (local dev).
+  const sessionCookie =
+    request.cookies.get("__Secure-better-auth.session_token") ||
+    request.cookies.get("better-auth.session_token");
   if (!sessionCookie?.value) {
     const signInUrl = new URL("/sign-in", request.url);
     signInUrl.searchParams.set("callbackUrl", pathname);
