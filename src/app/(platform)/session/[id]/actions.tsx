@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { CalendarPlus } from "@phosphor-icons/react";
 
 export function SessionActions({
   sessionId,
@@ -27,27 +28,40 @@ export function SessionActions({
     setLoading(false);
   }
 
-  if (status === "completed" || status === "cancelled") return null;
-
   return (
-    <div className="mt-6 flex gap-2">
-      {status === "requested" && isMentor && (
-        <Button onClick={() => updateStatus("confirmed")} disabled={loading}>
-          Confirm session
-        </Button>
+    <div className="mt-6 space-y-3">
+      {(status === "confirmed" || status === "completed") && (
+        <a
+          href={`/api/sessions/${sessionId}/ical`}
+          download
+          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+        >
+          <CalendarPlus size={16} />
+          Add to calendar
+        </a>
       )}
-      {status === "confirmed" && (
-        <Button onClick={() => updateStatus("completed")} disabled={loading}>
-          Mark completed
-        </Button>
+
+      {status !== "completed" && status !== "cancelled" && (
+        <div className="flex gap-2">
+          {status === "requested" && isMentor && (
+            <Button onClick={() => updateStatus("confirmed")} disabled={loading}>
+              Confirm session
+            </Button>
+          )}
+          {status === "confirmed" && isMentor && (
+            <Button onClick={() => updateStatus("completed")} disabled={loading}>
+              Mark completed
+            </Button>
+          )}
+          <Button
+            variant="outline"
+            onClick={() => updateStatus("cancelled")}
+            disabled={loading}
+          >
+            Cancel
+          </Button>
+        </div>
       )}
-      <Button
-        variant="outline"
-        onClick={() => updateStatus("cancelled")}
-        disabled={loading}
-      >
-        Cancel
-      </Button>
     </div>
   );
 }
