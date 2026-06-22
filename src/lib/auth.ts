@@ -21,12 +21,16 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
-    sendVerificationEmail: async ({ user, url }) => {
+    sendVerificationEmail: async (payload: {
+      user: { email: string; name?: string | null };
+      url: string;
+    }) => {
+      const { user, url } = payload;
       await resend.emails.send({
         from: "Grasshopper <onboarding@resend.dev>",
         to: user.email,
         subject: "Verify your email",
-        html: `<p>Hey ${user.name},</p><p>Click the link below to verify your email:</p><p><a href="${url}">${url}</a></p>`,
+        html: `<p>Hey ${user.name ?? "there"},</p><p>Click the link below to verify your email:</p><p><a href="${url}">${url}</a></p>`,
       });
     },
   },
