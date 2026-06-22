@@ -4,6 +4,14 @@ import { headers } from "next/headers";
 import { getSessionById, updateSessionStatus } from "@/core/booking/queries";
 import { z } from "zod";
 import { safeJson, uuidParam } from "@/lib/api-utils";
+import { sendEmail } from "@/lib/email";
+import {
+  SessionConfirmedEmail,
+  SessionCancelledEmail,
+} from "@/lib/emails/session-emails";
+import { db } from "@/lib/db";
+import { users } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
 
 const statusSchema = z.object({
   status: z.enum(["confirmed", "completed", "cancelled"]),
@@ -66,5 +74,45 @@ export async function PATCH(
   }
 
   const updated = await updateSessionStatus(id, parsed.data.status);
+
+  // Send email notifications (fire-and-forget)
+  const [mentor] = await db
+    .select({ name: users.name, email: users.email })
+    .from(users)
+    .where(eq(users.id, existing.mentorId));
+  const [mentee] = await db
+    .select({ name: users.name, email: users.email })
+    .from(users)
+    .where(eq(users.id, existing.menteeId));
+
+  if (parsed.data.status === "confirmed" && mentee?.email) {
+    sendEmail({
+      to: mentee.email,
+      subject: `Session confirmed with ${mentor?.name}`,
+      react: SessionConfirmedEmail({
+        mentorName: mentor?.name ?? "your mentor",
+        menteeName: mentee.name,
+        startsAt: existing.startsAt.toISOString(),
+        endsAt: existing.endsAt.toISOString(),
+      }),
+    });
+  }
+
+  if (parsed.data.status === "cancelled") {
+    const cancelledBy = session.user.id === existing.mentorId ? mentor : mentee;
+    const other = session.user.id === existing.mentorId ? mentee : mentor;
+    if (other?.email) {
+      sendEmail({
+        to: other.email,
+        subject: `Session cancelled by ${cancelledBy?.name}`,
+        react: SessionCancelledEmail({
+          recipientName: other.name,
+          cancelledByName: cancelledBy?.name ?? "the other participant",
+          startsAt: existing.startsAt.toISOString(),
+        }),
+      });
+    }
+  }
+
   return NextResponse.json({ session: updated });
 }
