@@ -3,17 +3,15 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { CaretLeft, CaretRight } from "@phosphor-icons/react";
 
 type Slot = { startsAt: string; endsAt: string };
 
-function getMonday(date: Date): Date {
-  const d = new Date(date);
-  const day = d.getDay();
-  const diff = day === 0 ? -6 : 1 - day;
-  d.setDate(d.getDate() + diff);
-  d.setHours(0, 0, 0, 0);
-  return d;
+// Local YYYY-MM-DD — never toISOString(), which shifts the date in +UTC zones.
+function toDateStr(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
 }
 
 function formatTime(iso: string): string {
@@ -27,22 +25,45 @@ function formatDayLabel(iso: string): string {
 
 export function BookSessionForm({ mentorId }: { mentorId: string }) {
   const router = useRouter();
-  const [weekStart, setWeekStart] = useState(() => getMonday(new Date()));
   const [slots, setSlots] = useState<Slot[]>([]);
   const [selected, setSelected] = useState<Slot | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(false);
+  const [daysLoaded, setDaysLoaded] = useState(0);
+
+  const DAYS_PER_PAGE = 7;
 
   useEffect(() => {
     setLoading(true);
-    setSelected(null);
-    const weekStr = weekStart.toISOString().split("T")[0];
-    fetch(`/api/availability/${mentorId}?week=${weekStr}`)
+    fetch(`/api/availability/${mentorId}?days=${DAYS_PER_PAGE}`)
       .then((r) => r.json())
-      .then((data) => setSlots(data.slots ?? []))
+      .then((data) => {
+        setSlots(data.slots ?? []);
+        setHasMore(data.hasMore ?? false);
+        setDaysLoaded(DAYS_PER_PAGE);
+      })
       .finally(() => setLoading(false));
-  }, [mentorId, weekStart]);
+  }, [mentorId]);
+
+  function loadMore() {
+    setLoadingMore(true);
+    // Cursor is the date after the last loaded day range
+    const afterDate = new Date();
+    afterDate.setDate(afterDate.getDate() + daysLoaded);
+    const afterStr = toDateStr(afterDate);
+    fetch(`/api/availability/${mentorId}?days=${DAYS_PER_PAGE}&after=${afterStr}`)
+      .then((r) => r.json())
+      .then((data) => {
+        const newSlots = data.slots ?? [];
+        setSlots((prev) => [...prev, ...newSlots]);
+        setHasMore(data.hasMore ?? false);
+        setDaysLoaded((d) => d + DAYS_PER_PAGE);
+      })
+      .finally(() => setLoadingMore(false));
+  }
 
   async function handleBook() {
     if (!selected) return;
@@ -69,57 +90,25 @@ export function BookSessionForm({ mentorId }: { mentorId: string }) {
     router.push("/dashboard");
   }
 
-  function prevWeek() {
-    const d = new Date(weekStart);
-    d.setDate(d.getDate() - 7);
-    if (d >= getMonday(new Date())) setWeekStart(d);
-  }
-
-  function nextWeek() {
-    const d = new Date(weekStart);
-    d.setDate(d.getDate() + 7);
-    setWeekStart(d);
-  }
-
-  // Group slots by day
+  // Group slots by local date
   const slotsByDay = slots.reduce<Record<string, Slot[]>>((acc, slot) => {
-    const day = slot.startsAt.split("T")[0];
+    const day = toDateStr(new Date(slot.startsAt));
     if (!acc[day]) acc[day] = [];
     acc[day].push(slot);
     return acc;
   }, {});
 
-  const isCurrentWeek = weekStart.getTime() === getMonday(new Date()).getTime();
-
   return (
     <div className="mt-8 space-y-4 rounded-lg border border-border p-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-sm font-medium">Pick a time</h2>
-        <div className="flex items-center gap-1">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={prevWeek}
-            disabled={isCurrentWeek}
-          >
-            <CaretLeft size={14} />
-          </Button>
-          <span className="text-xs text-muted-foreground">
-            {weekStart.toLocaleDateString([], { month: "short", day: "numeric" })}
-          </span>
-          <Button type="button" variant="ghost" size="sm" onClick={nextWeek}>
-            <CaretRight size={14} />
-          </Button>
-        </div>
-      </div>
+      <h2 className="text-sm font-medium">Pick a time</h2>
 
       {loading && <p className="text-sm text-muted-foreground">Loading slots…</p>}
 
       {!loading && slots.length === 0 && (
-        <p className="text-sm text-muted-foreground">No available slots this week.</p>
+        <p className="text-sm text-muted-foreground">No available slots in the next 4 weeks.</p>
       )}
 
+      <div className="max-h-64 space-y-3 overflow-y-auto">
       {!loading && Object.entries(slotsByDay).map(([day, daySlots]) => (
         <div key={day}>
           <p className="text-xs font-medium text-muted-foreground">
@@ -141,6 +130,21 @@ export function BookSessionForm({ mentorId }: { mentorId: string }) {
           </div>
         </div>
       ))}
+
+      </div>
+
+      {!loading && hasMore && (
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="w-full text-xs"
+          disabled={loadingMore}
+          onClick={loadMore}
+        >
+          {loadingMore ? "Loading…" : "Show next week"}
+        </Button>
+      )}
 
       {error && <p className="text-sm text-destructive">{error}</p>}
 
