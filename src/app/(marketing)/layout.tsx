@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { auth } from "@/lib/auth";
@@ -14,11 +15,9 @@ export default async function MarketingLayout({
     <>
       <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-sm">
         <nav className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
-          <Link
-            href="/"
-            className="text-base font-semibold tracking-tight text-foreground"
-          >
-            Grsshppr
+          <Link href="/" className="flex items-center gap-2">
+            <Image src="/logo.svg" alt="" width={60} height={60} priority />
+            <span className="text-base font-semibold tracking-tight text-foreground">Grsshppr</span>
           </Link>
           <div className="flex items-center gap-2">
             <ThemeToggle />
@@ -42,16 +41,19 @@ export default async function MarketingLayout({
       </header>
       <main className="flex-1">{children}</main>
       <footer className="border-t border-border py-6">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 text-sm text-muted-foreground">
-          <p>Open source · MIT License</p>
-          <a
-            href="https://github.com/grasshopper-protocol/grsshppr"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-foreground"
-          >
-            GitHub
-          </a>
+        <div className="mx-auto flex max-w-5xl flex-col items-center gap-3 px-4 text-sm text-muted-foreground">
+          <Image src="/logo.svg" alt="Grsshppr" width={100} height={100} className="opacity-90" />
+          <div className="flex items-center gap-3">
+            <span>Open source · MIT</span>
+            <a
+              href="https://github.com/grasshopper-protocol/grsshppr"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-foreground"
+            >
+              GitHub
+            </a>
+          </div>
         </div>
       </footer>
     </>
