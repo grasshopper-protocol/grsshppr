@@ -29,7 +29,7 @@ export function MobileNav() {
       <SheetContent side="left" className="w-64">
         <SheetHeader>
           <SheetTitle className="text-base font-semibold tracking-tight">
-            Grasshopper
+            Grsshppr
           </SheetTitle>
         </SheetHeader>
         <nav className="mt-4 flex flex-col gap-1">

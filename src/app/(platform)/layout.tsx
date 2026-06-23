@@ -18,7 +18,7 @@ export default function PlatformLayout({
               href="/"
               className="text-base font-semibold tracking-tight text-foreground"
             >
-              Grasshopper
+              Grsshppr
             </Link>
             <div className="hidden items-center gap-1 sm:flex">
               <Link

@@ -125,7 +125,7 @@ export default function WelcomePage() {
         <Card className="w-full max-w-sm">
           <CardHeader className="text-center">
             <ProgressDots steps={steps} current="role" />
-            <CardTitle className="text-xl">How will you use Grasshopper?</CardTitle>
+            <CardTitle className="text-xl">How will you use Grsshppr?</CardTitle>
             <CardDescription>You can change this later in settings.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">

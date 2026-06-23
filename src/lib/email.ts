@@ -5,7 +5,7 @@ const resend = process.env.RESEND_API_KEY
   ? new Resend(process.env.RESEND_API_KEY)
   : null;
 
-const FROM = process.env.EMAIL_FROM ?? "Grasshopper <noreply@grsshppr.org>";
+const FROM = process.env.EMAIL_FROM ?? "Grsshppr <noreply@grsshppr.org>";
 
 export async function sendEmail({
   to,

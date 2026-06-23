@@ -37,7 +37,7 @@ export default function SignInPage() {
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
           <CardTitle className="text-xl">Welcome back</CardTitle>
-          <CardDescription>Sign in to Grasshopper</CardDescription>
+          <CardDescription>Sign in to Grsshppr</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <Button

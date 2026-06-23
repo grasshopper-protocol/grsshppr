@@ -38,7 +38,7 @@ export async function GET(
   const ics = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//Grasshopper//Session//EN",
+    "PRODID:-//Grsshppr//Session//EN",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
     "BEGIN:VEVENT",
@@ -47,7 +47,7 @@ export async function GET(
     `DTSTART:${start}`,
     `DTEND:${end}`,
     `SUMMARY:Mentoring session with ${partnerName}`,
-    `DESCRIPTION:${isMentor ? "Mentoring" : "Learning"} session on Grasshopper`,
+    `DESCRIPTION:${isMentor ? "Mentoring" : "Learning"} session on Grsshppr`,
     "END:VEVENT",
     "END:VCALENDAR",
   ].join("\r\n");

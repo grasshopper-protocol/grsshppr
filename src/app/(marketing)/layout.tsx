@@ -18,7 +18,7 @@ export default async function MarketingLayout({
             href="/"
             className="text-base font-semibold tracking-tight text-foreground"
           >
-            Grasshopper
+            Grsshppr
           </Link>
           <div className="flex items-center gap-2">
             <ThemeToggle />
@@ -45,7 +45,7 @@ export default async function MarketingLayout({
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 text-sm text-muted-foreground">
           <p>Open source · MIT License</p>
           <a
-            href="https://github.com/grasshopper-protocol/grasshopper"
+            href="https://github.com/grasshopper-protocol/grsshppr"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-foreground"

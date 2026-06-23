@@ -50,7 +50,7 @@ export function FeedbackNudgeEmail({
           </Section>
           <Hr style={{ margin: "24px 0", borderColor: "#e5e5e5" }} />
           <Text style={{ fontSize: 12, color: "#737373" }}>
-            Grasshopper — Free mentoring for tech & design professionals
+            Grsshppr — Free mentoring for tech & design professionals
           </Text>
         </Container>
       </Body>
