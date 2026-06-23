@@ -99,8 +99,8 @@ AI agents: read [AGENTS.md](AGENTS.md) before writing any code.
 
 ## Contributors
 
-<a href="https://github.com/grasshopper-protocol/grasshoppper-app/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=grasshopper-protocol/grasshoppper-app" />
+<a href="https://github.com/grasshopper-protocol/grsshppr/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=grasshopper-protocol/grsshppr" />
 </a>
 
 ## License
