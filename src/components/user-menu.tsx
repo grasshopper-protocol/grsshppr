@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { SignOut, Gear, CalendarDots } from "@phosphor-icons/react";
+import { SignOut, Gear, CalendarDots, UserCircle } from "@phosphor-icons/react";
 
 export function UserMenu() {
   const router = useRouter();
@@ -51,9 +51,9 @@ export function UserMenu() {
           <p className="text-xs text-muted-foreground">{session.user.email}</p>
         </div>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => router.push("/settings")}>
-          <Gear size={16} />
-          Settings
+        <DropdownMenuItem onClick={() => router.push("/profile")}>
+          <UserCircle size={16} />
+          Edit profile
         </DropdownMenuItem>
         {isMentor && (
           <DropdownMenuItem onClick={() => router.push("/settings/availability")}>
@@ -61,6 +61,10 @@ export function UserMenu() {
             Availability
           </DropdownMenuItem>
         )}
+        <DropdownMenuItem onClick={() => router.push("/settings")}>
+          <Gear size={16} />
+          Account
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={async () => {
