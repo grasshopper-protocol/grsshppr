@@ -1,8 +1,10 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { headers } from "next/headers";
 import { getProfileWithUser } from "@/core/profiles/queries";
 import { getCompletedSessionCount } from "@/core/booking/queries";
 import { getCompletedGoalsForMentor } from "@/modules/goals/queries";
+import { auth } from "@/lib/auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -13,6 +15,7 @@ import {
   CalendarCheck,
   Clock,
   Trophy,
+  SignIn,
 } from "@phosphor-icons/react/dist/ssr";
 import { BookSessionForm } from "@/core/booking/book-session-form";
 
@@ -51,6 +54,9 @@ export default async function MentorProfilePage({
   if (!data || data.profile.role !== "mentor") {
     notFound();
   }
+
+  const session = await auth.api.getSession({ headers: await headers() });
+  const isLoggedIn = !!session;
 
   const { profile, user } = data;
   const sessionsCompleted = await getCompletedSessionCount(profile.userId);
@@ -191,7 +197,15 @@ export default async function MentorProfilePage({
 
           {/* Booking — inline on mobile */}
           <div className="mt-10 lg:hidden">
-            {profile.available ? (
+            {!isLoggedIn ? (
+              <Link
+                href="/sign-in"
+                className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+              >
+                <SignIn size={16} />
+                Sign in to book a session
+              </Link>
+            ) : profile.available ? (
               <BookSessionForm mentorId={user.id} />
             ) : (
               <p className="text-sm text-muted-foreground">
@@ -219,7 +233,17 @@ export default async function MentorProfilePage({
                     : "Not taking new mentees"}
                 </span>
               </div>
-              {profile.available && <BookSessionForm mentorId={user.id} />}
+              {!isLoggedIn ? (
+                <Link
+                  href="/sign-in"
+                  className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                >
+                  <SignIn size={16} />
+                  Sign in to book a session
+                </Link>
+              ) : (
+                profile.available && <BookSessionForm mentorId={user.id} />
+              )}
             </div>
           </div>
         </aside>
