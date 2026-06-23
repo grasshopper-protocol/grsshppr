@@ -1,6 +1,6 @@
-import { eq, or, and, desc, count } from "drizzle-orm";
+import { eq, or, and, desc, count, gt, notInArray } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { sessions, users } from "@/lib/db/schema";
+import { sessions, users, sessionFeedback } from "@/lib/db/schema";
 
 export async function createSession(data: {
   mentorId: string;
@@ -77,6 +77,44 @@ export async function getCompletedSessionCount(userId: string) {
     .from(sessions)
     .where(and(eq(sessions.mentorId, userId), eq(sessions.status, "completed")));
   return row?.count ?? 0;
+}
+
+// ponytail: returns completed sessions within 48h that user hasn't reviewed yet
+export async function getSessionsNeedingFeedback(userId: string) {
+  const cutoff = new Date(Date.now() - 48 * 60 * 60 * 1000);
+
+  // Get sessions user already reviewed
+  const reviewed = await db
+    .select({ sessionId: sessionFeedback.sessionId })
+    .from(sessionFeedback)
+    .where(eq(sessionFeedback.userId, userId));
+  const reviewedIds = reviewed.map((r) => r.sessionId);
+
+  const completed = await db
+    .select()
+    .from(sessions)
+    .where(
+      and(
+        eq(sessions.status, "completed"),
+        or(eq(sessions.mentorId, userId), eq(sessions.menteeId, userId)),
+        gt(sessions.endsAt, cutoff),
+        reviewedIds.length > 0 ? notInArray(sessions.id, reviewedIds) : undefined
+      )
+    )
+    .orderBy(desc(sessions.endsAt));
+
+  // Enrich with partner info
+  const enriched = await Promise.all(
+    completed.map(async (s) => {
+      const partnerId = s.mentorId === userId ? s.menteeId : s.mentorId;
+      const [partner] = await db
+        .select({ id: users.id, name: users.name, image: users.image })
+        .from(users)
+        .where(eq(users.id, partnerId));
+      return { session: s, partner };
+    })
+  );
+  return enriched;
 }
 
 export async function updateSessionStatus(
