@@ -116,8 +116,8 @@ export default async function DashboardPage() {
             Past
           </h2>
           <div className="mt-3 space-y-2">
-            {past.map(({ session: s, partner, role, mentorProfileId }) => (
-              <SessionRow key={s.id} session={s} partner={partner} role={role} mentorProfileId={mentorProfileId} />
+            {past.map(({ session: s, partner, role, mentorSlug }) => (
+              <SessionRow key={s.id} session={s} partner={partner} role={role} mentorSlug={mentorSlug} />
             ))}
           </div>
         </section>
@@ -136,12 +136,12 @@ function SessionRow({
   session: s,
   partner,
   role,
-  mentorProfileId,
+  mentorSlug,
 }: {
   session: { id: string; status: string; startsAt: Date; endsAt: Date };
   partner: { id: string; name: string; image: string | null };
   role: string;
-  mentorProfileId?: string;
+  mentorSlug?: string;
 }) {
   const initials = partner.name
     .split(" ")
@@ -178,9 +178,9 @@ function SessionRow({
       <Badge variant="secondary" className={`text-xs ${statusColors[s.status] ?? ""}`}>
         {s.status}
       </Badge>
-      {s.status === "completed" && mentorProfileId && (
+      {s.status === "completed" && mentorSlug && (
         <Link
-          href={`/mentor/${mentorProfileId}`}
+          href={`/mentor/${mentorSlug}`}
           onClick={(e) => e.stopPropagation()}
           className="text-xs font-medium text-foreground hover:underline underline-offset-4"
         >

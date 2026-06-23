@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { headers } from "next/headers";
 import { getProfileWithUser } from "@/core/profiles/queries";
@@ -20,6 +21,32 @@ import {
 import { BookSessionForm } from "@/core/booking/book-session-form";
 
 type Params = Promise<{ id: string }>;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Params;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const data = await getProfileWithUser(id);
+  if (!data || data.profile.role !== "mentor") return {};
+  const { profile, user } = data;
+  const description = profile.headline ?? `Mentor on Grsshppr`;
+  return {
+    title: `${user.name} — Grsshppr`,
+    description,
+    openGraph: {
+      title: user.name,
+      description,
+      type: "profile",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: user.name,
+      description,
+    },
+  };
+}
 
 function getLinkIcon(url: string) {
   try {

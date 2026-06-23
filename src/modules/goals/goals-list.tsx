@@ -29,7 +29,7 @@ type Mentor = {
   mentorId: string;
   name: string;
   image: string | null;
-  profileId: string | null;
+  slug: string | null;
 };
 
 const statusIcon: Record<string, React.ReactNode> = {
@@ -291,9 +291,9 @@ function MentorMomentum({
           </span>
         )}
       </p>
-      {needsRebook && mentor?.profileId && (
+      {needsRebook && mentor?.slug && (
         <a
-          href={`/mentor/${mentor.profileId}`}
+          href={`/mentor/${mentor.slug}`}
           className="text-xs font-medium text-amber-600 dark:text-amber-400 hover:underline underline-offset-4 flex items-center gap-1"
         >
           <CalendarDots size={12} />

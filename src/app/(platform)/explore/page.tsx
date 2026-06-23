@@ -55,7 +55,7 @@ export default async function ExplorePage({
             return (
               <Link
                 key={profile.id}
-                href={`/mentor/${profile.id}`}
+                href={`/mentor/${profile.slug}`}
                 className="group rounded-lg border border-border p-4 transition-colors hover:border-foreground/20"
               >
                 <div className="flex gap-3">
