@@ -41,7 +41,7 @@ Next.js 16 · TypeScript · Tailwind CSS v4 · Drizzle ORM · PostgreSQL · Bett
 ## Getting Started
 
 ```bash
-# Prerequisites: Node.js 20+, pnpm, Docker
+# Prerequisites: Node.js 22+, pnpm, Docker
 
 pnpm install
 cp .env.example .env.local    # Then fill in BETTER_AUTH_SECRET
@@ -70,6 +70,8 @@ See [AGENTS.md](AGENTS.md) for architecture guidance and [DESIGN.md](DESIGN.md) 
 | `GITHUB_CLIENT_SECRET` | No | GitHub OAuth app secret |
 | `GOOGLE_CLIENT_ID` | No | Google OAuth client ID |
 | `GOOGLE_CLIENT_SECRET` | No | Google OAuth client secret |
+| `RESEND_API_KEY` | No | Resend API key for transactional emails |
+| `CRON_SECRET` | No | Shared secret for cron endpoints (`openssl rand -hex 32`) |
 
 4. Deploy — Vercel auto-detects Next.js
 
