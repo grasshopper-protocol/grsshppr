@@ -15,6 +15,7 @@ import { eq } from "drizzle-orm";
 
 const statusSchema = z.object({
   status: z.enum(["confirmed", "completed", "cancelled"]),
+  cancelReason: z.string().max(200).optional(),
 });
 
 // Valid state transitions
@@ -73,7 +74,7 @@ export async function PATCH(
     return NextResponse.json({ error: "Only the mentor can confirm or complete sessions" }, { status: 403 });
   }
 
-  const updated = await updateSessionStatus(id, parsed.data.status);
+  const updated = await updateSessionStatus(id, parsed.data.status, parsed.data.cancelReason);
 
   // Send email notifications (fire-and-forget)
   const [mentor] = await db

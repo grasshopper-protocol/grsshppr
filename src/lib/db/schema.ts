@@ -65,6 +65,7 @@ export const sessions = pgTable("sessions", {
   status: sessionStatusEnum("status").notNull().default("requested"),
   startsAt: timestamp("starts_at").notNull(),
   endsAt: timestamp("ends_at").notNull(),
+  cancelReason: text("cancel_reason"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

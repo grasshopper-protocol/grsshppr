@@ -130,11 +130,12 @@ export async function getSessionsNeedingFeedback(userId: string) {
 
 export async function updateSessionStatus(
   id: string,
-  status: "confirmed" | "completed" | "cancelled"
+  status: "confirmed" | "completed" | "cancelled",
+  cancelReason?: string
 ) {
   const [updated] = await db
     .update(sessions)
-    .set({ status })
+    .set({ status, ...(cancelReason && status === "cancelled" ? { cancelReason } : {}) })
     .where(eq(sessions.id, id))
     .returning();
   return updated;

@@ -101,6 +101,7 @@ export default async function SessionPage({
         status={session.status}
         isMentor={isMentor}
         mentorProfileId={isMentor ? undefined : (await getProfileByUserId(session.mentorId))?.id}
+        cancelReason={session.cancelReason}
       />
 
       <div className="mt-8">
