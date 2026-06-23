@@ -11,8 +11,8 @@ Thanks for your interest in contributing. Grasshopper is an open-source mentorin
 ## Local Setup
 
 ```bash
-git clone https://github.com/grasshopper-protocol/grasshopper.git
-cd grasshopper
+git clone https://github.com/grasshopper-protocol/grasshoppper-app.git
+cd grasshoppper-app
 pnpm install
 cp .env.example .env.local       # Then fill in BETTER_AUTH_SECRET
 docker compose up -d              # Starts PostgreSQL
