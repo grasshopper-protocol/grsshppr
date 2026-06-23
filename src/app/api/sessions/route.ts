@@ -4,7 +4,7 @@ import { headers } from "next/headers";
 import { createSession, getSessionsForUser } from "@/core/booking/queries";
 import { getProfileByUserId } from "@/core/profiles/queries";
 import { z } from "zod";
-import { safeJson } from "@/lib/api-utils";
+import { safeJson, rateLimit } from "@/lib/api-utils";
 import { sendEmail } from "@/lib/email";
 import { SessionRequestedEmail } from "@/lib/emails/session-emails";
 import { db } from "@/lib/db";
@@ -26,6 +26,9 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const limited = rateLimit(request, { limit: 5, windowMs: 60_000 });
+  if (limited) return limited;
+
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 

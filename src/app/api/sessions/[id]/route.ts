@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { getSessionById, updateSessionStatus } from "@/core/booking/queries";
 import { z } from "zod";
-import { safeJson, uuidParam } from "@/lib/api-utils";
+import { safeJson, uuidParam, rateLimit } from "@/lib/api-utils";
 import { sendEmail } from "@/lib/email";
 import {
   SessionConfirmedEmail,
@@ -32,6 +32,9 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Params }
 ) {
+  const limited = rateLimit(request, { limit: 10, windowMs: 60_000 });
+  if (limited) return limited;
+
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 

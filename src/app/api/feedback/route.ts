@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { z } from "zod";
-import { safeJson } from "@/lib/api-utils";
+import { safeJson, rateLimit } from "@/lib/api-utils";
 import { db } from "@/lib/db";
 import { sessionFeedback, sessions } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
@@ -14,6 +14,9 @@ const feedbackSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
+  const limited = rateLimit(request, { limit: 10, windowMs: 60_000 });
+  if (limited) return limited;
+
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
