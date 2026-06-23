@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { eq, and } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { availability, sessions } from "@/lib/db/schema";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+import { rateLimit } from "@/lib/api-utils";
 
 // GET /api/availability/[userId]?week=2026-06-23
 // Returns available time slots for a given mentor in a specific week
@@ -9,6 +12,12 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ userId: string }> }
 ) {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const limited = rateLimit(request, { limit: 20, windowMs: 60_000 });
+  if (limited) return limited;
+
   const { userId } = await params;
   const { searchParams } = new URL(request.url);
   const weekStart = searchParams.get("week"); // ISO date string, Monday of the week
