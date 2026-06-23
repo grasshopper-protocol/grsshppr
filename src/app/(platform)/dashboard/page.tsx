@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { eq } from "drizzle-orm";
-import { getSessionsForUser } from "@/core/booking/queries";
+import { getSessionsForUser, getSessionsNeedingFeedback } from "@/core/booking/queries";
 import { getProfileByUserId } from "@/core/profiles/queries";
 import { db } from "@/lib/db";
 import { availability } from "@/lib/db/schema";
@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { GoalsList } from "@/modules/goals/goals-list";
 import { PendingRequestRow } from "@/core/booking/pending-request-row";
+import { FeedbackPrompt } from "@/core/booking/feedback-prompt";
 import { CalendarDots, PencilSimple } from "@phosphor-icons/react/dist/ssr";
 
 const statusColors: Record<string, string> = {
@@ -24,10 +25,11 @@ export default async function DashboardPage() {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) redirect("/sign-in");
 
-  const [allSessions, profile, windows] = await Promise.all([
+  const [allSessions, profile, windows, needsFeedback] = await Promise.all([
     getSessionsForUser(session.user.id),
     getProfileByUserId(session.user.id),
     db.select().from(availability).where(eq(availability.userId, session.user.id)),
+    getSessionsNeedingFeedback(session.user.id),
   ]);
 
   // No profile yet → send to onboarding
@@ -55,6 +57,14 @@ export default async function DashboardPage() {
       <p className="mt-1 text-muted-foreground">
         Your sessions at a glance.
       </p>
+
+      {needsFeedback.length > 0 && (
+        <section className="mt-6 space-y-2">
+          {needsFeedback.map(({ session: s, partner }) => (
+            <FeedbackPrompt key={s.id} session={s} partner={partner} />
+          ))}
+        </section>
+      )}
 
       {pendingRequests.length > 0 && (
         <section className="mt-8">
