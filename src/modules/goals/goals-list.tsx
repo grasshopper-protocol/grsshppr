@@ -13,6 +13,7 @@ import {
   PencilSimple,
   UserCircle,
   X,
+  CalendarDots,
 } from "@phosphor-icons/react";
 
 type Goal = {
@@ -28,6 +29,7 @@ type Mentor = {
   mentorId: string;
   name: string;
   image: string | null;
+  profileId: string | null;
 };
 
 const statusIcon: Record<string, React.ReactNode> = {
@@ -45,6 +47,7 @@ const statusColor: Record<string, string> = {
 export function GoalsList() {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [mentors, setMentors] = useState<Mentor[]>([]);
+  const [lastSessionByMentor, setLastSessionByMentor] = useState<Record<string, string>>({});
   const [newTitle, setNewTitle] = useState("");
   const [adding, setAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -54,9 +57,10 @@ export function GoalsList() {
   useEffect(() => {
     fetch("/api/goals")
       .then((r) => r.json())
-      .then(({ goals, mentors }) => {
+      .then(({ goals, mentors, lastSessionByMentor }) => {
         setGoals(goals ?? []);
         setMentors(mentors ?? []);
+        setLastSessionByMentor(lastSessionByMentor ?? {});
       });
   }, []);
 
@@ -171,10 +175,12 @@ export function GoalsList() {
                       <p className="text-xs text-muted-foreground truncate">{goal.description}</p>
                     )}
                     {goal.mentorId && (
-                      <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-                        <UserCircle size={12} />
-                        {mentors.find((m) => m.mentorId === goal.mentorId)?.name ?? "Mentor"}
-                      </p>
+                      <MentorMomentum
+                        mentorId={goal.mentorId}
+                        mentors={mentors}
+                        lastSessionByMentor={lastSessionByMentor}
+                        goalStatus={goal.status}
+                      />
                     )}
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
@@ -239,6 +245,61 @@ export function GoalsList() {
           <Plus size={14} />
         </Button>
       </form>
+    </div>
+  );
+}
+
+function MentorMomentum({
+  mentorId,
+  mentors,
+  lastSessionByMentor,
+  goalStatus,
+}: {
+  mentorId: string;
+  mentors: Mentor[];
+  lastSessionByMentor: Record<string, string>;
+  goalStatus: string;
+}) {
+  const mentor = mentors.find((m) => m.mentorId === mentorId);
+  const lastSession = lastSessionByMentor[mentorId];
+  const daysAgo = lastSession
+    ? Math.floor((Date.now() - new Date(lastSession).getTime()) / (1000 * 60 * 60 * 24))
+    : null;
+
+  // ponytail: thresholds — 14d amber, 21d rebook CTA
+  const isStale = daysAgo !== null && daysAgo > 14;
+  const needsRebook = daysAgo !== null && daysAgo > 21;
+
+  if (goalStatus !== "active") {
+    // Only show momentum for active goals
+    return (
+      <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+        <UserCircle size={12} />
+        {mentor?.name ?? "Mentor"}
+      </p>
+    );
+  }
+
+  return (
+    <div className="mt-0.5 space-y-0.5">
+      <p className={`text-xs flex items-center gap-1 ${isStale ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground"}`}>
+        <UserCircle size={12} />
+        {mentor?.name ?? "Mentor"}
+        {daysAgo !== null && (
+          <span className="ml-1">
+            · {daysAgo === 0 ? "today" : `${daysAgo}d ago`}
+          </span>
+        )}
+      </p>
+      {needsRebook && mentor?.profileId && (
+        <a
+          href={`/mentor/${mentor.profileId}`}
+          className="text-xs font-medium text-amber-600 dark:text-amber-400 hover:underline underline-offset-4 flex items-center gap-1"
+        >
+          <CalendarDots size={12} />
+          Book a follow-up
+        </a>
+      )}
     </div>
   );
 }
