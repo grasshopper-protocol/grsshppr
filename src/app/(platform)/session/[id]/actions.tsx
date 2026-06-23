@@ -2,17 +2,20 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { CalendarPlus } from "@phosphor-icons/react";
+import { CalendarPlus, ArrowClockwise } from "@phosphor-icons/react";
 
 export function SessionActions({
   sessionId,
   status,
   isMentor,
+  mentorProfileId,
 }: {
   sessionId: string;
   status: string;
   isMentor: boolean;
+  mentorProfileId?: string;
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -39,6 +42,16 @@ export function SessionActions({
           <CalendarPlus size={16} />
           Add to calendar
         </a>
+      )}
+
+      {status === "completed" && !isMentor && mentorProfileId && (
+        <Link
+          href={`/mentor/${mentorProfileId}`}
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground hover:underline underline-offset-4"
+        >
+          <ArrowClockwise size={16} />
+          Book again
+        </Link>
       )}
 
       {status !== "completed" && status !== "cancelled" && (

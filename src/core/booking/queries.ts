@@ -1,6 +1,6 @@
 import { eq, or, and, desc, count, gt, notInArray } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { sessions, users, sessionFeedback } from "@/lib/db/schema";
+import { sessions, users, sessionFeedback, profiles } from "@/lib/db/schema";
 
 export async function createSession(data: {
   mentorId: string;
@@ -64,7 +64,18 @@ export async function getSessionsForUser(userId: string) {
         .from(users)
         .where(eq(users.id, partnerId));
       const role = s.mentorId === userId ? "mentor" : "mentee";
-      return { session: s, partner, role };
+
+      // For completed sessions where user is mentee, include mentor profile ID for rebook
+      let mentorProfileId: string | undefined;
+      if (role === "mentee" && s.status === "completed") {
+        const [profile] = await db
+          .select({ id: profiles.id })
+          .from(profiles)
+          .where(eq(profiles.userId, s.mentorId));
+        mentorProfileId = profile?.id;
+      }
+
+      return { session: s, partner, role, mentorProfileId };
     })
   );
 
