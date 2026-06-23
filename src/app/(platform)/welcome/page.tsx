@@ -51,7 +51,8 @@ export default function WelcomePage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const steps = role === "mentor" ? MENTOR_STEPS : role === "mentee" ? MENTEE_STEPS : ["role"];
+  // ponytail: show mentor steps (4 dots) as default before role is picked — it's the longer path
+  const steps = role === "mentee" ? MENTEE_STEPS : MENTOR_STEPS;
 
   async function saveProfile(data: Record<string, unknown>) {
     setSaving(true);
