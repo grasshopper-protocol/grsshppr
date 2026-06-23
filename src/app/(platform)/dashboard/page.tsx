@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { GoalsList } from "@/modules/goals/goals-list";
 import { PendingRequestRow } from "@/core/booking/pending-request-row";
 import { FeedbackPrompt } from "@/core/booking/feedback-prompt";
+import { ProfileNudge } from "@/components/profile-nudge";
 import { CalendarDots, PencilSimple } from "@phosphor-icons/react/dist/ssr";
 
 const statusColors: Record<string, string> = {
@@ -57,6 +58,16 @@ export default async function DashboardPage() {
       <p className="mt-1 text-muted-foreground">
         Your sessions at a glance.
       </p>
+
+      <div className="mt-6">
+        <ProfileNudge
+          role={profile.role}
+          hasBio={!!profile.bio}
+          hasHeadline={!!profile.headline}
+          hasExpertise={!!profile.expertise?.length}
+          hasAvailability={windows.length > 0}
+        />
+      </div>
 
       {needsFeedback.length > 0 && (
         <section className="mt-6 space-y-2">
