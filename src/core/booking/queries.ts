@@ -147,9 +147,34 @@ export async function getMentorsForMentee(menteeId: string) {
       mentorId: sessions.mentorId,
       name: users.name,
       image: users.image,
+      profileId: profiles.id,
     })
     .from(sessions)
     .innerJoin(users, eq(sessions.mentorId, users.id))
+    .leftJoin(profiles, eq(profiles.userId, sessions.mentorId))
     .where(eq(sessions.menteeId, menteeId));
   return rows;
+}
+
+/** Last completed/confirmed session date per mentor for a mentee */
+export async function getLastSessionByMentor(menteeId: string) {
+  const rows = await db
+    .selectDistinctOn([sessions.mentorId], {
+      mentorId: sessions.mentorId,
+      endsAt: sessions.endsAt,
+    })
+    .from(sessions)
+    .where(
+      and(
+        eq(sessions.menteeId, menteeId),
+        or(eq(sessions.status, "completed"), eq(sessions.status, "confirmed"))
+      )
+    )
+    .orderBy(sessions.mentorId, desc(sessions.endsAt));
+
+  const map: Record<string, string> = {};
+  for (const r of rows) {
+    map[r.mentorId] = r.endsAt.toISOString();
+  }
+  return map;
 }
