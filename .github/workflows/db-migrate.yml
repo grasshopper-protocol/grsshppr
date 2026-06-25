@@ -1,0 +1,41 @@
+name: DB Migrate
+
+# Applies committed Drizzle migrations to production.
+# Migrations are generated locally with `pnpm db:generate` and committed under
+# drizzle/. Prod schema is never changed via `db:push` — see
+# decisions/ADR-0003-schema-migrations.md.
+#
+# ONE-TIME BASELINE (do once, manually, before this workflow runs against a DB
+# that was previously managed by `db:push`):
+#   The prod DB already has these tables, so the 0000 baseline must be marked
+#   applied WITHOUT re-running it. Either start from a fresh DB, or insert the
+#   baseline hash into drizzle's __drizzle_migrations table. After baselining,
+#   future migrations apply cleanly.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'drizzle/**'
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Pull env from Vercel
+        run: npx vercel env pull .env.production --environment=production --token=$VERCEL_TOKEN
+      - name: Apply migrations
+        run: |
+          export $(grep DATABASE_URL .env.production | xargs)
+          pnpm drizzle-kit migrate

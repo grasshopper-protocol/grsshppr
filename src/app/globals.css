@@ -40,6 +40,20 @@
 }
 
 @theme inline {
+  /* Brand ramp — see design/tokens/colors.md. Namespaced `grass` so it never
+     collides with Tailwind's generic green-* (status) utilities. Primitive
+     tokens; semantic mapping to --primary/--accent is RFC-gated. */
+  --color-grass-50: #e1eecc;
+  --color-grass-100: #cde2a9;
+  --color-grass-200: #a4c77f;
+  --color-grass-300: #9bc34b;
+  --color-grass-400: #83b328;
+  --color-grass-500: #5b9518;
+  --color-grass-600: #468613;
+  --color-grass-700: #3c7209;
+  --color-grass-800: #17651a;
+  --color-grass-900: #05481f;
+  --color-grass-950: #012305;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);

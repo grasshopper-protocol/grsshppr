@@ -1,0 +1,17 @@
+# Code ownership — maps paths to the maintainers who review them.
+# See governance/MAINTAINERS.md. Replace placeholders with real handles.
+
+# Default owner (lead / engineering)
+*                       @TODO-founder-handle
+
+# Product surface
+/product/               @TODO-product-handle @TODO-founder-handle
+
+# Design surface
+/design/                @TODO-design-handle @TODO-founder-handle
+DESIGN.md               @TODO-design-handle @TODO-founder-handle
+
+# Governance + decisions (lead sign-off required)
+/governance/            @TODO-founder-handle
+/decisions/             @TODO-founder-handle
+AGENTS.md               @TODO-founder-handle
