@@ -51,7 +51,7 @@ pnpm db:seed                  # Optional: populate sample mentors
 pnpm dev                      # http://localhost:3000
 ```
 
-See [AGENTS.md](AGENTS.md) for architecture guidance and [DESIGN.md](DESIGN.md) for visual direction.
+See [ENGINEERING.md](ENGINEERING.md) for architecture guidance and [DESIGN.md](DESIGN.md) for visual direction.
 
 ## Deployment
 
@@ -75,7 +75,9 @@ See [AGENTS.md](AGENTS.md) for architecture guidance and [DESIGN.md](DESIGN.md) 
 
 4. Deploy — Vercel auto-detects Next.js
 
-After first deploy, run `pnpm db:push` against your production database to apply the schema.
+After first deploy, run `pnpm db:migrate` against your production database to
+apply committed migrations. Never use `db:push` against production — see
+[ADR-0003](decisions/ADR-0003-schema-migrations.md).
 
 ### Self-Hosting (Docker)
 
@@ -84,9 +86,9 @@ After first deploy, run `pnpm db:push` against your production database to apply
 BETTER_AUTH_SECRET=$(openssl rand -base64 32) \
   docker compose -f docker-compose.prod.yml up -d --build
 
-# Apply schema to the database
+# Apply migrations to the database
 docker compose -f docker-compose.prod.yml exec app \
-  npx drizzle-kit push
+  npx drizzle-kit migrate
 ```
 
 The app runs on `http://localhost:3000`. See `Dockerfile` for the multi-stage build.
@@ -95,7 +97,7 @@ The app runs on `http://localhost:3000`. See `Dockerfile` for the multi-stage bu
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for setup instructions, code conventions, and PR guidelines.
 
-AI agents: read [AGENTS.md](AGENTS.md) before writing any code.
+AI agents: read [AGENTS.md](AGENTS.md) for how to operate (RFCs, ADRs, traceability) and [ENGINEERING.md](ENGINEERING.md) before writing any code.
 
 ## Contributors
 

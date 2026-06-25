@@ -39,7 +39,7 @@ src/
 └── lib/                  # DB client, auth config, utilities
 ```
 
-Read [AGENTS.md](AGENTS.md) for architecture rules and [DESIGN.md](DESIGN.md) for visual direction.
+Read [AGENTS.md](AGENTS.md) for how change happens (RFCs, ADRs, traceability), [ENGINEERING.md](ENGINEERING.md) for architecture rules, and [DESIGN.md](DESIGN.md) for visual direction.
 
 ## Code Conventions
 
@@ -106,7 +106,10 @@ These are intentional constraints (see AGENTS.md):
 
 ## AI Contributors
 
-Read [AGENTS.md](AGENTS.md) before writing any code. It contains architecture rules, naming conventions, the data model, and explicit constraints.
+Read [AGENTS.md](AGENTS.md) before doing anything — it defines how change happens
+(open by default, RFC before major changes, decisions traceable as ADRs, no
+silent changes). Then read [ENGINEERING.md](ENGINEERING.md) for architecture
+rules, naming conventions, the data model, and explicit constraints.
 
 ## License
 
