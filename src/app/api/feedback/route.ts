@@ -6,6 +6,7 @@ import { safeJson, rateLimit } from "@/lib/api-utils";
 import { db } from "@/lib/db";
 import { sessionFeedback, sessions } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
+import { resolveNotification } from "@/core/notifications/queries";
 
 const feedbackSchema = z.object({
   sessionId: z.string().uuid(),
@@ -70,6 +71,9 @@ export async function POST(request: NextRequest) {
       comment: comment ?? null,
     })
     .returning();
+
+  // Resolve the "leave feedback" action notification for this user
+  resolveNotification(sessionId, "action_required:feedback");
 
   return NextResponse.json({ feedback }, { status: 201 });
 }

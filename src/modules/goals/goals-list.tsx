@@ -9,11 +9,11 @@ import {
   Pause,
   Play,
   Trash,
-  Plus,
   PencilSimple,
   UserCircle,
   X,
   CalendarDots,
+  KeyReturn,
 } from "@phosphor-icons/react";
 
 type Goal = {
@@ -241,8 +241,9 @@ export function GoalsList() {
           maxLength={200}
           className="h-9"
         />
-        <Button type="submit" size="sm" variant="outline" disabled={adding}>
-          <Plus size={14} />
+        <Button type="submit" size="sm" variant="ghost" disabled={adding} title="Press Enter to add" className="h-9 gap-1.5 text-muted-foreground">
+          <span className="text-xs">enter</span>
+          <KeyReturn size={14} />
         </Button>
       </form>
     </div>

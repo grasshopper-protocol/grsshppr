@@ -7,7 +7,11 @@ import {
   Text,
   Heading,
   Hr,
+  Img,
+  Button,
 } from "@react-email/components";
+
+const BASE_URL = process.env.BETTER_AUTH_URL ?? "http://localhost:3000";
 
 interface SessionEmailProps {
   mentorName: string;
@@ -34,6 +38,13 @@ function Layout({ children }: { children: React.ReactNode }) {
       <Head />
       <Body style={{ fontFamily: "system-ui, sans-serif", backgroundColor: "#fafafa" }}>
         <Container style={{ maxWidth: 480, margin: "0 auto", padding: "32px 16px" }}>
+          <Img
+            src={`${BASE_URL}/logo.svg`}
+            alt="Grsshppr"
+            width={28}
+            height={28}
+            style={{ marginBottom: 24 }}
+          />
           {children}
           <Hr style={{ margin: "24px 0", borderColor: "#e5e5e5" }} />
           <Text style={{ fontSize: 12, color: "#737373" }}>
@@ -46,7 +57,18 @@ function Layout({ children }: { children: React.ReactNode }) {
 }
 
 // Mentor receives: new session request
-export function SessionRequestedEmail({ mentorName, menteeName, startsAt }: SessionEmailProps) {
+export function SessionRequestedEmail({
+  mentorName,
+  menteeName,
+  startsAt,
+  confirmUrl,
+  declineUrl,
+  goalTitles,
+}: SessionEmailProps & {
+  confirmUrl?: string;
+  declineUrl?: string;
+  goalTitles?: string[];
+}) {
   return (
     <Layout>
       <Heading as="h2" style={{ fontSize: 20 }}>New session request</Heading>
@@ -55,7 +77,54 @@ export function SessionRequestedEmail({ mentorName, menteeName, startsAt }: Sess
         <strong>{menteeName}</strong> has requested a mentoring session on{" "}
         <strong>{formatDateTime(startsAt)}</strong>.
       </Text>
-      <Text>Head to your dashboard to confirm or decline.</Text>
+      {goalTitles && goalTitles.length > 0 && (
+        <Section style={{ margin: "16px 0", padding: "12px 16px", backgroundColor: "#f5f5f5", borderRadius: 8 }}>
+          <Text style={{ fontSize: 13, margin: 0, color: "#525252" }}>
+            <strong>Goals they'd like help with:</strong>
+          </Text>
+          {goalTitles.map((title, i) => (
+            <Text key={i} style={{ fontSize: 13, margin: "4px 0 0 0", color: "#525252" }}>
+              • {title}
+            </Text>
+          ))}
+        </Section>
+      )}
+      {confirmUrl && declineUrl ? (
+        <Section style={{ margin: "20px 0" }}>
+          <Button
+            href={confirmUrl}
+            style={{
+              backgroundColor: "#171717",
+              color: "#fff",
+              padding: "10px 20px",
+              borderRadius: 6,
+              fontSize: 14,
+              fontWeight: 500,
+              textDecoration: "none",
+              marginRight: 8,
+            }}
+          >
+            Confirm
+          </Button>
+          <Button
+            href={declineUrl}
+            style={{
+              backgroundColor: "#fff",
+              color: "#171717",
+              padding: "10px 20px",
+              borderRadius: 6,
+              fontSize: 14,
+              fontWeight: 500,
+              textDecoration: "none",
+              border: "1px solid #e5e5e5",
+            }}
+          >
+            Decline
+          </Button>
+        </Section>
+      ) : (
+        <Text>Head to your dashboard to confirm or decline.</Text>
+      )}
     </Layout>
   );
 }
