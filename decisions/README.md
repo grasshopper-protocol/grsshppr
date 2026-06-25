@@ -19,8 +19,15 @@ was made and what would change it.
 | [0001](ADR-0001-modular-architecture.md) | Modular architecture (core + opt-in modules) | Accepted |
 | [0002](ADR-0002-passwordless-auth.md) | Passwordless auth (OAuth + passkeys) | Accepted |
 | [0003](ADR-0003-schema-migrations.md) | Generated migrations over `db:push` | Accepted |
+| [0004](ADR-0004-timezone-handling.md) | Timezone handling (calendar dates + slot wire format) | Accepted |
 
 ## Historical log
 
 Decisions made before this folder existed are preserved in [LOG.md](LOG.md),
 migrated from `AGENTS.md`. New decisions get their own ADR file.
+
+## Post-mortems
+
+When something breaks in production, the incident write-up lives in
+[../postmortems](../postmortems). Several ADRs exist *because* of an incident —
+the post-mortem captures what broke, the ADR captures the durable rule.
