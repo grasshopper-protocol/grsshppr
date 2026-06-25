@@ -6,13 +6,15 @@ is the home for design direction, principles, and (soon) the design system.
 ## Contents
 
 - **[principles.md](principles.md)** — the design principles (source of truth).
+- **[tokens/colors.md](tokens/colors.md)** — the brand color ramp (`grass`),
+  wired as utilities in `globals.css`.
 - `DESIGN.md` (repo root) — the fuller visual brief: color, type, motion, IA,
   tone. Will be progressively distilled into this folder.
 
 ## Coming next (Phase 2)
 
-- `tokens/` — extracted color / type / space tokens, once the accent color is
-  chosen (currently "to be defined" in `DESIGN.md`).
+- `tokens/` — type / space tokens, and a semantic color mapping
+  (`--primary` / `--accent` → a `grass` step, RFC-gated).
 - `patterns/` — component inventory and usage notes.
 - A link to the Figma source file.
 
