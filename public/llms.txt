@@ -1,0 +1,28 @@
+# Grsshppr
+
+> Free, open-source mentoring for tech and design professionals. Mentors offer their time; mentees discover them, book sessions, set goals, and track progress. No ads, no fees, no surveillance.
+
+Grsshppr is a fully open product: open code, open specs, open design, open decisions, and a public roadmap. It is built to be self-hostable. The platform is free forever — there is no paid tier, no marketplace, and no algorithmic feed.
+
+## Product
+
+- [Home](https://www.grsshppr.org): Landing page and value proposition.
+- [Sign up](https://www.grsshppr.org/sign-up): Passwordless sign-up (Google, GitHub, or passkey).
+
+Mentor profiles live at `https://www.grsshppr.org/mentor/{slug}` and are public. Discovery (`/explore`), dashboards, and sessions require sign-in.
+
+## Project
+
+- [Source code](https://github.com/grasshopper-protocol/grsshppr): The full repository.
+- [README](https://github.com/grasshopper-protocol/grsshppr/blob/main/README.md): Overview and local setup.
+- [Operating model (AGENTS.md)](https://github.com/grasshopper-protocol/grsshppr/blob/main/AGENTS.md): How humans and agents change the project.
+- [Engineering guide](https://github.com/grasshopper-protocol/grsshppr/blob/main/ENGINEERING.md): Stack, data model, and conventions.
+- [Design principles](https://github.com/grasshopper-protocol/grsshppr/blob/main/design/principles.md): The design direction.
+- [Roadmap](https://github.com/grasshopper-protocol/grsshppr/tree/main/product/roadmap): What is being built, now / next / later.
+- [Decisions (ADRs)](https://github.com/grasshopper-protocol/grsshppr/tree/main/decisions): Why things were decided.
+
+## Optional
+
+- [Contributing](https://github.com/grasshopper-protocol/grsshppr/blob/main/CONTRIBUTING.md): How to propose changes (RFCs for major work).
+- [Security policy](https://github.com/grasshopper-protocol/grsshppr/blob/main/SECURITY.md): How to report vulnerabilities.
+- [RFCs](https://github.com/grasshopper-protocol/grsshppr/tree/main/product/rfc): Open proposals under discussion.
