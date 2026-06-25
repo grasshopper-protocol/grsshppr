@@ -44,11 +44,14 @@ export function SessionNotes({ sessionId }: { sessionId: string }) {
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-medium">Session notes</h2>
+        <h2 className="text-sm font-medium">Shared session notes</h2>
         <span className="text-xs text-muted-foreground">
           {saving ? "Saving…" : "Saved"}
         </span>
       </div>
+      <p className="text-xs text-muted-foreground">
+        These notes are visible to both mentor and mentee.
+      </p>
       <Textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}

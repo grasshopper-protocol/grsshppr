@@ -9,6 +9,7 @@ import {
   SessionConfirmedEmail,
   SessionCancelledEmail,
 } from "@/lib/emails/session-emails";
+import { createNotification, resolveNotification } from "@/core/notifications/queries";
 import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
@@ -116,6 +117,31 @@ export async function PATCH(
         }),
       });
     }
+  }
+
+  // Create in-app notifications
+  if (parsed.data.status === "confirmed") {
+    // Resolve the mentor's "confirm" action notification
+    resolveNotification(id, "action_required:confirm");
+  } else if (parsed.data.status === "cancelled") {
+    // Resolve the mentor's "confirm" action notification (if declining)
+    resolveNotification(id, "action_required:confirm");
+  } else if (parsed.data.status === "completed") {
+    // Create action notifications for feedback
+    createNotification({
+      userId: existing.menteeId,
+      type: "action_required:feedback",
+      message: `Leave feedback for session with ${mentor?.name}`,
+      resourceId: id,
+      priority: "action",
+    });
+    createNotification({
+      userId: existing.mentorId,
+      type: "action_required:feedback",
+      message: `Leave feedback for session with ${mentee?.name}`,
+      resourceId: id,
+      priority: "action",
+    });
   }
 
   return NextResponse.json({ session: updated });

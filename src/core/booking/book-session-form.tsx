@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
 type Slot = { startsAt: string; endsAt: string };
+type Goal = { id: string; title: string; status: string };
 
 // Local YYYY-MM-DD — never toISOString(), which shifts the date in +UTC zones.
 function toDateStr(d: Date): string {
@@ -33,6 +34,8 @@ export function BookSessionForm({ mentorId }: { mentorId: string }) {
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
   const [daysLoaded, setDaysLoaded] = useState(0);
+  const [goals, setGoals] = useState<Goal[]>([]);
+  const [selectedGoalIds, setSelectedGoalIds] = useState<string[]>([]);
 
   const DAYS_PER_PAGE = 7;
 
@@ -46,6 +49,15 @@ export function BookSessionForm({ mentorId }: { mentorId: string }) {
         setDaysLoaded(DAYS_PER_PAGE);
       })
       .finally(() => setLoading(false));
+
+    // Fetch mentee's active goals
+    fetch("/api/goals")
+      .then((r) => r.json())
+      .then((data) => {
+        const active = (data.goals ?? []).filter((g: Goal) => g.status === "active");
+        setGoals(active);
+      })
+      .catch(() => {});
   }, [mentorId]);
 
   function loadMore() {
@@ -77,6 +89,7 @@ export function BookSessionForm({ mentorId }: { mentorId: string }) {
         mentorId,
         startsAt: selected.startsAt,
         endsAt: selected.endsAt,
+        ...(selectedGoalIds.length > 0 && { goalIds: selectedGoalIds }),
       }),
     });
 
@@ -144,6 +157,37 @@ export function BookSessionForm({ mentorId }: { mentorId: string }) {
         >
           {loadingMore ? "Loading…" : "Show next week"}
         </Button>
+      )}
+
+      {goals.length > 0 && (
+        <div className="space-y-2 border-t border-border pt-3">
+          <p className="text-xs font-medium text-muted-foreground">
+            What would you like help with? <span className="text-muted-foreground/60">(optional)</span>
+          </p>
+          {goals.map((goal) => (
+            <label key={goal.id} className="flex items-center gap-2 text-sm cursor-pointer">
+              <input
+                type="checkbox"
+                className="h-3.5 w-3.5 rounded border-border"
+                checked={selectedGoalIds.includes(goal.id)}
+                onChange={(e) => {
+                  setSelectedGoalIds((prev) =>
+                    e.target.checked
+                      ? [...prev, goal.id]
+                      : prev.filter((id) => id !== goal.id)
+                  );
+                }}
+              />
+              {goal.title}
+            </label>
+          ))}
+        </div>
+      )}
+
+      {goals.length === 0 && !loading && slots.length > 0 && (
+        <p className="text-xs text-muted-foreground border-t border-border pt-3">
+          <a href="/dashboard" className="underline underline-offset-4 hover:text-foreground">Add a goal</a> to help your mentor prepare.
+        </p>
       )}
 
       {error && <p className="text-sm text-destructive">{error}</p>}
