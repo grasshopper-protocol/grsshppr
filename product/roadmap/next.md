@@ -10,6 +10,10 @@ they move to **Now**.
 - **Shared session notes (notes module)** — the `notes` module is scaffolded
   but not built. Needs an RFC (collaborative editing model). _Why:_ continuity
   across sessions is a core value prop.
+- **Mentor visibility & ranking** — gate `/explore` on profile completeness and
+  rank by signals we already collect. _Why:_ oldest-first sorting rewards
+  incumbency and surfaces half-built profiles. See
+  [RFC-0001](../rfc/RFC-0001-mentor-visibility-ranking.md).
 
 > Items here are committed in principle. Promotion to **Now** requires an owner,
 > an open issue, and (for major changes) an approved RFC.

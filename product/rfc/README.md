@@ -29,3 +29,9 @@ When in doubt, write the RFC. It's cheaper than unwinding a shipped decision.
 
 An RFC captures **alternatives considered**, not just the chosen path. Rejected
 options are recorded, not erased.
+
+## Open RFCs
+
+| RFC | Title | Status | Issue |
+|-----|-------|--------|-------|
+| [RFC-0001](RFC-0001-mentor-visibility-ranking.md) | Mentor visibility & ranking system | Discussion | [#31](https://github.com/grasshopper-protocol/grsshppr/issues/31) |
