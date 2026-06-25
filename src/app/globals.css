@@ -54,6 +54,16 @@
   --color-grass-800: #17651a;
   --color-grass-900: #05481f;
   --color-grass-950: #012305;
+  /* Status/utility colors — see DESIGN.md §1c. Status only, never decorative.
+     Names don't collide with Tailwind's built-ins (red/amber/blue). The neutral
+     ramp (DESIGN.md §1b) is intentionally NOT redefined here — that would clobber
+     Tailwind's built-in `neutral-*`; its values are applied via semantic tokens. */
+  --color-error: #dc2626;
+  --color-error-dark: #f87171;
+  --color-warning: #d97706;
+  --color-warning-dark: #fcd34d;
+  --color-info: #2563eb;
+  --color-info-dark: #60a5fa;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);

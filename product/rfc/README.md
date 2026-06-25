@@ -35,3 +35,4 @@ options are recorded, not erased.
 | RFC | Title | Status | Issue |
 |-----|-------|--------|-------|
 | [RFC-0001](RFC-0001-mentor-visibility-ranking.md) | Mentor visibility & ranking system | Discussion | [#31](https://github.com/grasshopper-protocol/grsshppr/issues/31) |
+| [RFC-0002](RFC-0002-brand-color-adoption.md) | Brand color adoption | Discussion | — |
