@@ -241,3 +241,61 @@ applies `grass` only to `ring`, `accent`, links, and selected states.
 
 > Grasshopper ships **no sidebar in v1** (top nav only — see IA above), so the
 > `sidebar-*` tokens are wired for completeness but currently unused.
+
+## 3. Status, interaction & motion tokens
+
+Implemented in [`globals.css`](src/app/globals.css). See
+[ADR-0006](decisions/ADR-0006-status-token-layer.md) (status) and
+[ADR-0007](decisions/ADR-0007-interaction-states-motion.md) (interaction + motion).
+
+### 3a. Status — semantic & mode-aware
+
+Status/feedback only — never decorative. `error` is `destructive` (§2); these add
+the missing triples. Each token resolves per theme, so consumers write `bg-warning`
+/ `text-warning-foreground` with **no** `dark:` variant. The fixed `utility/*`
+Tailwind utilities (`bg-error` etc.) were unused and are superseded by these — the
+§1c table remains the primitive *palette* reference.
+
+| token | Light primitive | Light HEX | Dark primitive | Dark HEX | Usage |
+|-------|-----------------|-----------|----------------|----------|-------|
+| `success` | `grass/700` | `#3C7209` | `grass/400` | `#83B328` | Success/available/completed fill — grass/700 passes AA on white |
+| `success-subtle` | `grass/50` | `#E1EECC` | `grass/900` | `#05481F` | Success tint background |
+| `success-foreground` | `neutral/white` | `#FFFFFF` | `grass/950` | `#012305` | Text/icon on success |
+| `warning` | `utility/warning` | `#D97706` | `utility/warning-dark` | `#FCD34D` | Warning fill |
+| `warning-subtle` | `utility/warning-subtle` | `#FFFBEB` | `utility/warning-subtle-dark` | `#451A03` | Warning tint background |
+| `warning-foreground` | `grass/950` | `#012305` | `grass/950` | `#012305` | Text on warning — stays dark **both** modes (amber is light) |
+| `info` | `utility/info` | `#2563EB` | `utility/info-dark` | `#60A5FA` | Info fill |
+| `info-subtle` | `utility/info-subtle` | `#EFF6FF` | `utility/info-subtle-dark` | `#172554` | Info tint background |
+| `info-foreground` | `neutral/white` | `#FFFFFF` | `grass/950` | `#012305` | Text on info |
+| `destructive-subtle` | `utility/error-subtle` | `#FEF2F2` | `utility/error-subtle-dark` | `#450A0A` | Error tint background (pairs with `destructive`) |
+| `destructive-foreground` | `neutral/white` | `#FFFFFF` | `grass/950` | `#012305` | Text on destructive |
+
+### 3b. Interaction states
+
+Neutral feedback — brand presence stays the focus ring. Hover values are a
+darken/lighten of the base, **not** grass.
+
+| token | Light HEX | Dark HEX | Usage |
+|-------|-----------|----------|-------|
+| `primary-hover` | `oklch(0.27 0.0098 66.70)` | `oklch(0.88 0.0300 38.37)` | Hover on `primary` |
+| `secondary-hover` | `oklch(0.9007 0.0300 38.37)` | `oklch(0.32 0.0126 65.19)` | Hover on `secondary` / ghost surfaces |
+| `foreground-disabled` | `#ABB3A5` | `#6B6F68` | Disabled text/icons |
+
+Conventions (no token): `:active` → 90% opacity; `:disabled` → 40% opacity +
+`pointer-events: none`. Global `:focus-visible` → `2px solid var(--ring)`, 2px
+offset (the single standing brand cue — never remove without a visible
+alternative). `[aria-invalid="true"]` adopts `destructive` for border + ring.
+
+### 3c. Motion
+
+Layered on `tw-animate-css` (already imported); no new dependency.
+
+| token | Value | Usage |
+|-------|-------|-------|
+| `--ease-standard` | `cubic-bezier(0.2, 0, 0, 1)` | State + enter/exit easing |
+| `--duration-fast` | `150ms` | Hover / focus / colour changes |
+| `--duration-base` | `200ms` | Small surface enter/exit |
+
+A global `@media (prefers-reduced-motion: reduce)` guard neutralises animation
+and transitions. Transitions animate `color` / `background` / `border` /
+`opacity` / `box-shadow` only — never `all`, never layout.
