@@ -300,7 +300,7 @@ export default async function MentorProfilePage({
                 <span
                   className={`h-2 w-2 rounded-full ${
                     profile.available
-                      ? "bg-green-500"
+                      ? "bg-success"
                       : "bg-muted-foreground/40"
                   }`}
                 />
