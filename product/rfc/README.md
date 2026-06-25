@@ -36,3 +36,5 @@ options are recorded, not erased.
 |-----|-------|--------|-------|
 | [RFC-0001](RFC-0001-mentor-visibility-ranking.md) | Mentor visibility & ranking system | Discussion | [#31](https://github.com/grasshopper-protocol/grsshppr/issues/31) |
 | [RFC-0002](RFC-0002-brand-color-adoption.md) | Brand color adoption | Accepted (A) | [ADR-0005](../../decisions/ADR-0005-brand-color-minimal-mapping.md) |
+| [RFC-0003](RFC-0003-status-token-layer.md) | Status token layer | Accepted | [ADR-0006](../../decisions/ADR-0006-status-token-layer.md) |
+| [RFC-0004](RFC-0004-interaction-states-motion.md) | Interaction states & motion | Accepted | [ADR-0007](../../decisions/ADR-0007-interaction-states-motion.md) |

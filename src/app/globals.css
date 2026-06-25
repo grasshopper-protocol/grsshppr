@@ -25,6 +25,27 @@
   --input: oklch(0.8712 0.0294 44.39);               /* neutral/200 */
   --ring: #5B9518;                /* grass/500 — brand focus */
   --destructive: oklch(0.5771 0.2103 17.08);         /* utility/error */
+  --destructive-subtle: #fef2f2;  /* error-subtle */
+  --destructive-foreground: #ffffff;
+  /* Status — semantic, mode-aware (RFC-0003 / ADR-0006). Status only. */
+  --success: #3c7209;             /* grass/700 — passes AA on white */
+  --success-subtle: #e1eecc;      /* grass/50 */
+  --success-foreground: #ffffff;
+  --warning: #d97706;             /* utility/warning */
+  --warning-subtle: #fffbeb;
+  --warning-foreground: #012305;  /* grass/950 — dark in both modes */
+  --info: #2563eb;                /* utility/info */
+  --info-subtle: #eff6ff;
+  --info-foreground: #ffffff;
+  /* Interaction states (RFC-0004 / ADR-0007) — neutral feedback; brand stays
+     the focus ring. */
+  --primary-hover: oklch(0.2700 0.0098 66.70);       /* neutral/900 lightened */
+  --secondary-hover: oklch(0.9007 0.0300 38.37);     /* neutral/100 darkened */
+  --foreground-disabled: #abb3a5;                    /* neutral, dimmed */
+  /* Motion (RFC-0004 / ADR-0007) */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --duration-fast: 150ms;
+  --duration-base: 200ms;
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
@@ -56,16 +77,27 @@
   --color-grass-800: #17651a;
   --color-grass-900: #05481f;
   --color-grass-950: #012305;
-  /* Status/utility colors — see DESIGN.md §1c. Status only, never decorative.
-     Names don't collide with Tailwind's built-ins (red/amber/blue). The neutral
-     ramp (DESIGN.md §1b) is intentionally NOT redefined here — that would clobber
-     Tailwind's built-in `neutral-*`; its values are applied via semantic tokens. */
-  --color-error: #dc2626;
-  --color-error-dark: #f87171;
-  --color-warning: #d97706;
-  --color-warning-dark: #fcd34d;
-  --color-info: #2563eb;
-  --color-info-dark: #60a5fa;
+  /* Status — semantic & mode-aware (RFC-0003 / ADR-0006). Status only, never
+     decorative. `error` is `destructive` (defined in :root); success/warning/info
+     each get base + -subtle + -foreground. The neutral ramp (DESIGN.md §1b) is
+     still intentionally NOT redefined here — that would clobber Tailwind's
+     built-in `neutral-*`. The previously fixed error/warning/info(+dark)
+     primitives were unused and are superseded by these — see ADR-0006. */
+  --color-success: var(--success);
+  --color-success-subtle: var(--success-subtle);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-subtle: var(--warning-subtle);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-subtle: var(--info-subtle);
+  --color-info-foreground: var(--info-foreground);
+  --color-destructive-subtle: var(--destructive-subtle);
+  --color-destructive-foreground: var(--destructive-foreground);
+  /* Interaction states (RFC-0004 / ADR-0007) */
+  --color-primary-hover: var(--primary-hover);
+  --color-secondary-hover: var(--secondary-hover);
+  --color-foreground-disabled: var(--foreground-disabled);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
@@ -131,6 +163,22 @@ body {
   --accent: #17651A;              /* grass/800 — subtle */
   --accent-foreground: #E1EECC;   /* grass/50 */
   --destructive: oklch(0.7113 0.1693 15.90);         /* utility/error-dark */
+  --destructive-subtle: #450a0a;
+  --destructive-foreground: #012305;  /* grass/950 */
+  /* Status — dark (RFC-0003 / ADR-0006). Do not simply invert. */
+  --success: #83b328;             /* grass/400 */
+  --success-subtle: #05481f;      /* grass/900 */
+  --success-foreground: #012305;  /* grass/950 */
+  --warning: #fcd34d;             /* utility/warning-dark */
+  --warning-subtle: #451a03;
+  --warning-foreground: #012305;  /* grass/950 — stays dark both modes */
+  --info: #60a5fa;                /* utility/info-dark */
+  --info-subtle: #172554;
+  --info-foreground: #012305;     /* grass/950 */
+  /* Interaction states — dark (RFC-0004 / ADR-0007) */
+  --primary-hover: oklch(0.8800 0.0300 38.37);       /* neutral/100 darkened */
+  --secondary-hover: oklch(0.3200 0.0126 65.19);     /* neutral/800 lightened */
+  --foreground-disabled: #6b6f68;
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: #83B328;                /* grass/400 — brand focus */
@@ -158,5 +206,29 @@ body {
   }
   html {
     @apply font-sans;
+  }
+  /* Focus ring — the single standing brand cue (RFC-0004 / ADR-0007). Never
+     remove without a visible alternative. */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  /* Invalid form fields adopt the destructive color for border + focus ring. */
+  [aria-invalid="true"] {
+    border-color: var(--destructive);
+    --ring: var(--destructive);
+  }
+}
+
+/* Respect reduced-motion globally (RFC-0004 / ADR-0007). Covers tw-animate-css
+   and all CSS transitions. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
