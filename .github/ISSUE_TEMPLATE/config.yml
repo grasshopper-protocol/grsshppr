@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
   - name: RFC (major change)
-    url: https://github.com/grasshopper-protocol/grasshopper/tree/main/product/rfc
+    url: https://github.com/grasshopper-protocol/grsshppr/tree/main/product/rfc
     about: For new features, schema/API/dependency/design-system or governance changes, open an RFC instead of an issue.
   - name: Discussions
-    url: https://github.com/grasshopper-protocol/grasshopper/discussions
+    url: https://github.com/grasshopper-protocol/grsshppr/discussions
     about: Questions, ideas, and open-ended conversation.
