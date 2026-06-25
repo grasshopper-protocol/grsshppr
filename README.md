@@ -30,9 +30,15 @@ Grasshopper is modular by design:
 
 Each module is self-contained. The platform works without modules enabled; modules enhance committed mentoring relationships.
 
+## Auth
+
+Passwordless by design — sign in with GitHub, Google, or a passkey. No passwords,
+no resets, no credential stuffing. See
+[ADR-0002](decisions/ADR-0002-passwordless-auth.md).
+
 ## Status
 
-� **Alpha** — Core features implemented. Ready for local testing.
+🦗 **Alpha** — Core features implemented. Ready for local testing.
 
 ## Tech Stack
 
@@ -65,7 +71,7 @@ See [ENGINEERING.md](ENGINEERING.md) for architecture guidance and [DESIGN.md](D
 |----------|----------|-------|
 | `DATABASE_URL` | Yes | PostgreSQL connection string (Neon, Supabase, Railway, etc.) |
 | `BETTER_AUTH_SECRET` | Yes | `openssl rand -base64 32` |
-| `BETTER_AUTH_URL` | Yes | Your production URL (e.g. `https://grasshopper.vercel.app`) |
+| `BETTER_AUTH_URL` | Yes | Your production URL (e.g. `https://www.grsshppr.org`) |
 | `GITHUB_CLIENT_ID` | No | GitHub OAuth app ID |
 | `GITHUB_CLIENT_SECRET` | No | GitHub OAuth app secret |
 | `GOOGLE_CLIENT_ID` | No | Google OAuth client ID |
@@ -98,6 +104,19 @@ The app runs on `http://localhost:3000`. See `Dockerfile` for the multi-stage bu
 See [CONTRIBUTING.md](CONTRIBUTING.md) for setup instructions, code conventions, and PR guidelines.
 
 AI agents: read [AGENTS.md](AGENTS.md) for how to operate (RFCs, ADRs, traceability) and [ENGINEERING.md](ENGINEERING.md) before writing any code.
+
+## Working in the Open
+
+Grasshopper is a fully open product — not just open source. Code, specs, design,
+decisions, and roadmap are all public.
+
+- **Roadmap** — [product/roadmap](product/roadmap/README.md) (now / next / later)
+- **Propose a change** — [RFCs](product/rfc/README.md) for anything major
+- **Why things are the way they are** — [decisions](decisions/README.md) (ADRs)
+- **Who decides** — [governance](governance/GOVERNANCE.md)
+- **How humans + agents operate** — [AGENTS.md](AGENTS.md)
+
+Contributions are welcome across every layer — product, design, and engineering.
 
 ## Contributors
 
