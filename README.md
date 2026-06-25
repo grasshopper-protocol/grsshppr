@@ -101,8 +101,8 @@ AI agents: read [AGENTS.md](AGENTS.md) for how to operate (RFCs, ADRs, traceabil
 
 ## Contributors
 
-<a href="https://github.com/grasshopper-protocol/grasshopper/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=grasshopper-protocol/grasshopper" />
+<a href="https://github.com/grasshopper-protocol/grsshppr/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=grasshopper-protocol/grsshppr" />
 </a>
 
 ## License
