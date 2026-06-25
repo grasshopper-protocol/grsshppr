@@ -29,7 +29,7 @@ export function rateLimit(
   hits.push(now);
   hitMap.set(ip, hits);
 
-  if (hits.length > limit) {
+  if (hits.length > limit && process.env.NODE_ENV !== "development") {
     return NextResponse.json(
       { error: "Too many requests. Try again later." },
       { status: 429, headers: { "Retry-After": String(Math.ceil(windowMs / 1000)) } }

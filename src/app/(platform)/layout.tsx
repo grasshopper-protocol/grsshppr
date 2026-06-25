@@ -1,9 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Compass, SquaresFour } from "@phosphor-icons/react/dist/ssr";
+import { Compass, SquaresFour, CalendarDots } from "@phosphor-icons/react/dist/ssr";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "@/components/user-menu";
 import { MobileNav } from "@/components/mobile-nav";
+import { NotificationBell } from "@/components/notification-bell";
 
 export default function PlatformLayout({
   children,
@@ -34,10 +35,18 @@ export default function PlatformLayout({
                 <SquaresFour size={16} />
                 Dashboard
               </Link>
+              <Link
+                href="/sessions"
+                className="inline-flex h-9 items-center gap-1.5 rounded-md px-3 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <CalendarDots size={16} />
+                Sessions
+              </Link>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <MobileNav />
+            <NotificationBell />
             <ThemeToggle />
             <UserMenu />
           </div>

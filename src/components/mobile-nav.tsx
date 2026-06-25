@@ -9,11 +9,12 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { List, Compass, SquaresFour, Gear } from "@phosphor-icons/react";
+import { List, Compass, SquaresFour, CalendarDots, Gear } from "@phosphor-icons/react";
 
 const links = [
   { href: "/explore", label: "Explore", icon: Compass },
   { href: "/dashboard", label: "Dashboard", icon: SquaresFour },
+  { href: "/sessions", label: "Sessions", icon: CalendarDots },
   { href: "/settings", label: "Settings", icon: Gear },
 ];
 

@@ -65,9 +65,9 @@ export async function getSessionsForUser(userId: string) {
         .where(eq(users.id, partnerId));
       const role = s.mentorId === userId ? "mentor" : "mentee";
 
-      // For completed sessions where user is mentee, include mentor slug for rebook
+      // For mentee sessions, include mentor slug (rebook, reschedule)
       let mentorSlug: string | undefined;
-      if (role === "mentee" && s.status === "completed") {
+      if (role === "mentee") {
         const [profile] = await db
           .select({ slug: profiles.slug })
           .from(profiles)
@@ -80,6 +80,24 @@ export async function getSessionsForUser(userId: string) {
   );
 
   return enriched;
+}
+
+/** Active (requested or confirmed) session between a mentee and mentor */
+export async function getActiveSessionBetween(menteeId: string, mentorId: string) {
+  const result = await db
+    .select()
+    .from(sessions)
+    .where(
+      and(
+        eq(sessions.menteeId, menteeId),
+        eq(sessions.mentorId, mentorId),
+        or(eq(sessions.status, "requested"), eq(sessions.status, "confirmed")),
+        gt(sessions.startsAt, new Date())
+      )
+    )
+    .orderBy(sessions.startsAt)
+    .limit(1);
+  return result[0] ?? null;
 }
 
 export async function getCompletedSessionCount(userId: string) {
