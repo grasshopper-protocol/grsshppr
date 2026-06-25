@@ -1,6 +1,6 @@
 # RFC-0002: Brand color adoption
 
-- **Status:** Discussion
+- **Status:** Accepted (Option A) — see [ADR-0005](../../decisions/ADR-0005-brand-color-minimal-mapping.md)
 - **Author:** natos
 - **Created:** 2026-06-25
 - **Discipline:** Design (which hat decides)
@@ -96,5 +96,13 @@ The brand-forward mapping exported from Figma (`DESIGN.md` §2), light + dark:
 
 ## Outcome
 
-_Pending the visual A/B test._ On decision: record **ADR-0005**, merge the
-winning branch (it carries the shared base), delete the losing branch.
+**Decided: Option A (minimal).** The visual A/B test settled it — the minimal
+mapping's green focus ring and quiet accents give enough brand presence without
+abandoning the restrained look, and carry no WCAG or brand-vs-status-green
+liabilities. Recorded in [ADR-0005](../../decisions/ADR-0005-brand-color-minimal-mapping.md).
+`feat/design-system-minimal` merges to `main` (it carries the shared base);
+`feat/design-system-full` and the base branch `feat/design-system` are deleted.
+
+> During the spike we also found the Figma export's `oklch()` values were
+> desaturated/hue-shifted vs their own hex; semantic tokens were repointed to the
+> source-of-truth hex from `DESIGN.md` §1 before judging.

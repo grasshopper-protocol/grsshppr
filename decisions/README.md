@@ -20,6 +20,7 @@ was made and what would change it.
 | [0002](ADR-0002-passwordless-auth.md) | Passwordless auth (OAuth + passkeys) | Accepted |
 | [0003](ADR-0003-schema-migrations.md) | Generated migrations over `db:push` | Accepted |
 | [0004](ADR-0004-timezone-handling.md) | Timezone handling (calendar dates + slot wire format) | Accepted |
+| [0005](ADR-0005-brand-color-minimal-mapping.md) | Brand color adoption — minimal mapping | Accepted |
 
 ## Historical log
 
