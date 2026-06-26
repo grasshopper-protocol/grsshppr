@@ -17,6 +17,10 @@ on:
     branches: [main]
     paths:
       - 'drizzle/**'
+  # Manual trigger — for the one-time baseline run and for re-running after an
+  # incident. Safe to run anytime: drizzle-kit migrate only applies migrations
+  # not yet recorded in drizzle.__drizzle_migrations.
+  workflow_dispatch:
 
 jobs:
   migrate:
