@@ -21,10 +21,6 @@ on:
 jobs:
   migrate:
     runs-on: ubuntu-latest
-    env:
-      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -33,9 +29,11 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Pull env from Vercel
-        run: npx vercel env pull .env.production --environment=production --token=$VERCEL_TOKEN
       - name: Apply migrations
-        run: |
-          export $(grep DATABASE_URL .env.production | xargs)
-          pnpm drizzle-kit migrate
+        # MIGRATION_DATABASE_URL is the Neon direct (non-pooling) connection
+        # string, stored as a GitHub Actions secret. We do NOT pull it from
+        # Vercel: the prod DB URLs there are Sensitive env vars and come back
+        # empty via `vercel env pull` (in CI and locally alike).
+        env:
+          DATABASE_URL: ${{ secrets.MIGRATION_DATABASE_URL }}
+        run: pnpm drizzle-kit migrate
