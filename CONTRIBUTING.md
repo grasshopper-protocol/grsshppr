@@ -2,6 +2,44 @@
 
 Thanks for your interest in contributing. Grasshopper is an open-source mentoring platform for tech & design professionals.
 
+## Finding work
+
+You don't have to be a coder. Code, design, product, and docs are equal layers
+(see [AGENTS.md](AGENTS.md)).
+
+- **New here?** Browse [`good first issue`](https://github.com/grasshopper-protocol/grsshppr/labels/good%20first%20issue)
+  — small, self-contained, well-described tasks meant for a first PR.
+- **Want something meatier?** [`help wanted`](https://github.com/grasshopper-protocol/grsshppr/labels/help%20wanted)
+  marks issues we'd love a hand with.
+- **Have an idea?** Open an issue or a [Discussion](https://github.com/grasshopper-protocol/grsshppr/discussions);
+  it gets triaged into a [roadmap horizon](product/roadmap). Major changes start
+  as an [RFC](product/rfc).
+- **Design or product, not code?** Open a **Design proposal** issue — see
+  [design/](design/README.md) and the component inventory in
+  [design/patterns/](design/patterns/README.md).
+
+### Labels
+
+| Label | Meaning |
+|-------|---------|
+| `good first issue` | Small, scoped, newcomer-friendly. Start here. |
+| `help wanted` | We'd welcome a contributor picking this up. |
+
+## Contributor ladder
+
+Reputation is earned in the open, across any layer:
+
+1. **Contributor** — anyone who opens an issue, RFC, design proposal, or PR.
+2. **Trusted contributor** — a track record of merged, on-principle work; gets
+   the benefit of the doubt in review and can triage issues.
+3. **Maintainer** — sustained, quality contribution plus alignment with the
+   project's principles; reviews and merges, records ADRs, owns a discipline.
+   Existing maintainers propose and agree by lazy consensus, then add you to
+   [MAINTAINERS.md](governance/MAINTAINERS.md) and `.github/CODEOWNERS`.
+
+See [governance/GOVERNANCE.md](governance/GOVERNANCE.md) for decision rights and
+how disagreements are resolved.
+
 ## Prerequisites
 
 - **Node.js 22+**
