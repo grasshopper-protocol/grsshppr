@@ -112,6 +112,22 @@ baselining so `0000` truly equals prod.
 just run `pnpm db:migrate` and it applies `0000` onward normally. The runbook
 above is only for the pre-existing prod DB that predates migrations.
 
+## Addendum (2026-06-26): baseline done, and how migrations get their URL
+
+- **Prod is baselined.** The `0000_sleepy_dazzler` row is present in
+  `drizzle.__drizzle_migrations` (hash above, `created_at = 1782354777415`).
+  `drizzle-kit migrate` now skips `0000` and applies future migrations cleanly.
+- **The workflow no longer pulls the DB URL from Vercel.** Neon's prod
+  connection strings are stored as Vercel **Sensitive** environment variables,
+  which `vercel env pull` returns **empty** — in CI and locally alike. So the
+  old `db-migrate.yml` step (`vercel env pull` → `export DATABASE_URL`) could
+  never connect. The workflow now passes the Neon **direct (non-pooling)**
+  connection string from the `MIGRATION_DATABASE_URL` GitHub Actions secret
+  straight to `drizzle-kit migrate`.
+- The runbook above is unchanged for future baselines; substitute the direct
+  connection string (e.g. `MIGRATION_DATABASE_URL`) wherever it reads
+  `$DATABASE_URL`.
+
 ## Links
 
 - `package.json` scripts: `db:generate`, `db:migrate`, `db:push`
