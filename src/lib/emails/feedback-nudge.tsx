@@ -11,7 +11,12 @@ import {
   Link,
 } from "@react-email/components";
 
-const BASE_URL = process.env.BETTER_AUTH_URL ?? "http://localhost:3000";
+// Logo is a static brand asset — always load it from the canonical public
+// origin so it resolves in every environment. It is intentionally NOT tied to
+// BETTER_AUTH_URL (which is localhost in dev): a real inbox can't reach
+// localhost, and Gmail/Outlook block data-URI (base64) images, so neither
+// localhost nor inline embedding works. Override with EMAIL_LOGO_URL if needed.
+const LOGO_URL = process.env.EMAIL_LOGO_URL ?? "https://www.grsshppr.org/logo.png";
 
 export function FeedbackNudgeEmail({
   recipientName,
@@ -29,9 +34,9 @@ export function FeedbackNudgeEmail({
       <Head />
       <Body style={{ fontFamily: "system-ui, sans-serif", backgroundColor: "#fafafa" }}>
         <Container style={{ maxWidth: 480, margin: "0 auto", padding: "32px 16px" }}>
-          {/* Raster PNG — email clients (Gmail, Outlook, Apple Mail) don't render SVG. */}
+          {/* Raster PNG on the canonical origin — email clients (Gmail, Outlook, Apple Mail) don't render SVG or data-URI images. */}
           <Img
-            src={`${BASE_URL}/logo.png`}
+            src={LOGO_URL}
             alt="Grsshppr"
             width={28}
             height={28}
