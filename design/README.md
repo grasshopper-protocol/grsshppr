@@ -18,8 +18,12 @@ is the home for design direction, principles, and (soon) the design system.
   status / interaction / motion token layers added in
   [ADR-0006](../decisions/ADR-0006-status-token-layer.md) /
   [ADR-0007](../decisions/ADR-0007-interaction-states-motion.md).)
-- `patterns/` — component inventory and usage notes.
-- A link to the Figma source file.
+- `patterns/` — component inventory and usage notes
+  ([patterns/README.md](patterns/README.md)).
+
+Design lives entirely in this repo — there is no external Figma file. The source
+of truth is `src/app/globals.css` (tokens + theme), [`tokens/`](tokens), and
+[`patterns/`](patterns).
 
 ## Contributing design
 

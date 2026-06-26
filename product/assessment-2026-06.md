@@ -32,8 +32,9 @@ public governance machinery that lets outsiders participate.
    Operational knowledge (prod incidents, leaked credential) lives in agent
    memory, invisible to humans.
 4. **Design/UX (3.5)** — DESIGN.md is an excellent *brief*, not yet a *system*.
-   Accent color still "(to be defined)", no tokens, no component inventory, no
-   Figma link, no design contribution entry point.
+   Accent color still "(to be defined)", no tokens, no component inventory,
+   design lives in-repo (no external Figma source), no design contribution entry
+   point.
 5. **Architecture (4.5)** — Genuinely good. Core/modules split documented and
    enforced. Gaps: **no migrations folder** (schema drift caused 2 prod
    incidents); `@vercel/analytics` + `@vercel/speed-insights` contradict the
@@ -70,15 +71,17 @@ public governance machinery that lets outsiders participate.
 
 ### Phase 2 — Systemisation (next)
 - [x] Author first real RFC for the next feature (RFC-0001–0004 authored)
-- [~] Choose accent color; extract `/design/tokens`; publish component inventory
-  — accent chosen ([ADR-0005](../decisions/ADR-0005-brand-color-minimal-mapping.md))
-  and tokens extracted; component inventory still open
-- [ ] Link the Figma source from `/design/README.md`
+- [x] Choose accent color; extract `/design/tokens`; publish component inventory
+  — accent chosen ([ADR-0005](../decisions/ADR-0005-brand-color-minimal-mapping.md)),
+  tokens extracted, inventory at [`design/patterns/`](../design/patterns/README.md)
 - [x] Enable GitHub Discussions (Ideas, RFCs, Q&A, Show & Tell)
+- _Design lives in-repo; there is no external Figma source to link._
 
 ### Phase 3 — Scaling openness (later)
-- [ ] Open roadmap to community proposals; define triage cadence
-- [ ] "good first issue" / "help wanted" labels + contributor ladder
-- [ ] Public changelog tied to ADRs
+- [x] Open roadmap to community proposals; define triage cadence
+  (see [roadmap — Triage & promotion](../product/roadmap/README.md))
+- [x] "good first issue" / "help wanted" labels + contributor ladder
+  (see [CONTRIBUTING.md](../CONTRIBUTING.md))
+- [x] Public changelog tied to ADRs ([CHANGELOG.md](../CHANGELOG.md))
 - [x] Move incident notes from agent memory into `/decisions` or `POSTMORTEMS.md`
   (postmortems live under `/postmortems`)

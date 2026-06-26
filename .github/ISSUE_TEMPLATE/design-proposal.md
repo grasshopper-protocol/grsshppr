@@ -15,7 +15,7 @@ What's wrong or missing today, and who it affects.
 
 ## Visuals
 
-Mockups, sketches, references, or a Figma link. Even a rough sketch helps.
+Mockups, sketches, or references — paste images directly. Even a rough sketch helps.
 
 ## Principles check
 
