@@ -6,6 +6,7 @@ import {
 } from "@phosphor-icons/react/dist/ssr";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { BuiltWith } from "@/components/built-with";
 
 export default async function Home() {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -258,6 +259,9 @@ export default async function Home() {
           </div>
         </div>
       </section>
+
+      {/* ── Built with open tools ── */}
+      <BuiltWith />
     </div>
   );
 }

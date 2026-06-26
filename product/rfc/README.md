@@ -38,3 +38,5 @@ options are recorded, not erased.
 | [RFC-0002](RFC-0002-brand-color-adoption.md) | Brand color adoption | Accepted (A) | [ADR-0005](../../decisions/ADR-0005-brand-color-minimal-mapping.md) |
 | [RFC-0003](RFC-0003-status-token-layer.md) | Status token layer | Accepted | [ADR-0006](../../decisions/ADR-0006-status-token-layer.md) |
 | [RFC-0004](RFC-0004-interaction-states-motion.md) | Interaction states & motion | Accepted | [ADR-0007](../../decisions/ADR-0007-interaction-states-motion.md) |
+| [RFC-0005](RFC-0005-built-with-marketing.md) | "Built with open tools" strip on the marketing page | Accepted | [ADR-0008](../../decisions/ADR-0008-built-with-marketing-strip.md) |
+| [RFC-0006](RFC-0006-marketing-footer.md) | Marketing footer expansion | Accepted | [ADR-0009](../../decisions/ADR-0009-marketing-footer.md) |
