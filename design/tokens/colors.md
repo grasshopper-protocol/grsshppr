@@ -39,11 +39,16 @@ a background. Dark text uses `--foreground`; white text uses `#fff`.
 - **Borders / dividers on tint:** Sage `200`.
 - **On dark surfaces:** Lime `300` / Meadow `400` read as the "lit" brand color;
   avoid the deep steps (700–950) as text on dark backgrounds.
-- **Don't** use `grass` for success/error semantics — those stay on Tailwind's
-  generic `green-*` / `red-*` so brand and status never blur.
+- **Success** semantics _do_ sit on the grass ramp by design: the `success`
+  token is `grass/700` (light) / `grass/400` (dark) — see
+  [ADR-0006](../../decisions/ADR-0006-status-token-layer.md). `warning` (amber)
+  and `error`/`destructive` (red) stay off the brand ramp so they read as alerts.
 
-## Adopting a semantic mapping
+## Semantic mapping (shipped)
 
-Repointing `--primary` / `--accent` to a grass step is a **design-system change**
-and goes through an RFC. Until then the ramp is available as utilities
-(`bg-grass-500`, `text-grass-700`, …) and as CSS variables (`--color-grass-500`).
+The minimal mapping shipped ([ADR-0005](../../decisions/ADR-0005-brand-color-minimal-mapping.md)):
+`--ring` and `--accent` (plus links and selected states) point to a `grass`
+step, while `--primary` stays near-black. The ramp is also available directly
+as utilities (`bg-grass-500`, `text-grass-700`, …) and CSS variables
+(`--color-grass-500`). Further repointing of `--primary` to grass would be a new
+design-system change and require an RFC.

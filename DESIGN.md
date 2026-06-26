@@ -20,7 +20,7 @@ Quiet confidence. Grasshopper looks like it was made by people who care deeply b
 ### Color
 
 - Neutral palette as foundation: near-black text, warm grays, off-white backgrounds
-- One accent color (to be defined) — used sparingly for primary actions and active states
+- One accent color — `grass` (the brand green ramp) — used sparingly for focus rings, accents, links, and active states ([ADR-0005](decisions/ADR-0005-brand-color-minimal-mapping.md))
 - Dark mode as first-class citizen, not an afterthought
 - Avoid pure black (#000) and pure white (#FFF) — use off-values for warmth
 
@@ -202,10 +202,7 @@ Status/feedback only — never decorative.
 ## 2. Semantic tokens
 
 Mapping to shadcn/ui token names. ⚠️ marks a WCAG pairing to verify per theme.
-**Two candidate mappings are being A/B tested** — see
-`product/rfc/RFC-0002`. The table below is the **full theme** (most brand-forward);
-the **minimal** variant keeps `background`/`card`/`foreground`/`primary` neutral and
-applies `grass` only to `ring`, `accent`, links, and selected states.
+**Decided: the _minimal_ mapping shipped** ([RFC-0002](product/rfc/RFC-0002-brand-color-adoption.md) → [ADR-0005](decisions/ADR-0005-brand-color-minimal-mapping.md)) — it keeps `background`/`card`/`foreground`/`primary` neutral and applies `grass` only to `ring`, `accent`, links, and selected states. The table below documents the **full theme** that was _considered and rejected_, kept here for reference; it is **not** what the product renders.
 
 | shadcn token | Light primitive | Light HEX | Dark primitive | Dark HEX | Usage |
 |--------------|-----------------|-----------|----------------|----------|-------|
