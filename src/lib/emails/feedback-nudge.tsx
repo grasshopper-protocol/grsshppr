@@ -7,8 +7,11 @@ import {
   Text,
   Heading,
   Hr,
+  Img,
   Link,
 } from "@react-email/components";
+
+const BASE_URL = process.env.BETTER_AUTH_URL ?? "http://localhost:3000";
 
 export function FeedbackNudgeEmail({
   recipientName,
@@ -26,6 +29,14 @@ export function FeedbackNudgeEmail({
       <Head />
       <Body style={{ fontFamily: "system-ui, sans-serif", backgroundColor: "#fafafa" }}>
         <Container style={{ maxWidth: 480, margin: "0 auto", padding: "32px 16px" }}>
+          {/* Raster PNG — email clients (Gmail, Outlook, Apple Mail) don't render SVG. */}
+          <Img
+            src={`${BASE_URL}/logo.png`}
+            alt="Grsshppr"
+            width={28}
+            height={28}
+            style={{ marginBottom: 24 }}
+          />
           <Heading as="h2" style={{ fontSize: 20 }}>How did it go?</Heading>
           <Text>Hi {recipientName},</Text>
           <Text>

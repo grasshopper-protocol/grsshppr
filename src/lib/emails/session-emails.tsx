@@ -38,8 +38,9 @@ function Layout({ children }: { children: React.ReactNode }) {
       <Head />
       <Body style={{ fontFamily: "system-ui, sans-serif", backgroundColor: "#fafafa" }}>
         <Container style={{ maxWidth: 480, margin: "0 auto", padding: "32px 16px" }}>
+          {/* Raster PNG — email clients (Gmail, Outlook, Apple Mail) don't render SVG. */}
           <Img
-            src={`${BASE_URL}/logo.svg`}
+            src={`${BASE_URL}/logo.png`}
             alt="Grsshppr"
             width={28}
             height={28}
