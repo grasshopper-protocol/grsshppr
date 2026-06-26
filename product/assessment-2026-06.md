@@ -69,13 +69,16 @@ public governance machinery that lets outsiders participate.
 - [x] Split `AGENTS.md` → `ENGINEERING.md` (engineering) + governance `AGENTS.md`
 
 ### Phase 2 — Systemisation (next)
-- [ ] Author first real RFC for the next feature (notes module / notifications)
-- [ ] Choose accent color; extract `/design/tokens`; publish component inventory
+- [x] Author first real RFC for the next feature (RFC-0001–0004 authored)
+- [~] Choose accent color; extract `/design/tokens`; publish component inventory
+  — accent chosen ([ADR-0005](../decisions/ADR-0005-brand-color-minimal-mapping.md))
+  and tokens extracted; component inventory still open
 - [ ] Link the Figma source from `/design/README.md`
-- [ ] Enable GitHub Discussions (Ideas, RFCs, Q&A, Show & Tell)
+- [x] Enable GitHub Discussions (Ideas, RFCs, Q&A, Show & Tell)
 
 ### Phase 3 — Scaling openness (later)
 - [ ] Open roadmap to community proposals; define triage cadence
 - [ ] "good first issue" / "help wanted" labels + contributor ladder
 - [ ] Public changelog tied to ADRs
-- [ ] Move incident notes from agent memory into `/decisions` or `POSTMORTEMS.md`
+- [x] Move incident notes from agent memory into `/decisions` or `POSTMORTEMS.md`
+  (postmortems live under `/postmortems`)

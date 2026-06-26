@@ -1,19 +1,26 @@
 # Now
 
-Committed and in flight. Each item has an owner and an open issue.
+Committed and in flight. Each item should have an owner and an open issue.
 
-## Correctness & openness foundations
-- **Rotate leaked Neon credential** — live security item flagged in ops notes.
-  _Why now:_ a credential was exposed; this is non-negotiable.
-- **Resolve analytics-vs-policy contradiction** — `@vercel/analytics` +
-  `@vercel/speed-insights` contradict the no-telemetry policy. Remove them or
-  update the policy. _Why now:_ stated values must match the code.
-- **Adopt generated migrations** — replace prod `db:push` with
-  `db:generate` + `db:migrate`. See [ADR-0003](../../decisions/ADR-0003-schema-migrations.md).
-  _Why now:_ schema drift already caused two production incidents.
-- **Publish governance + open product scaffolding** — this repo restructure.
-  _Why now:_ "open product" requires public roadmap, RFCs, ADRs, and decision
-  rights before outside contribution is possible.
+## Adopt the new token layers in components
+- **Status / interaction / motion token adoption** — the token layer shipped
+  ([ADR-0006](../../decisions/ADR-0006-status-token-layer.md),
+  [ADR-0007](../../decisions/ADR-0007-interaction-states-motion.md)) but most
+  components still use ad-hoc colors and transitions. Roll `success` / `warning`
+  / `info`, hover / disabled, and motion tokens into buttons, inputs, and a
+  status badge/alert primitive. _Why now:_ the tokens are defined but unused —
+  the value only lands when components consume them.
 
-> Update this list as items ship. Move completed items into release notes /
-> the decision log, not here.
+> Update this list as items ship. Move completed items into the decision log
+> ([decisions/LOG.md](../../decisions/LOG.md)) / release notes, not here.
+
+## Recently shipped (moved out of Now)
+- Rotated the leaked Neon credential.
+- Removed `@vercel/analytics` + `@vercel/speed-insights` to honor the
+  no-telemetry policy.
+- Adopted generated migrations and a green DB Migrate CI workflow
+  ([ADR-0003](../../decisions/ADR-0003-schema-migrations.md)).
+- Published governance + open-product scaffolding (roadmap, RFCs, ADRs).
+- Decided the design-system direction — minimal
+  ([ADR-0005](../../decisions/ADR-0005-brand-color-minimal-mapping.md)) — and
+  added status / interaction / motion token layers.

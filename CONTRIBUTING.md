@@ -4,7 +4,7 @@ Thanks for your interest in contributing. Grasshopper is an open-source mentorin
 
 ## Prerequisites
 
-- **Node.js 20+**
+- **Node.js 22+**
 - **pnpm** (`corepack enable`)
 - **Docker** (for PostgreSQL)
 
@@ -12,7 +12,7 @@ Thanks for your interest in contributing. Grasshopper is an open-source mentorin
 
 ```bash
 git clone https://github.com/grasshopper-protocol/grsshppr.git
-cd grasshopper
+cd grsshppr
 pnpm install
 cp .env.example .env.local       # Then fill in BETTER_AUTH_SECRET
 docker compose up -d              # Starts PostgreSQL
@@ -97,7 +97,7 @@ The platform has two layers:
 
 These are intentional constraints (see AGENTS.md):
 
-- Auth providers beyond Better Auth (email/password + GitHub + Google)
+- Auth providers beyond Better Auth (passwordless: GitHub + Google + passkey)
 - Analytics, tracking, or telemetry
 - i18n/l10n scaffolding
 - CSS libraries beyond Tailwind

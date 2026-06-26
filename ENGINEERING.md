@@ -119,7 +119,7 @@ This project follows lazy-senior-dev principles:
 | Framework | **Next.js 16** | App Router, RSC, Turbopack, `use cache` |
 | Language | **TypeScript** (strict) | Infer where possible, annotate at boundaries |
 | Styling | **Tailwind CSS v4** | Utility-first, CSS variables for theming |
-| Icons | **Phosphor Icons** | `@phosphor-icons/react` — mono-weight, line style |
+| Icons | **Phosphor Icons** | `@phosphor-icons/react` — mono-weight, line style (app UI). `lucide-react` ships only inside generated shadcn/ui primitives. |
 | Components | **shadcn/ui** | Cherry-picked, not full install. Radix primitives underneath |
 | ORM | **Drizzle ORM** | Type-safe, SQL-like, no magic. Drizzle Kit for migrations |
 | Database | **PostgreSQL** | Docker for local dev. Any Postgres host in prod |
@@ -150,8 +150,8 @@ src/
 │   └── goals/                # Goal tracking (opt-in)
 ├── components/               # Shared UI primitives (shadcn/ui)
 ├── lib/                      # DB client, auth config, shared utilities
-└── styles/                   # Global CSS, Tailwind theme
-drizzle/                      # Migration files
+└── app/globals.css           # Global CSS + Tailwind v4 theme (all design tokens)
+drizzle/                      # Migration files (applied by .github/workflows/db-migrate.yml)
 public/
 docker-compose.yml            # Local Postgres
 ```

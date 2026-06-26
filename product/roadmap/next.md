@@ -7,9 +7,8 @@ they move to **Now**.
   _Why:_ booking without confirmation is a trust gap.
 - **Session cancel / reschedule flow** — currently sessions can't be changed
   after booking. _Why:_ real mentoring needs to handle life happening.
-- **Shared session notes (notes module)** — the `notes` module is scaffolded
-  but not built. Needs an RFC (collaborative editing model). _Why:_ continuity
-  across sessions is a core value prop.
+- **Reviews / testimonials** — let mentees vouch for mentors after a session.
+  _Why:_ social proof is how new mentees choose who to book.
 - **Mentor visibility & ranking** — gate `/explore` on profile completeness and
   rank by signals we already collect. _Why:_ oldest-first sorting rewards
   incumbency and surfaces half-built profiles. See

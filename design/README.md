@@ -13,8 +13,11 @@ is the home for design direction, principles, and (soon) the design system.
 
 ## Coming next (Phase 2)
 
-- `tokens/` — type / space tokens, and a semantic color mapping
-  (`--primary` / `--accent` → a `grass` step, RFC-gated).
+- `tokens/` — type / space tokens. (The semantic color mapping shipped — `grass`
+  on `--ring` / `--accent`, see [ADR-0005](../decisions/ADR-0005-brand-color-minimal-mapping.md);
+  status / interaction / motion token layers added in
+  [ADR-0006](../decisions/ADR-0006-status-token-layer.md) /
+  [ADR-0007](../decisions/ADR-0007-interaction-states-motion.md).)
 - `patterns/` — component inventory and usage notes.
 - A link to the Figma source file.
 
