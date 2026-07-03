@@ -46,6 +46,14 @@ Next.js 16 · TypeScript · Tailwind CSS v4 · Drizzle ORM · PostgreSQL · Bett
 
 ## Getting Started
 
+### One-click (Codespaces / Dev Container)
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/grasshopper-protocol/grsshppr)
+
+Open in Codespaces, or locally with VS Code + Docker via **Reopen in Container**. The dev container installs deps, starts PostgreSQL, applies the schema, and seeds mentors. Then run `pnpm dev` and visit http://localhost:3000 — hot reload included.
+
+### Manual
+
 ```bash
 # Prerequisites: Node.js 22+, pnpm, Docker
 

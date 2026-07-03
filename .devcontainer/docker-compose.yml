@@ -1,0 +1,16 @@
+services:
+  app:
+    image: node:22
+    working_dir: /workspace
+    command: sleep infinity
+    volumes:
+      - .:/workspace:cached
+    environment:
+      CI: "true"
+      DATABASE_URL: postgres://grasshopper:grasshopper@db:5432/grasshopper
+      BETTER_AUTH_SECRET: dev-only-not-for-production-32chars-min
+      BETTER_AUTH_URL: http://localhost:3000
+      # Poll the filesystem so edits trigger hot reload inside the container
+      WATCHPACK_POLLING: "true"
+    depends_on:
+      - db
