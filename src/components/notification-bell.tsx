@@ -24,6 +24,8 @@ export function NotificationBell() {
   const router = useRouter();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const notificationLabel =
+    unreadCount > 0 ? `Notifications, ${unreadCount} unread` : "Notifications";
 
   useEffect(() => {
     fetch("/api/notifications")
@@ -43,7 +45,10 @@ export function NotificationBell() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="relative rounded-full p-1.5 text-muted-foreground transition-colors hover:text-foreground outline-none ring-ring focus-visible:ring-2">
+      <DropdownMenuTrigger
+        aria-label={notificationLabel}
+        className="relative rounded-full p-1.5 text-muted-foreground transition-colors hover:text-foreground outline-none ring-ring focus-visible:ring-2"
+      >
         <Bell size={18} />
         {unreadCount > 0 && (
           <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground">

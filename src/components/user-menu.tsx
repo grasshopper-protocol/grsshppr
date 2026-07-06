@@ -41,11 +41,14 @@ export function UserMenu() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="rounded-full outline-none ring-ring focus-visible:ring-2">
-          <Avatar className="h-8 w-8">
-            <AvatarImage src={session.user.image ?? undefined} alt={session.user.name ?? ""} />
-            <AvatarFallback className="text-xs">{initials}</AvatarFallback>
-          </Avatar>
+      <DropdownMenuTrigger
+        aria-label="Open user menu"
+        className="rounded-full outline-none ring-ring focus-visible:ring-2"
+      >
+        <Avatar className="h-8 w-8">
+          <AvatarImage src={session.user.image ?? undefined} alt={session.user.name ?? ""} />
+          <AvatarFallback className="text-xs">{initials}</AvatarFallback>
+        </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
         {profileSlug ? (
