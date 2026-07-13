@@ -58,6 +58,9 @@ next-env.d.ts
 
 # docker
 docker-compose.override.yml
+
+# internal research (kept private; distilled into public RFCs)
+/research
 .env*
 
 # Temporary design-token staging/reference notes (not for commit)
