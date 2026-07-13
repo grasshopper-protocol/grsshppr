@@ -25,6 +25,7 @@ was made and what would change it.
 | [0007](ADR-0007-interaction-states-motion.md) | Interaction states & motion | Accepted |
 | [0008](ADR-0008-built-with-marketing-strip.md) | "Built with open tools" strip on the marketing page | Accepted |
 | [0009](ADR-0009-marketing-footer.md) | Marketing footer expansion | Accepted |
+| [0010](ADR-0010-supply-chain-hardening.md) | Supply-chain hardening (CI security baseline) | Accepted |
 
 ## Historical log
 
