@@ -1,0 +1,27 @@
+version: 2
+updates:
+  # npm dependencies (managed via pnpm; Dependabot reads pnpm-lock.yaml).
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    groups:
+      # Batch minor/patch bumps into one PR to keep review noise low.
+      minor-and-patch:
+        update-types:
+          - minor
+          - patch
+
+  # GitHub Actions — keeps the SHA-pinned actions current (Dependabot bumps the
+  # pin and updates the trailing version comment).
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+
+  # Docker base image in the Dockerfile.
+  - package-ecosystem: docker
+    directory: "/"
+    schedule:
+      interval: weekly
