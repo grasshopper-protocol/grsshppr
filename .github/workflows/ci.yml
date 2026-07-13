@@ -1,0 +1,37 @@
+name: CI
+
+# Fast correctness gates on every PR and push to main. No secrets needed:
+# typecheck and lint are pure static analysis. `next build` is intentionally
+# omitted — it can hit the database during static generation, which would make
+# CI flaky without production secrets.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      # Hard gate: the build must typecheck.
+      - name: Typecheck
+        run: pnpm exec tsc --noEmit
+
+      # Advisory until the existing lint debt is cleared, then promote to a hard
+      # gate (drop continue-on-error) and add "quality" to branch protection.
+      - name: Lint (advisory)
+        run: pnpm lint
+        continue-on-error: true
