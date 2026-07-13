@@ -1,5 +1,7 @@
 # Grasshopper
 
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/grasshopper-protocol/grsshppr/badge)](https://scorecard.dev/viewer/?uri=github.com/grasshopper-protocol/grsshppr)
+
 Open-source mentoring platform for tech & design professionals.
 
 ## Why Grasshopper
