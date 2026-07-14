@@ -41,7 +41,7 @@ no resets, no credential stuffing. See
 
 ## Status
 
-🦗 **Alpha** — Core features implemented. Ready for local testing.
+🦗 **Beta** — Feature-complete, hardening.
 
 ## Tech Stack
 
