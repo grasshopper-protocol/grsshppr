@@ -87,9 +87,12 @@ This project follows lazy-senior-dev principles:
 - Barrel exports (`index.ts`) only at module boundaries, not everywhere
 
 ### Testing
-- Non-trivial logic gets ONE runnable check (assert-based, no frameworks needed for unit checks)
-- Integration tests for booking flow and module enable/disable
-- No test for obvious one-liners
+- **Run:** `pnpm test` (uses Node's built-in test runner via tsx — no framework needed)
+- **Where:** `tests/` at the root, file per module (`<module>.test.js`)
+- **Policy:** non-trivial logic (pure functions, edge cases, anything that caused a bug) gets at
+  least one test. PRs that add non-trivial logic must include a test.
+- No test for obvious one-liners. No test doubles unless absolutely necessary.
+- Tests must pass in CI before merge (`pnpm test` is a required check).
 
 ### Error Handling
 - Validate at system boundaries (API inputs, form submissions)

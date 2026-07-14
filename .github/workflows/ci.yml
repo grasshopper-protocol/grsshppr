@@ -1,9 +1,9 @@
 name: CI
 
-# Fast correctness gates on every PR and push to main. No secrets needed:
-# typecheck and lint are pure static analysis. `next build` is intentionally
-# omitted — it can hit the database during static generation, which would make
-# CI flaky without production secrets.
+# Correctness gates on every PR and push to main. No secrets needed:
+# all checks are pure static analysis or self-contained unit tests.
+# `next build` is intentionally omitted — it hits the DB during static
+# generation and would be flaky without production secrets.
 
 on:
   push:
@@ -25,6 +25,10 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+
+      # Hard gate: tests must pass.
+      - name: Test
+        run: pnpm test
 
       # Hard gate: the build must typecheck.
       - name: Typecheck

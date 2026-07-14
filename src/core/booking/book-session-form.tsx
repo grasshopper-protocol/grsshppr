@@ -7,13 +7,7 @@ import { Button } from "@/components/ui/button";
 type Slot = { startsAt: string; endsAt: string };
 type Goal = { id: string; title: string; status: string };
 
-// Local YYYY-MM-DD — never toISOString(), which shifts the date in +UTC zones.
-function toDateStr(d: Date): string {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
+import { toDateStr } from "@/lib/booking-dates";
 
 function formatTime(iso: string): string {
   return new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });

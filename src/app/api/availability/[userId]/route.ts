@@ -5,6 +5,7 @@ import { availability, sessions } from "@/lib/db/schema";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { rateLimit } from "@/lib/api-utils";
+import { zonedTimeToUtc } from "@/lib/booking-dates";
 
 function getMonday(date: Date): Date {
   const d = new Date(date);
@@ -13,21 +14,6 @@ function getMonday(date: Date): Date {
   d.setDate(d.getDate() + diff);
   d.setHours(0, 0, 0, 0);
   return d;
-}
-
-// Converts a wall-clock time (date "YYYY-MM-DD" + "HH:mm") in an IANA timezone
-// to a UTC Date, using the offset-correction trick.
-// ponytail: at a DST-transition instant the offset can be off by the DST delta
-// for the ambiguous/skipped hour. Fine for booking windows; swap in date-fns-tz
-// if sub-hour DST-boundary accuracy is ever needed.
-function zonedTimeToUtc(dateStr: string, timeStr: string, timeZone: string): Date {
-  const [y, mo, d] = dateStr.split("-").map(Number);
-  const [h, mi] = timeStr.split(":").map(Number);
-  const utcGuess = Date.UTC(y, mo - 1, d, h, mi);
-  const guess = new Date(utcGuess);
-  const wall = new Date(guess.toLocaleString("en-US", { timeZone }));
-  const utc = new Date(guess.toLocaleString("en-US", { timeZone: "UTC" }));
-  return new Date(utcGuess + (utc.getTime() - wall.getTime()));
 }
 
 // GET /api/availability/[userId]?week=2026-06-23
