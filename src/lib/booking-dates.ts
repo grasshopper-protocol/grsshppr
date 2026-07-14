@@ -41,3 +41,73 @@ export function zonedTimeToUtc(
   const utc = new Date(guess.toLocaleString("en-US", { timeZone: "UTC" }));
   return new Date(utcGuess + (utc.getTime() - wall.getTime()));
 }
+
+/**
+ * Returns the Monday (local midnight) of the week containing `date`.
+ * Sunday belongs to the week that just ended, so it maps back 6 days.
+ */
+export function getMonday(date: Date): Date {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  d.setDate(d.getDate() + diff);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+/** A weekly recurring availability window. dayOfWeek: 0 = Sunday … 6 = Saturday. */
+export interface AvailabilityWindow {
+  dayOfWeek: number;
+  startTime: string; // "HH:mm"
+  endTime: string; // "HH:mm"
+}
+
+export interface Slot {
+  startsAt: string; // offset-aware ISO instant
+  endsAt: string;
+}
+
+/**
+ * Generates every bookable slot for the week beginning on `monday`, across all
+ * availability windows, as offset-aware UTC instants sorted ascending.
+ *
+ * Pure: no DB, no clock. Slots are laid out by walking each window in
+ * `sessionDuration`-minute steps that fit fully inside the window.
+ */
+export function slotsForWeek(
+  monday: Date,
+  windows: AvailabilityWindow[],
+  sessionDuration: number,
+  timeZone: string
+): Slot[] {
+  const result: Slot[] = [];
+  for (const win of windows) {
+    const daysFromMonday = win.dayOfWeek === 0 ? 6 : win.dayOfWeek - 1;
+    const dayDate = new Date(monday);
+    dayDate.setDate(dayDate.getDate() + daysFromMonday);
+    const dateStr = toDateStr(dayDate);
+
+    const [startH, startM] = win.startTime.split(":").map(Number);
+    const [endH, endM] = win.endTime.split(":").map(Number);
+    const windowStartMin = startH * 60 + startM;
+    const windowEndMin = endH * 60 + endM;
+
+    for (
+      let min = windowStartMin;
+      min + sessionDuration <= windowEndMin;
+      min += sessionDuration
+    ) {
+      const slotStartH = String(Math.floor(min / 60)).padStart(2, "0");
+      const slotStartM = String(min % 60).padStart(2, "0");
+      const endMin = min + sessionDuration;
+      const slotEndH = String(Math.floor(endMin / 60)).padStart(2, "0");
+      const slotEndM = String(endMin % 60).padStart(2, "0");
+
+      result.push({
+        startsAt: zonedTimeToUtc(dateStr, `${slotStartH}:${slotStartM}`, timeZone).toISOString(),
+        endsAt: zonedTimeToUtc(dateStr, `${slotEndH}:${slotEndM}`, timeZone).toISOString(),
+      });
+    }
+  }
+  return result.sort((a, b) => a.startsAt.localeCompare(b.startsAt));
+}

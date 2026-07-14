@@ -41,3 +41,4 @@ options are recorded, not erased.
 | [RFC-0005](RFC-0005-built-with-marketing.md) | "Built with open tools" strip on the marketing page | Accepted | [ADR-0008](../../decisions/ADR-0008-built-with-marketing-strip.md) |
 | [RFC-0006](RFC-0006-marketing-footer.md) | Marketing footer expansion | Accepted | [ADR-0009](../../decisions/ADR-0009-marketing-footer.md) |
 | [RFC-0007](RFC-0007-session-reschedule.md) | Session reschedule | Draft | — |
+| [RFC-0009](RFC-0009-testing-policy.md) | Testing policy & coverage gate | Accepted | [ADR-0011](../../decisions/ADR-0011-testing-gate.md) |
