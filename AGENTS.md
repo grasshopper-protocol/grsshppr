@@ -41,6 +41,11 @@ When acting on this repository, an agent MUST:
   write the ADR (context, options, decision, consequences) and link it.
 - **Update documentation in the same change.** Code that changes behavior
   updates the relevant doc (README, ENGINEERING, DESIGN, roadmap) in the same PR.
+- **Ship a test with non-trivial logic.** A PR that adds or changes non-trivial
+  logic includes a test in the same change and must not lower the coverage gate
+  (see [ADR-0011](decisions/ADR-0011-testing-gate.md) and
+  [ENGINEERING.md](ENGINEERING.md)). Logic that isn't unit-testable in place is
+  extracted into a pure helper under `src/lib` and tested there.
 - **Never introduce silent changes.** No undocumented features, no quiet
   dependency additions, no schema drift, no behavior changes "while I was in
   there." If it wasn't asked for and isn't documented, don't ship it.
@@ -85,6 +90,8 @@ When acting on this repository, an agent MUST:
   an issue and a line in the PR explaining why nothing already-present works.
 - **No schema drift.** Schema changes ship as generated migrations, never as an
   undocumented `push` — see [ADR-0003](decisions/ADR-0003-schema-migrations.md).
+- **No untested logic.** Non-trivial logic ships with a test and keeps the CI
+  coverage gate green — see [ADR-0011](decisions/ADR-0011-testing-gate.md).
 - **No scope smuggling.** Do exactly what the issue/RFC describes. Unrelated
   improvements get their own issue.
 

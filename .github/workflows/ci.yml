@@ -26,9 +26,10 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
 
-      # Hard gate: tests must pass.
-      - name: Test
-        run: pnpm test
+      # Hard gate: tests must pass and pure-logic coverage must hold.
+      # Thresholds are enforced in the `test:coverage` script (src/lib only).
+      - name: Test + coverage
+        run: pnpm test:coverage
 
       # Hard gate: the build must typecheck.
       - name: Typecheck

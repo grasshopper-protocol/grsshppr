@@ -1,18 +1,9 @@
 import { eq, and, or, ilike, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { profiles, users, sessions, availability, goals } from "@/lib/db/schema";
+import { slugify, nextAvailableSlug } from "@/lib/slug";
 
-// ponytail: 3-line slugify — strips diacritics, lowercases, keeps alphanum + hyphens.
 // Collision ceiling: linear scan with LIKE prefix. Fine for <10k profiles.
-function slugify(name: string) {
-  return name
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
-}
-
 async function uniqueSlug(name: string, excludeProfileId?: string) {
   const base = slugify(name);
   const existing = await db
@@ -24,11 +15,7 @@ async function uniqueSlug(name: string, excludeProfileId?: string) {
       .filter((r) => !excludeProfileId || r.slug !== excludeProfileId)
       .map((r) => r.slug)
   );
-  if (!taken.has(base)) return base;
-  for (let i = 2; ; i++) {
-    const candidate = `${base}-${i}`;
-    if (!taken.has(candidate)) return candidate;
-  }
+  return nextAvailableSlug(base, taken);
 }
 
 export async function getProfileByUserId(userId: string) {
