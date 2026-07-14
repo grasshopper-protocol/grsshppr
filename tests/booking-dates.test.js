@@ -11,7 +11,12 @@
 
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { toDateStr, zonedTimeToUtc } from "../src/lib/booking-dates.js";
+import {
+  toDateStr,
+  zonedTimeToUtc,
+  getMonday,
+  slotsForWeek,
+} from "../src/lib/booking-dates.js";
 
 // ---------------------------------------------------------------------------
 // toDateStr
@@ -75,5 +80,97 @@ describe("zonedTimeToUtc", () => {
     const result = zonedTimeToUtc("2026-06-23", "10:00", "UTC");
     // z.string().datetime() requires Z or +offset. toISOString() always emits Z.
     assert.ok(result.toISOString().endsWith("Z"), "must end with Z");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// getMonday
+// ---------------------------------------------------------------------------
+
+describe("getMonday", () => {
+  it("returns the same day when given a Monday", () => {
+    // 2026-06-22 is a Monday
+    const mon = getMonday(new Date(2026, 5, 22, 15, 30));
+    assert.equal(toDateStr(mon), "2026-06-22");
+  });
+
+  it("maps mid-week days back to that week's Monday", () => {
+    // 2026-06-25 is a Thursday → Monday 2026-06-22
+    assert.equal(toDateStr(getMonday(new Date(2026, 5, 25))), "2026-06-22");
+  });
+
+  it("maps Sunday back to the Monday that started the week (not the next one)", () => {
+    // 2026-06-28 is a Sunday → Monday 2026-06-22
+    assert.equal(toDateStr(getMonday(new Date(2026, 5, 28))), "2026-06-22");
+  });
+
+  it("normalizes the time to local midnight", () => {
+    const mon = getMonday(new Date(2026, 5, 25, 23, 59, 59));
+    assert.equal(mon.getHours(), 0);
+    assert.equal(mon.getMinutes(), 0);
+    assert.equal(mon.getSeconds(), 0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// slotsForWeek
+// ---------------------------------------------------------------------------
+
+describe("slotsForWeek", () => {
+  const monday = new Date(2026, 5, 22); // Mon 2026-06-22, local midnight
+
+  it("lays out slots of sessionDuration length that fit inside the window", () => {
+    // Monday 09:00–10:30 UTC, 30-min sessions → 09:00, 09:30, 10:00 (3 slots)
+    const windows = [{ dayOfWeek: 1, startTime: "09:00", endTime: "10:30" }];
+    const slots = slotsForWeek(monday, windows, 30, "UTC");
+    assert.equal(slots.length, 3);
+    assert.equal(slots[0].startsAt, "2026-06-22T09:00:00.000Z");
+    assert.equal(slots[0].endsAt, "2026-06-22T09:30:00.000Z");
+    assert.equal(slots[2].startsAt, "2026-06-22T10:00:00.000Z");
+  });
+
+  it("drops a trailing partial slot that would overrun the window", () => {
+    // 09:00–10:00 with 45-min sessions → only 09:00 fits (09:45 would end 10:30)
+    const windows = [{ dayOfWeek: 1, startTime: "09:00", endTime: "10:00" }];
+    const slots = slotsForWeek(monday, windows, 45, "UTC");
+    assert.equal(slots.length, 1);
+    assert.equal(slots[0].startsAt, "2026-06-22T09:00:00.000Z");
+  });
+
+  it("places a slot on the correct calendar day for the window's dayOfWeek", () => {
+    // Wednesday window (dayOfWeek 3) → 2026-06-24
+    const windows = [{ dayOfWeek: 3, startTime: "08:00", endTime: "08:30" }];
+    const slots = slotsForWeek(monday, windows, 30, "UTC");
+    assert.equal(slots[0].startsAt, "2026-06-24T08:00:00.000Z");
+  });
+
+  it("places a Sunday window at the end of the week (dayOfWeek 0)", () => {
+    // Sunday maps 6 days after Monday → 2026-06-28
+    const windows = [{ dayOfWeek: 0, startTime: "10:00", endTime: "10:30" }];
+    const slots = slotsForWeek(monday, windows, 30, "UTC");
+    assert.equal(slots[0].startsAt, "2026-06-28T10:00:00.000Z");
+  });
+
+  it("merges multiple windows and returns them sorted ascending", () => {
+    const windows = [
+      { dayOfWeek: 3, startTime: "08:00", endTime: "08:30" },
+      { dayOfWeek: 1, startTime: "09:00", endTime: "09:30" },
+    ];
+    const slots = slotsForWeek(monday, windows, 30, "UTC");
+    const starts = slots.map((s) => s.startsAt);
+    assert.deepEqual(starts, [...starts].sort());
+    assert.equal(starts[0], "2026-06-22T09:00:00.000Z"); // Monday before Wednesday
+  });
+
+  it("converts wall-clock windows through the mentor's timezone (SGT UTC+8)", () => {
+    // 09:00 SGT on Monday = 01:00 UTC same day — the postmortem zone
+    const windows = [{ dayOfWeek: 1, startTime: "09:00", endTime: "09:30" }];
+    const slots = slotsForWeek(monday, windows, 30, "Asia/Singapore");
+    assert.equal(slots[0].startsAt, "2026-06-22T01:00:00.000Z");
+  });
+
+  it("returns an empty list when no window can fit a session", () => {
+    const windows = [{ dayOfWeek: 1, startTime: "09:00", endTime: "09:20" }];
+    assert.deepEqual(slotsForWeek(monday, windows, 30, "UTC"), []);
   });
 });
