@@ -18,6 +18,14 @@ You don't have to be a coder. Code, design, product, and docs are equal layers
   [design/](design/README.md) and the component inventory in
   [design/patterns/](design/patterns/README.md).
 
+### Feedback and issue handling
+
+- **Default channel:** use GitHub Issues for bugs, enhancements, and product feedback.
+- **Bugs:** bug reports are auto-escalated for triage and ownership by @natos.
+- **Response target:** we aim to acknowledge new issues within two weeks, with urgent regressions handled faster when the impact is clear.
+- **Enhancements:** feature ideas and small improvements are tracked as issues first; larger or architectural changes may be promoted to an RFC.
+- **Not sure what it is?** Open an issue and we will classify it during triage.
+
 ### Labels
 
 | Label | Meaning |
