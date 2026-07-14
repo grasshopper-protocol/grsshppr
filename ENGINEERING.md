@@ -88,11 +88,17 @@ This project follows lazy-senior-dev principles:
 
 ### Testing
 - **Run:** `pnpm test` (uses Node's built-in test runner via tsx — no framework needed)
+- **Coverage:** `pnpm test:coverage` enforces thresholds (95% lines / 90% branches / 95%
+  funcs) on the pure-logic modules in `src/lib`. This is the hard gate in CI.
 - **Where:** `tests/` at the root, file per module (`<module>.test.js`)
 - **Policy:** non-trivial logic (pure functions, edge cases, anything that caused a bug) gets at
   least one test. PRs that add non-trivial logic must include a test.
+- **Make it testable:** logic that lives inside a route handler, React component, or a
+  DB-coupled query module can't be unit-tested in isolation. Extract the pure part into a
+  DB-/framework-free helper under `src/lib` (see `booking-dates.ts`, `slug.ts`) and test that.
+  The consumer imports the helper; the test imports the same helper.
 - No test for obvious one-liners. No test doubles unless absolutely necessary.
-- Tests must pass in CI before merge (`pnpm test` is a required check).
+- Tests + coverage must pass in CI before merge (`pnpm test:coverage` is a required check).
 
 ### Error Handling
 - Validate at system boundaries (API inputs, form submissions)

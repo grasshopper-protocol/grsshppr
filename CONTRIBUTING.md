@@ -105,7 +105,11 @@ Read [AGENTS.md](AGENTS.md) for how change happens (RFCs, ADRs, traceability), [
 
 ### Testing
 
-Non-trivial logic gets ONE runnable check (assert-based, no frameworks needed). Trivial one-liners don't need tests.
+Non-trivial logic gets at least one test (Node's built-in runner, no framework). Run
+`pnpm test` locally, or `pnpm test:coverage` to check the coverage gate. If your logic is
+buried in a route or component, extract the pure part into a helper under `src/lib` (see
+`booking-dates.ts`, `slug.ts`) and test that. Both run in CI and must pass before merge.
+Trivial one-liners don't need tests.
 
 ### Error Handling
 
