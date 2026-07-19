@@ -85,6 +85,21 @@ export const availability = pgTable("availability", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+// --- Core: Availability ---
+
+export const availability = pgTable("availability", {
+  id: text("id").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  dayOfWeek: integer("day_of_week").notNull(), // 0=Sunday, 6=Saturday
+  startTime: text("start_time").notNull(), // "HH:mm"
+  endTime: text("end_time").notNull(), // "HH:mm"
+  timezone: text("timezone").notNull().default("UTC"),
+  sessionDuration: integer("session_duration").notNull().default(30), // minutes
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 // --- Module: Notes ---
 
 export const notes = pgTable("notes", {

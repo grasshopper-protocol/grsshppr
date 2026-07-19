@@ -506,3 +506,55 @@ function AvailabilityWidget({
     </section>
   );
 }
+
+const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+function AvailabilityWidget({
+  windows,
+}: {
+  windows: { dayOfWeek: number; startTime: string; endTime: string }[];
+}) {
+  const byDay = DAYS.map((day, i) => ({
+    day,
+    slots: windows.filter((w) => w.dayOfWeek === i),
+  })).filter((d) => d.slots.length > 0);
+
+  return (
+    <section className="mt-10">
+      <div className="flex items-center justify-between">
+        <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+          Your availability
+        </h2>
+        <Link
+          href="/settings/availability"
+          className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+        >
+          <PencilSimple size={12} />
+          Edit
+        </Link>
+      </div>
+      {byDay.length === 0 ? (
+        <div className="mt-3 rounded-lg border border-dashed border-border p-4 text-center">
+          <CalendarDots size={24} className="mx-auto text-muted-foreground" />
+          <p className="mt-2 text-sm text-muted-foreground">
+            No availability set.{" "}
+            <Link href="/settings/availability" className="text-foreground underline-offset-4 hover:underline">
+              Configure your schedule
+            </Link>
+          </p>
+        </div>
+      ) : (
+        <div className="mt-3 grid gap-1.5">
+          {byDay.map(({ day, slots }) => (
+            <div key={day} className="flex items-baseline gap-3 text-sm">
+              <span className="w-8 font-medium text-foreground">{day}</span>
+              <span className="text-muted-foreground">
+                {slots.map((s) => `${s.startTime}–${s.endTime}`).join(", ")}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}

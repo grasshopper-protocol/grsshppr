@@ -76,6 +76,12 @@ export function UserMenu() {
           <Gear size={16} />
           Account
         </DropdownMenuItem>
+        {isMentor && (
+          <DropdownMenuItem onClick={() => router.push("/settings/availability")}>
+            <CalendarDots size={16} />
+            Availability
+          </DropdownMenuItem>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={async () => {
