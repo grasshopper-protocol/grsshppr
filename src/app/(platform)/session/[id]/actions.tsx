@@ -10,13 +10,13 @@ export function SessionActions({
   sessionId,
   status,
   isMentor,
-  mentorProfileId,
+  mentorSlug,
   cancelReason,
 }: {
   sessionId: string;
   status: string;
   isMentor: boolean;
-  mentorProfileId?: string;
+  mentorSlug?: string;
   cancelReason?: string | null;
 }) {
   const router = useRouter();
@@ -48,8 +48,8 @@ export function SessionActions({
       body: JSON.stringify({ status: "cancelled", cancelReason: "Rescheduled" }),
     });
     // Redirect to mentor profile to pick a new time
-    if (mentorProfileId) {
-      router.push(`/mentor/${mentorProfileId}`);
+    if (mentorSlug) {
+      router.push(`/mentor/${mentorSlug}`);
     } else {
       router.refresh();
     }
@@ -69,9 +69,9 @@ export function SessionActions({
         </a>
       )}
 
-      {status === "completed" && !isMentor && mentorProfileId && (
+      {status === "completed" && !isMentor && mentorSlug && (
         <Link
-          href={`/mentor/${mentorProfileId}`}
+          href={`/mentor/${mentorSlug}`}
           className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground hover:underline underline-offset-4"
         >
           <ArrowClockwise size={16} />
@@ -98,7 +98,7 @@ export function SessionActions({
                 Mark completed
               </Button>
             )}
-            {status === "confirmed" && mentorProfileId && (
+            {status === "confirmed" && mentorSlug && (
               <Button variant="outline" onClick={handleReschedule} disabled={loading}>
                 <ArrowsClockwise size={14} className="mr-1" />
                 Reschedule

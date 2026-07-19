@@ -1,0 +1,17 @@
+# Code ownership — maps paths to the maintainers who review them.
+# See governance/MAINTAINERS.md.
+
+# Default owner (lead / engineering)
+*                       @natos
+
+# Product surface
+/product/               @natos
+
+# Design surface
+/design/                @natos
+DESIGN.md               @natos
+
+# Governance + decisions (lead sign-off required)
+/governance/            @natos
+/decisions/             @natos
+AGENTS.md               @natos

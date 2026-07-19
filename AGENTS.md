@@ -1,175 +1,141 @@
-# Grasshopper — Agent Instructions
+# AGENTS.md — How Humans and Agents Operate in Grasshopper
 
-## What This Is
+Grasshopper is a **fully open product**: open code, open specs, open design,
+open decisions, public roadmap. This file is the contract for everyone who
+changes the project — human or AI. It is enforceable. If a change violates it,
+the change is wrong, not the rule.
 
-Grasshopper is an open-source, free mentoring platform for tech & design professionals. Mentors volunteer their time. Mentees book sessions and track goals. The platform is modular — core features ship lean, optional modules add depth for committed pairs.
+For engineering specifics (tech stack, data model, naming, module rules) see
+[ENGINEERING.md](ENGINEERING.md). For visual direction see [DESIGN.md](DESIGN.md)
+and [design/principles.md](design/principles.md). This file governs *how change
+happens*.
 
-Read [DESIGN.md](DESIGN.md) for visual/UX direction. Read [README.md](README.md) for project context.
+---
 
-## Core Features
+## 1. Principles (non-negotiable)
 
-1. **Profiles + Discovery** — Mentor/mentee profiles with expertise tags, bio, availability. Browse and filter.
-2. **Session Booking + Shared Notes** — 1:1 session scheduling. Collaborative notes tied to each session.
-3. **Goal Tracking** — Mentees set goals, link sessions to goals, track progress over time.
+1. **Open by default.** Publish the reasoning, not just the result. If there is
+   no concrete reason to keep something private, it is public.
+2. **Document before building.** Non-trivial change starts as a written
+   proposal ([RFC](product/rfc/README.md)), not as a pull request.
+3. **Decisions must be traceable.** Every decision links idea → discussion →
+   decision ([ADR](decisions/README.md)) → implementation (PR) → release. No
+   orphan changes.
+4. **Product, Design, and Engineering are equals.** A design or product
+   proposal is a first-class contribution, not a request for engineering.
+5. **Lazy stays lazy.** This process governs *change*, not *effort*. A typo or
+   a one-line fix needs no ceremony. The bar scales with blast radius.
 
-## Architecture
+---
 
-### Modular Design
+## 2. Responsibilities of Agents
 
-The platform is composed of independent modules:
+When acting on this repository, an agent MUST:
 
-```
-core/
-  profiles/       → User profiles, expertise taxonomy, availability management
-  booking/        → Session scheduling, time slots, confirmations, notifications
+- **Write an RFC before any major change.** "Major" = new feature/module,
+  schema or data-model change, new dependency, public API change, design-system
+  change, governance change, or reversing a prior ADR.
+- **Link every change to an issue or spec.** A PR with no linked issue/RFC is
+  incomplete.
+- **Record decisions as ADRs.** When a choice is made between alternatives,
+  write the ADR (context, options, decision, consequences) and link it.
+- **Update documentation in the same change.** Code that changes behavior
+  updates the relevant doc (README, ENGINEERING, DESIGN, roadmap) in the same PR.
+- **Ship a test with non-trivial logic.** A PR that adds or changes non-trivial
+  logic includes a test in the same change and must not lower the coverage gate
+  (see [ADR-0011](decisions/ADR-0011-testing-gate.md) and
+  [ENGINEERING.md](ENGINEERING.md)). Logic that isn't unit-testable in place is
+  extracted into a pure helper under `src/lib` and tested there.
+- **Never introduce silent changes.** No undocumented features, no quiet
+  dependency additions, no schema drift, no behavior changes "while I was in
+  there." If it wasn't asked for and isn't documented, don't ship it.
+- **Surface operational risk in the repo, not in private notes.** Incidents,
+  drift, and security concerns belong in `/decisions` or
+  [SECURITY.md](SECURITY.md), where humans can see them.
 
-modules/
-  notes/          → Shared session notes (opt-in per mentoring pair)
-  goals/          → Goal setting + progress tracking (opt-in per mentoring pair)
-```
+---
 
-**Rules:**
-- Core works without any modules enabled
-- Modules depend on core but never on each other
-- A module can be disabled without breaking anything else
-- Module boundaries are enforced: no cross-module imports
+## 3. Workflows
 
-### Data Model (Conceptual)
+**Proposing a change**
+1. Open an Issue describing the problem (not the solution).
+2. If the change is *major* (see §2), author an RFC in [`product/rfc/`](product/rfc/README.md)
+   using `RFC-template.md`. Otherwise go straight to a PR.
+3. Discuss on the RFC/issue thread. Capture alternatives considered.
+4. On agreement, record an ADR in [`decisions/`](decisions/README.md) and link
+   the RFC.
+5. Implement via PRs that reference the issue, RFC, and ADR.
+6. Release notes reference the merged ADR/RFC.
 
-```
-User (mentor | mentee | both)
-  → has Profile (bio, expertise[], experience_years, availability[])
-  → has Sessions[] (as mentor or mentee)
+**Escalating uncertainty**
+- If requirements are ambiguous, STOP and write the open questions into the
+  issue/RFC. Do not guess on irreversible or wide-blast-radius work.
+- If a change would violate this file or an existing ADR, do not proceed.
+  Propose superseding the ADR explicitly.
 
-Session
-  → belongs to Mentor + Mentee
-  → has time_slot, status (requested | confirmed | completed | cancelled)
-  → has Notes (optional, module)
-  → links to Goal (optional, module)
+**Documenting decisions**
+- One ADR per decision. Decisions are immutable once recorded; to change one,
+  write a new ADR that supersedes it and link both directions.
 
-Goal (module)
-  → belongs to Mentee
-  → has title, description, status (active | completed | paused)
-  → has Sessions[] linked
+---
 
-Note (module)
-  → belongs to Session
-  → collaborative (both mentor and mentee can edit)
-  → persists after session ends
-```
+## 4. Non-Negotiable Rules
 
-## Coding Philosophy
+- **No undocumented features.** If users can see it, a doc describes it.
+- **No hidden decisions.** Every decision has an ADR. Rejected options are
+  recorded, not erased.
+- **No direct commits without traceability.** Every change traces to an issue
+  or RFC. No "drive-by" commits to shared branches.
+- **No silent dependencies.** Adding a package requires an RFC or, at minimum,
+  an issue and a line in the PR explaining why nothing already-present works.
+- **No schema drift.** Schema changes ship as generated migrations, never as an
+  undocumented `push` — see [ADR-0003](decisions/ADR-0003-schema-migrations.md).
+- **No untested logic.** Non-trivial logic ships with a test and keeps the CI
+  coverage gate green — see [ADR-0011](decisions/ADR-0011-testing-gate.md).
+- **No scope smuggling.** Do exactly what the issue/RFC describes. Unrelated
+  improvements get their own issue.
 
-This project follows lazy-senior-dev principles:
+---
 
-- **YAGNI** — Don't build it until it's needed. No speculative features.
-- **Boring over clever** — Readable code wins. No magic.
-- **Deletion over addition** — Solve problems by removing complexity, not adding layers.
-- **No premature abstractions** — Write the specific thing. Abstract only when the third instance appears.
-- **Fewest files possible** — Don't create a file for one function. Don't create a folder for one file.
+## 5. Quality Bar
 
-## Conventions
+- **Clarity over cleverness.** The reader's understanding outranks the author's
+  ingenuity. Boring and obvious wins.
+- **Explicit reasoning.** Every proposal states *why now*, *what else was
+  considered*, and *what it costs*.
+- **Reproducible decisions.** Anyone reading the RFC + ADR can reconstruct why
+  the decision was made and what would change it.
+- **Reversibility respected.** Cheap, reversible changes move fast. Expensive,
+  irreversible ones (schema, public API, dependencies, governance) require the
+  full trace.
 
-### Naming
-- Files: `kebab-case`
-- Components: `PascalCase`
-- Functions/variables: `camelCase`
-- Database tables/columns: `snake_case`
-- URLs/routes: `kebab-case`
+---
 
-### Code Organization
-- Co-locate related code (component + styles + tests together)
-- No `utils/` junk drawer — if a utility exists, it belongs near its consumer
-- Barrel exports (`index.ts`) only at module boundaries, not everywhere
+## 6. Quick Reference — Does this need an RFC?
 
-### Testing
-- Non-trivial logic gets ONE runnable check (assert-based, no frameworks needed for unit checks)
-- Integration tests for booking flow and module enable/disable
-- No test for obvious one-liners
+| Change | RFC? |
+|--------|------|
+| Typo, copy, in-place refactor, bug fix | No → Issue + PR |
+| New feature or module | **Yes** |
+| Schema / data-model change | **Yes** |
+| New dependency | **Yes** |
+| Public API change | **Yes** |
+| Design-system change (tokens, patterns) | **Yes** |
+| Governance change | **Yes** |
+| Reversing a prior ADR | **Yes** (supersede it) |
 
-### Error Handling
-- Validate at system boundaries (API inputs, form submissions)
-- Don't defensively code against impossible states internally
-- Error messages: actionable, not apologetic (see DESIGN.md tone section)
+When in doubt, write the RFC. It is cheaper than an unwound decision.
 
-### Data Lifecycle
-- `deleteProfile()` in `src/core/profiles/queries.ts` is the canonical "delete all user data" function
-- When adding a new table or storing new user-associated data, update `deleteProfile()` to clean it up
-- The function deletes data that doesn't cascade automatically, then removes the profile itself
+---
 
-## What NOT to Do
+## Map of the open product
 
-- Don't add auth providers beyond Better Auth without explicit approval
-- Don't add analytics, tracking, or telemetry
-- Don't add i18n/l10n scaffolding prematurely
-- Don't create abstractions for "future flexibility"
-- Don't add CSS libraries beyond Tailwind without explicit approval
-- Don't over-componentize (a component used once doesn't need its own file)
-- Don't add comments explaining obvious code
-- Don't add type annotations to code that TypeScript can infer
-
-## Tech Stack
-
-| Layer | Choice | Notes |
-|-------|--------|-------|
-| Framework | **Next.js 16** | App Router, RSC, Turbopack, `use cache` |
-| Language | **TypeScript** (strict) | Infer where possible, annotate at boundaries |
-| Styling | **Tailwind CSS v4** | Utility-first, CSS variables for theming |
-| Icons | **Phosphor Icons** | `@phosphor-icons/react` — mono-weight, line style |
-| Components | **shadcn/ui** | Cherry-picked, not full install. Radix primitives underneath |
-| ORM | **Drizzle ORM** | Type-safe, SQL-like, no magic. Drizzle Kit for migrations |
-| Database | **PostgreSQL** | Docker for local dev. Any Postgres host in prod |
-| Auth | **Better Auth** | Open-source, lightweight, no vendor lock-in |
-| Validation | **Zod** | Schema validation at system boundaries |
-| Email | **React Email + Resend** | Booking confirmations. Self-hosters can swap SMTP |
-| Package mgr | **pnpm** | Strict, fast, disk-efficient |
-| Deployment | **Vercel** (primary) | Self-hostable via Docker + Next.js Adapter API |
-
-### Project Structure
-
-```
-src/
-├── app/                      # Next.js App Router
-│   ├── (marketing)/          # Landing, about (public)
-│   ├── (platform)/           # Authenticated routes
-│   │   ├── explore/
-│   │   ├── dashboard/
-│   │   ├── session/[id]/
-│   │   └── settings/
-│   ├── api/                  # Route handlers
-│   └── layout.tsx
-├── core/
-│   ├── profiles/             # Schemas, queries, components for profiles
-│   └── booking/              # Scheduling, time slots, notifications
-├── modules/
-│   ├── notes/                # Shared session notes (opt-in)
-│   └── goals/                # Goal tracking (opt-in)
-├── components/               # Shared UI primitives (shadcn/ui)
-├── lib/                      # DB client, auth config, shared utilities
-└── styles/                   # Global CSS, Tailwind theme
-drizzle/                      # Migration files
-public/
-docker-compose.yml            # Local Postgres
-```
-
-## Decision Log
-
-| Date | Decision | Rationale |
-|------|----------|-----------|
-| 2026-06-18 | Modular architecture (core + opt-in modules) | Keep v1 simple; reward committed pairs with depth |
-| 2026-06-18 | Free/volunteer model | Reduce barriers; differentiate from MentorCruise/GrowthMentor |
-| 2026-06-18 | Tech & Design focus | Clear audience; avoid "platform for everything" trap |
-| 2026-06-18 | 3 core features only | Purposeful constraint; each feature must justify its existence |
-| 2026-06-18 | Next.js 16 + Tailwind + Drizzle + Better Auth | Modern, type-safe, OSS-friendly, self-hostable |
-| 2026-06-18 | PostgreSQL (Docker local, Neon prod) | No vendor lock. Contributors run `docker compose up` |
-| 2026-06-18 | Phosphor Icons | Mono-weight, multiple weights available, React-native tree-shaking |
-| 2026-06-19 | Passwordless auth only (OAuth + passkeys) | No passwords = no resets, no credential stuffing |
-| 2026-06-19 | Better Auth passkey plugin (`@simplewebauthn`) | WebAuthn, rpName: "Grasshopper" |
-| 2026-06-22 | Availability-based booking (not free-form) | Mentors define weekly windows; mentees pick generated slots |
-| 2026-06-22 | Goals v2: mentor attribution + target dates | `mentorId` FK on goals; server-validates against session history |
-| 2026-06-22 | Explicit goal status actions (not cycling) | Complete/Pause/Resume/Reopen buttons; clearer UX |
-| 2026-06-22 | Profile `headline` field (max 100 chars) | One flexible credibility signal — not separate jobTitle+company |
-| 2026-06-22 | Profile `links[]` (up to 5 URLs) | LinkedIn, GitHub, portfolio; auto-detected icons on mentor page |
-| 2026-06-22 | Mentor profile: two-column, sticky booking sidebar | Left: identity→expertise→links→about→stats→impact. Right: book CTA |
-| 2026-06-22 | Impact section on mentor profile | Completed goals attributed to mentor; builds trust via outcomes |
-| 2026-06-22 | Contextual avatar sizing | h-8 menu → h-11 dashboard → h-14 explore → h-16 session → h-28/32 hero |
+| You want to… | Go to |
+|--------------|-------|
+| Understand the code | [ENGINEERING.md](ENGINEERING.md) |
+| See visual/UX direction | [DESIGN.md](DESIGN.md) · [design/](design/README.md) |
+| Know what's being built | [product/roadmap/](product/roadmap/README.md) |
+| Propose a major change | [product/rfc/](product/rfc/README.md) |
+| See why something was decided | [decisions/](decisions/README.md) |
+| Know who decides | [governance/GOVERNANCE.md](governance/GOVERNANCE.md) |
+| Contribute (any layer) | [CONTRIBUTING.md](CONTRIBUTING.md) |

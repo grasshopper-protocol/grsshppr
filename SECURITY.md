@@ -6,7 +6,7 @@ If you discover a security vulnerability in Grasshopper, please report it respon
 
 **Do not open a public issue.**
 
-Instead, use [GitHub's private vulnerability reporting](https://github.com/grasshopper-protocol/grasshopper/security/advisories/new) or email the maintainers directly.
+Instead, use [GitHub's private vulnerability reporting](https://github.com/grasshopper-protocol/grsshppr/security/advisories/new) or email the maintainers directly.
 
 ## What to include
 

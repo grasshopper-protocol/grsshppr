@@ -9,11 +9,11 @@ import {
   Pause,
   Play,
   Trash,
-  Plus,
   PencilSimple,
   UserCircle,
   X,
   CalendarDots,
+  KeyReturn,
 } from "@phosphor-icons/react";
 
 type Goal = {
@@ -29,7 +29,7 @@ type Mentor = {
   mentorId: string;
   name: string;
   image: string | null;
-  profileId: string | null;
+  slug: string | null;
 };
 
 const statusIcon: Record<string, React.ReactNode> = {
@@ -241,8 +241,9 @@ export function GoalsList() {
           maxLength={200}
           className="h-9"
         />
-        <Button type="submit" size="sm" variant="outline" disabled={adding}>
-          <Plus size={14} />
+        <Button type="submit" size="sm" variant="ghost" disabled={adding} title="Press Enter to add" className="h-9 gap-1.5 text-muted-foreground">
+          <span className="text-xs">enter</span>
+          <KeyReturn size={14} />
         </Button>
       </form>
     </div>
@@ -291,9 +292,9 @@ function MentorMomentum({
           </span>
         )}
       </p>
-      {needsRebook && mentor?.profileId && (
+      {needsRebook && mentor?.slug && (
         <a
-          href={`/mentor/${mentor.profileId}`}
+          href={`/mentor/${mentor.slug}`}
           className="text-xs font-medium text-amber-600 dark:text-amber-400 hover:underline underline-offset-4 flex items-center gap-1"
         >
           <CalendarDots size={12} />

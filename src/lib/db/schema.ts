@@ -42,6 +42,7 @@ export const profiles = pgTable("profiles", {
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
   role: roleEnum("role").notNull(),
+  slug: text("slug").notNull().unique(),
   headline: text("headline"),
   bio: text("bio"),
   expertise: text("expertise").array(),
@@ -124,6 +125,32 @@ export const goals = pgTable("goals", {
   targetDate: timestamp("target_date"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// --- Join: Session ↔ Goals ---
+
+export const sessionGoals = pgTable("session_goals", {
+  sessionId: text("session_id")
+    .notNull()
+    .references(() => sessions.id, { onDelete: "cascade" }),
+  goalId: text("goal_id")
+    .notNull()
+    .references(() => goals.id, { onDelete: "cascade" }),
+}, (t) => [{ pk: { columns: [t.sessionId, t.goalId] } }]);
+
+// --- Core: Notifications ---
+
+export const notifications = pgTable("notifications", {
+  id: text("id").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  type: text("type").notNull(),
+  message: text("message").notNull(),
+  resourceId: text("resource_id"), // session ID or other entity
+  priority: text("priority").notNull().default("info"), // "action" | "info"
+  read: boolean("read").notNull().default(false),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 // --- Better Auth tables (managed by better-auth, defined here for Drizzle awareness) ---

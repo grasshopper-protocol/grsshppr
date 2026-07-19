@@ -2,9 +2,55 @@
 
 Thanks for your interest in contributing. Grasshopper is an open-source mentoring platform for tech & design professionals.
 
+## Finding work
+
+You don't have to be a coder. Code, design, product, and docs are equal layers
+(see [AGENTS.md](AGENTS.md)).
+
+- **New here?** Browse [`good first issue`](https://github.com/grasshopper-protocol/grsshppr/labels/good%20first%20issue)
+  — small, self-contained, well-described tasks meant for a first PR.
+- **Want something meatier?** [`help wanted`](https://github.com/grasshopper-protocol/grsshppr/labels/help%20wanted)
+  marks issues we'd love a hand with.
+- **Have an idea?** Open an issue or a [Discussion](https://github.com/grasshopper-protocol/grsshppr/discussions);
+  it gets triaged into a [roadmap horizon](product/roadmap). Major changes start
+  as an [RFC](product/rfc).
+- **Design or product, not code?** Open a **Design proposal** issue — see
+  [design/](design/README.md) and the component inventory in
+  [design/patterns/](design/patterns/README.md).
+
+### Feedback and issue handling
+
+- **Default channel:** use GitHub Issues for bugs, enhancements, and product feedback.
+- **Bugs:** bug reports are auto-escalated for triage and ownership by @natos.
+- **Response target:** we aim to acknowledge new issues within two weeks, with urgent regressions handled faster when the impact is clear.
+- **Enhancements:** feature ideas and small improvements are tracked as issues first; larger or architectural changes may be promoted to an RFC.
+- **Not sure what it is?** Open an issue and we will classify it during triage.
+
+### Labels
+
+| Label | Meaning |
+|-------|---------|
+| `good first issue` | Small, scoped, newcomer-friendly. Start here. |
+| `help wanted` | We'd welcome a contributor picking this up. |
+
+## Contributor ladder
+
+Reputation is earned in the open, across any layer:
+
+1. **Contributor** — anyone who opens an issue, RFC, design proposal, or PR.
+2. **Trusted contributor** — a track record of merged, on-principle work; gets
+   the benefit of the doubt in review and can triage issues.
+3. **Maintainer** — sustained, quality contribution plus alignment with the
+   project's principles; reviews and merges, records ADRs, owns a discipline.
+   Existing maintainers propose and agree by lazy consensus, then add you to
+   [MAINTAINERS.md](governance/MAINTAINERS.md) and `.github/CODEOWNERS`.
+
+See [governance/GOVERNANCE.md](governance/GOVERNANCE.md) for decision rights and
+how disagreements are resolved.
+
 ## Prerequisites
 
-- **Node.js 20+**
+- **Node.js 22+**
 - **pnpm** (`corepack enable`)
 - **Docker** (for PostgreSQL)
 
@@ -39,7 +85,7 @@ src/
 └── lib/                  # DB client, auth config, utilities
 ```
 
-Read [AGENTS.md](AGENTS.md) for architecture rules and [DESIGN.md](DESIGN.md) for visual direction.
+Read [AGENTS.md](AGENTS.md) for how change happens (RFCs, ADRs, traceability), [ENGINEERING.md](ENGINEERING.md) for architecture rules, and [DESIGN.md](DESIGN.md) for visual direction.
 
 ## Code Conventions
 
@@ -59,7 +105,11 @@ Read [AGENTS.md](AGENTS.md) for architecture rules and [DESIGN.md](DESIGN.md) fo
 
 ### Testing
 
-Non-trivial logic gets ONE runnable check (assert-based, no frameworks needed). Trivial one-liners don't need tests.
+Non-trivial logic gets at least one test (Node's built-in runner, no framework). Run
+`pnpm test` locally, or `pnpm test:coverage` to check the coverage gate. If your logic is
+buried in a route or component, extract the pure part into a helper under `src/lib` (see
+`booking-dates.ts`, `slug.ts`) and test that. Both run in CI and must pass before merge.
+Trivial one-liners don't need tests.
 
 ### Error Handling
 
@@ -97,7 +147,7 @@ The platform has two layers:
 
 These are intentional constraints (see AGENTS.md):
 
-- Auth providers beyond Better Auth (email/password + GitHub + Google)
+- Auth providers beyond Better Auth (passwordless: GitHub + Google + passkey)
 - Analytics, tracking, or telemetry
 - i18n/l10n scaffolding
 - CSS libraries beyond Tailwind
@@ -106,7 +156,10 @@ These are intentional constraints (see AGENTS.md):
 
 ## AI Contributors
 
-Read [AGENTS.md](AGENTS.md) before writing any code. It contains architecture rules, naming conventions, the data model, and explicit constraints.
+Read [AGENTS.md](AGENTS.md) before doing anything — it defines how change happens
+(open by default, RFC before major changes, decisions traceable as ADRs, no
+silent changes). Then read [ENGINEERING.md](ENGINEERING.md) for architecture
+rules, naming conventions, the data model, and explicit constraints.
 
 ## License
 

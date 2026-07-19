@@ -65,21 +65,39 @@ export async function getSessionsForUser(userId: string) {
         .where(eq(users.id, partnerId));
       const role = s.mentorId === userId ? "mentor" : "mentee";
 
-      // For completed sessions where user is mentee, include mentor profile ID for rebook
-      let mentorProfileId: string | undefined;
-      if (role === "mentee" && s.status === "completed") {
+      // For mentee sessions, include mentor slug (rebook, reschedule)
+      let mentorSlug: string | undefined;
+      if (role === "mentee") {
         const [profile] = await db
-          .select({ id: profiles.id })
+          .select({ slug: profiles.slug })
           .from(profiles)
           .where(eq(profiles.userId, s.mentorId));
-        mentorProfileId = profile?.id;
+        mentorSlug = profile?.slug;
       }
 
-      return { session: s, partner, role, mentorProfileId };
+      return { session: s, partner, role, mentorSlug };
     })
   );
 
   return enriched;
+}
+
+/** Active (requested or confirmed) session between a mentee and mentor */
+export async function getActiveSessionBetween(menteeId: string, mentorId: string) {
+  const result = await db
+    .select()
+    .from(sessions)
+    .where(
+      and(
+        eq(sessions.menteeId, menteeId),
+        eq(sessions.mentorId, mentorId),
+        or(eq(sessions.status, "requested"), eq(sessions.status, "confirmed")),
+        gt(sessions.startsAt, new Date())
+      )
+    )
+    .orderBy(sessions.startsAt)
+    .limit(1);
+  return result[0] ?? null;
 }
 
 export async function getCompletedSessionCount(userId: string) {
@@ -148,7 +166,7 @@ export async function getMentorsForMentee(menteeId: string) {
       mentorId: sessions.mentorId,
       name: users.name,
       image: users.image,
-      profileId: profiles.id,
+      slug: profiles.slug,
     })
     .from(sessions)
     .innerJoin(users, eq(sessions.mentorId, users.id))

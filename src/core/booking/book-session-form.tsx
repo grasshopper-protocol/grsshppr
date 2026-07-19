@@ -3,18 +3,11 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { CaretLeft, CaretRight } from "@phosphor-icons/react";
 
 type Slot = { startsAt: string; endsAt: string };
+type Goal = { id: string; title: string; status: string };
 
-function getMonday(date: Date): Date {
-  const d = new Date(date);
-  const day = d.getDay();
-  const diff = day === 0 ? -6 : 1 - day;
-  d.setDate(d.getDate() + diff);
-  d.setHours(0, 0, 0, 0);
-  return d;
-}
+import { toDateStr } from "@/lib/booking-dates";
 
 function formatTime(iso: string): string {
   return new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
@@ -27,22 +20,56 @@ function formatDayLabel(iso: string): string {
 
 export function BookSessionForm({ mentorId }: { mentorId: string }) {
   const router = useRouter();
-  const [weekStart, setWeekStart] = useState(() => getMonday(new Date()));
   const [slots, setSlots] = useState<Slot[]>([]);
   const [selected, setSelected] = useState<Slot | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(false);
+  const [daysLoaded, setDaysLoaded] = useState(0);
+  const [goals, setGoals] = useState<Goal[]>([]);
+  const [selectedGoalIds, setSelectedGoalIds] = useState<string[]>([]);
+
+  const DAYS_PER_PAGE = 7;
 
   useEffect(() => {
     setLoading(true);
-    setSelected(null);
-    const weekStr = weekStart.toISOString().split("T")[0];
-    fetch(`/api/availability/${mentorId}?week=${weekStr}`)
+    fetch(`/api/availability/${mentorId}?days=${DAYS_PER_PAGE}`)
       .then((r) => r.json())
-      .then((data) => setSlots(data.slots ?? []))
+      .then((data) => {
+        setSlots(data.slots ?? []);
+        setHasMore(data.hasMore ?? false);
+        setDaysLoaded(DAYS_PER_PAGE);
+      })
       .finally(() => setLoading(false));
-  }, [mentorId, weekStart]);
+
+    // Fetch mentee's active goals
+    fetch("/api/goals")
+      .then((r) => r.json())
+      .then((data) => {
+        const active = (data.goals ?? []).filter((g: Goal) => g.status === "active");
+        setGoals(active);
+      })
+      .catch(() => {});
+  }, [mentorId]);
+
+  function loadMore() {
+    setLoadingMore(true);
+    // Cursor is the date after the last loaded day range
+    const afterDate = new Date();
+    afterDate.setDate(afterDate.getDate() + daysLoaded);
+    const afterStr = toDateStr(afterDate);
+    fetch(`/api/availability/${mentorId}?days=${DAYS_PER_PAGE}&after=${afterStr}`)
+      .then((r) => r.json())
+      .then((data) => {
+        const newSlots = data.slots ?? [];
+        setSlots((prev) => [...prev, ...newSlots]);
+        setHasMore(data.hasMore ?? false);
+        setDaysLoaded((d) => d + DAYS_PER_PAGE);
+      })
+      .finally(() => setLoadingMore(false));
+  }
 
   async function handleBook() {
     if (!selected) return;
@@ -56,6 +83,7 @@ export function BookSessionForm({ mentorId }: { mentorId: string }) {
         mentorId,
         startsAt: selected.startsAt,
         endsAt: selected.endsAt,
+        ...(selectedGoalIds.length > 0 && { goalIds: selectedGoalIds }),
       }),
     });
 
@@ -69,57 +97,25 @@ export function BookSessionForm({ mentorId }: { mentorId: string }) {
     router.push("/dashboard");
   }
 
-  function prevWeek() {
-    const d = new Date(weekStart);
-    d.setDate(d.getDate() - 7);
-    if (d >= getMonday(new Date())) setWeekStart(d);
-  }
-
-  function nextWeek() {
-    const d = new Date(weekStart);
-    d.setDate(d.getDate() + 7);
-    setWeekStart(d);
-  }
-
-  // Group slots by day
+  // Group slots by local date
   const slotsByDay = slots.reduce<Record<string, Slot[]>>((acc, slot) => {
-    const day = slot.startsAt.split("T")[0];
+    const day = toDateStr(new Date(slot.startsAt));
     if (!acc[day]) acc[day] = [];
     acc[day].push(slot);
     return acc;
   }, {});
 
-  const isCurrentWeek = weekStart.getTime() === getMonday(new Date()).getTime();
-
   return (
     <div className="mt-8 space-y-4 rounded-lg border border-border p-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-sm font-medium">Pick a time</h2>
-        <div className="flex items-center gap-1">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={prevWeek}
-            disabled={isCurrentWeek}
-          >
-            <CaretLeft size={14} />
-          </Button>
-          <span className="text-xs text-muted-foreground">
-            {weekStart.toLocaleDateString([], { month: "short", day: "numeric" })}
-          </span>
-          <Button type="button" variant="ghost" size="sm" onClick={nextWeek}>
-            <CaretRight size={14} />
-          </Button>
-        </div>
-      </div>
+      <h2 className="text-sm font-medium">Pick a time</h2>
 
       {loading && <p className="text-sm text-muted-foreground">Loading slots…</p>}
 
       {!loading && slots.length === 0 && (
-        <p className="text-sm text-muted-foreground">No available slots this week.</p>
+        <p className="text-sm text-muted-foreground">No available slots in the next 4 weeks.</p>
       )}
 
+      <div className="max-h-64 space-y-3 overflow-y-auto">
       {!loading && Object.entries(slotsByDay).map(([day, daySlots]) => (
         <div key={day}>
           <p className="text-xs font-medium text-muted-foreground">
@@ -141,6 +137,52 @@ export function BookSessionForm({ mentorId }: { mentorId: string }) {
           </div>
         </div>
       ))}
+
+      </div>
+
+      {!loading && hasMore && (
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="w-full text-xs"
+          disabled={loadingMore}
+          onClick={loadMore}
+        >
+          {loadingMore ? "Loading…" : "Show next week"}
+        </Button>
+      )}
+
+      {goals.length > 0 && (
+        <div className="space-y-2 border-t border-border pt-3">
+          <p className="text-xs font-medium text-muted-foreground">
+            What would you like help with? <span className="text-muted-foreground/60">(optional)</span>
+          </p>
+          {goals.map((goal) => (
+            <label key={goal.id} className="flex items-center gap-2 text-sm cursor-pointer">
+              <input
+                type="checkbox"
+                className="h-3.5 w-3.5 rounded border-border"
+                checked={selectedGoalIds.includes(goal.id)}
+                onChange={(e) => {
+                  setSelectedGoalIds((prev) =>
+                    e.target.checked
+                      ? [...prev, goal.id]
+                      : prev.filter((id) => id !== goal.id)
+                  );
+                }}
+              />
+              {goal.title}
+            </label>
+          ))}
+        </div>
+      )}
+
+      {goals.length === 0 && !loading && slots.length > 0 && (
+        <p className="text-xs text-muted-foreground border-t border-border pt-3">
+          <a href="/dashboard" className="underline underline-offset-4 hover:text-foreground">Add a goal</a> to help your mentor prepare.
+        </p>
+      )}
 
       {error && <p className="text-sm text-destructive">{error}</p>}
 
