@@ -46,6 +46,19 @@ When acting on this repository, an agent MUST:
   (see [ADR-0011](decisions/ADR-0011-testing-gate.md) and
   [ENGINEERING.md](ENGINEERING.md)). Logic that isn't unit-testable in place is
   extracted into a pure helper under `src/lib` and tested there.
+- **Verify green before pushing.** Run `pnpm verify` (typecheck + lint) before
+  pushing a branch. A branch that fails `pnpm typecheck` must not be pushed —
+  typecheck is exactly what `next build` (Vercel) enforces. The
+  `.githooks/pre-commit` hook runs it automatically as a hard gate; lint stays
+  advisory until the current lint debt is cleared. See
+  [ADR-0012](decisions/ADR-0012-change-safety-guardrails.md).
+- **Resolve merge conflicts cleanly.** After resolving any conflict, re-run
+  `pnpm verify` and scan the diff for accidentally duplicated blocks before
+  committing. Never commit both sides of a hunk — a duplicated definition breaks
+  the build.
+- **Record any gate bypass.** `git commit --no-verify` is for emergencies only
+  and must be called out in the PR description. A silent bypass is a silent
+  change (see §4).
 - **Never introduce silent changes.** No undocumented features, no quiet
   dependency additions, no schema drift, no behavior changes "while I was in
   there." If it wasn't asked for and isn't documented, don't ship it.
@@ -73,6 +86,15 @@ When acting on this repository, an agent MUST:
 - If a change would violate this file or an existing ADR, do not proceed.
   Propose superseding the ADR explicitly.
 
+**Recovering a broken `main` / failed deploy**
+1. **Revert first.** Get `main` green with a fast, reversible revert before
+   attempting any forward fix. A green `main` outranks a clever fix.
+2. **Fix forward on a branch.** Reproduce the failure locally (`pnpm verify`,
+   or `pnpm build` with the right env), fix it, and open a normal PR.
+3. **Write the post-mortem.** Capture what broke and the durable rule in
+   [postmortems/](postmortems/README.md); if it warrants a new rule, record an
+   ADR. See [ADR-0012](decisions/ADR-0012-change-safety-guardrails.md).
+
 **Documenting decisions**
 - One ADR per decision. Decisions are immutable once recorded; to change one,
   write a new ADR that supersedes it and link both directions.
@@ -92,6 +114,11 @@ When acting on this repository, an agent MUST:
   undocumented `push` — see [ADR-0003](decisions/ADR-0003-schema-migrations.md).
 - **No untested logic.** Non-trivial logic ships with a test and keeps the CI
   coverage gate green — see [ADR-0011](decisions/ADR-0011-testing-gate.md).
+- **No red merges.** Do not merge to `main` while required checks are failing,
+  and do not push a branch that fails `pnpm typecheck` — see
+  [ADR-0012](decisions/ADR-0012-change-safety-guardrails.md).
+- **No silent gate bypass.** `git commit --no-verify` is emergency-only and must
+  be disclosed in the PR. An undisclosed bypass is a silent change.
 - **No scope smuggling.** Do exactly what the issue/RFC describes. Unrelated
   improvements get their own issue.
 

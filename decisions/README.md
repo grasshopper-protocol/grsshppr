@@ -27,6 +27,7 @@ was made and what would change it.
 | [0009](ADR-0009-marketing-footer.md) | Marketing footer expansion | Accepted |
 | [0010](ADR-0010-supply-chain-hardening.md) | Supply-chain hardening (CI security baseline) | Accepted |
 | [0011](ADR-0011-testing-gate.md) | Testing as a required gate (coverage on pure logic) | Accepted |
+| [0012](ADR-0012-change-safety-guardrails.md) | Change-safety guardrails (green-before-push, merge hygiene, no red merges, deploy recovery) | Accepted |
 
 ## Historical log
 

@@ -42,3 +42,4 @@ options are recorded, not erased.
 | [RFC-0006](RFC-0006-marketing-footer.md) | Marketing footer expansion | Accepted | [ADR-0009](../../decisions/ADR-0009-marketing-footer.md) |
 | [RFC-0007](RFC-0007-session-reschedule.md) | Session reschedule | Draft | — |
 | [RFC-0009](RFC-0009-testing-policy.md) | Testing policy & coverage gate | Accepted | [ADR-0011](../../decisions/ADR-0011-testing-gate.md) |
+| [RFC-0010](RFC-0010-change-safety-guardrails.md) | Change-safety guardrails | Accepted | [ADR-0012](../../decisions/ADR-0012-change-safety-guardrails.md) |
