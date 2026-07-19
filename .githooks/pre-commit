@@ -1,0 +1,27 @@
+#!/bin/sh
+# Local pre-commit gate — mirrors the checks Vercel enforces on `next build`.
+#
+# Hard gate: TypeScript typecheck. `next build` (what Vercel runs) fails on type
+# errors — this is exactly what broke a deploy when a bad merge left duplicate
+# `AvailabilityWidget` / `availability` definitions. Blocking here catches that
+# class of error before it ever reaches CI or Vercel.
+#
+# Advisory: ESLint. Kept non-blocking to match CI (.github/workflows/ci.yml),
+# which runs lint with `continue-on-error` while the existing lint debt is
+# cleared. Promote to a hard gate here once `pnpm lint` is clean.
+#
+# Skip in an emergency with: git commit --no-verify
+
+echo "▶ pre-commit: typecheck (tsc --noEmit)…"
+if ! pnpm exec tsc --noEmit; then
+  echo "✗ Typecheck failed — commit blocked. Fix the errors above, or bypass with 'git commit --no-verify'." >&2
+  exit 1
+fi
+echo "✓ Typecheck passed"
+
+echo "▶ pre-commit: lint (advisory)…"
+if ! pnpm lint; then
+  echo "⚠ Lint reported problems (advisory — not blocking the commit)."
+fi
+
+exit 0

@@ -100,6 +100,16 @@ This project follows lazy-senior-dev principles:
 - No test for obvious one-liners. No test doubles unless absolutely necessary.
 - Tests + coverage must pass in CI before merge (`pnpm test:coverage` is a required check).
 
+### Pre-commit gate
+- **`pnpm verify`** runs the same static checks Vercel enforces: `typecheck` (`tsc --noEmit`)
+  then `lint` (`eslint`). Run it manually any time.
+- A native git hook (`.githooks/pre-commit`, no extra dependency) runs on every commit:
+  **typecheck is a hard gate** (blocks the commit — this is what `next build` on Vercel
+  enforces), **lint is advisory** (mirrors CI while lint debt is cleared).
+- The hook is wired automatically by the `prepare` script (`pnpm install` sets
+  `core.hooksPath .githooks`). To wire it manually: `git config core.hooksPath .githooks`.
+- Bypass in an emergency with `git commit --no-verify`.
+
 ### Error Handling
 - Validate at system boundaries (API inputs, form submissions)
 - Don't defensively code against impossible states internally
