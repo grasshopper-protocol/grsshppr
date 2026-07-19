@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { getGoalsForUser, createGoal } from "@/modules/goals/queries";
-import { getMentorsForMentee } from "@/core/booking/queries";
+import { getMentorsForMentee, getLastSessionByMentor } from "@/core/booking/queries";
 import { z } from "zod";
 import { safeJson } from "@/lib/api-utils";
 
@@ -19,7 +19,8 @@ export async function GET() {
 
   const goals = await getGoalsForUser(session.user.id);
   const mentors = await getMentorsForMentee(session.user.id);
-  return NextResponse.json({ goals, mentors });
+  const lastSessionByMentor = await getLastSessionByMentor(session.user.id);
+  return NextResponse.json({ goals, mentors, lastSessionByMentor });
 }
 
 export async function POST(request: NextRequest) {

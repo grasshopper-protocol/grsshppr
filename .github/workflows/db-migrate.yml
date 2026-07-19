@@ -1,0 +1,49 @@
+name: DB Migrate
+
+# Applies committed Drizzle migrations to production.
+# Migrations are generated locally with `pnpm db:generate` and committed under
+# drizzle/. Prod schema is never changed via `db:push` — see
+# decisions/ADR-0003-schema-migrations.md.
+#
+# ONE-TIME BASELINE (do once, manually, before this workflow runs against a DB
+# that was previously managed by `db:push`):
+#   The prod DB already has these tables, so the 0000 baseline must be marked
+#   applied WITHOUT re-running it. Either start from a fresh DB, or insert the
+#   baseline hash into drizzle's __drizzle_migrations table. After baselining,
+#   future migrations apply cleanly.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'drizzle/**'
+  # Manual trigger — for the one-time baseline run and for re-running after an
+  # incident. Safe to run anytime: drizzle-kit migrate only applies migrations
+  # not yet recorded in drizzle.__drizzle_migrations.
+  workflow_dispatch:
+
+# Least privilege: this job only reads the repo and applies migrations via a
+# secret. It needs no write access to repo contents, packages, or anything else.
+permissions:
+  contents: read
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      # Actions pinned to commit SHAs (not mutable tags) for supply-chain safety.
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Apply migrations
+        # MIGRATION_DATABASE_URL is the Neon direct (non-pooling) connection
+        # string, stored as a GitHub Actions secret. We do NOT pull it from
+        # Vercel: the prod DB URLs there are Sensitive env vars and come back
+        # empty via `vercel env pull` (in CI and locally alike).
+        env:
+          DATABASE_URL: ${{ secrets.MIGRATION_DATABASE_URL }}
+        run: pnpm drizzle-kit migrate

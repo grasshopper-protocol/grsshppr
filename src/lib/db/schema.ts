@@ -42,6 +42,7 @@ export const profiles = pgTable("profiles", {
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
   role: roleEnum("role").notNull(),
+  slug: text("slug").notNull().unique(),
   headline: text("headline"),
   bio: text("bio"),
   expertise: text("expertise").array(),
@@ -65,6 +66,22 @@ export const sessions = pgTable("sessions", {
   status: sessionStatusEnum("status").notNull().default("requested"),
   startsAt: timestamp("starts_at").notNull(),
   endsAt: timestamp("ends_at").notNull(),
+  cancelReason: text("cancel_reason"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// --- Core: Availability ---
+
+export const availability = pgTable("availability", {
+  id: text("id").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  dayOfWeek: integer("day_of_week").notNull(), // 0=Sunday, 6=Saturday
+  startTime: text("start_time").notNull(), // "HH:mm"
+  endTime: text("end_time").notNull(), // "HH:mm"
+  timezone: text("timezone").notNull().default("UTC"),
+  sessionDuration: integer("session_duration").notNull().default(30), // minutes
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -94,6 +111,21 @@ export const notes = pgTable("notes", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+// --- Core: Session Feedback ---
+
+export const sessionFeedback = pgTable("session_feedback", {
+  id: text("id").primaryKey(),
+  sessionId: text("session_id")
+    .notNull()
+    .references(() => sessions.id, { onDelete: "cascade" }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  rating: integer("rating").notNull(), // 1-5
+  comment: text("comment"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 // --- Module: Goals ---
 
 export const goals = pgTable("goals", {
@@ -108,6 +140,32 @@ export const goals = pgTable("goals", {
   targetDate: timestamp("target_date"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// --- Join: Session ↔ Goals ---
+
+export const sessionGoals = pgTable("session_goals", {
+  sessionId: text("session_id")
+    .notNull()
+    .references(() => sessions.id, { onDelete: "cascade" }),
+  goalId: text("goal_id")
+    .notNull()
+    .references(() => goals.id, { onDelete: "cascade" }),
+}, (t) => [{ pk: { columns: [t.sessionId, t.goalId] } }]);
+
+// --- Core: Notifications ---
+
+export const notifications = pgTable("notifications", {
+  id: text("id").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  type: text("type").notNull(),
+  message: text("message").notNull(),
+  resourceId: text("resource_id"), // session ID or other entity
+  priority: text("priority").notNull().default("info"), // "action" | "info"
+  read: boolean("read").notNull().default(false),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 // --- Better Auth tables (managed by better-auth, defined here for Drizzle awareness) ---
