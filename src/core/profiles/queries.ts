@@ -1,6 +1,22 @@
 import { eq, and, or, ilike, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { profiles, users, sessions, availability, goals } from "@/lib/db/schema";
+import { slugify, nextAvailableSlug } from "@/lib/slug";
+
+// Collision ceiling: linear scan with LIKE prefix. Fine for <10k profiles.
+async function uniqueSlug(name: string, excludeProfileId?: string) {
+  const base = slugify(name);
+  const existing = await db
+    .select({ slug: profiles.slug })
+    .from(profiles)
+    .where(sql`${profiles.slug} = ${base} OR ${profiles.slug} LIKE ${base + "-%"}`);
+  const taken = new Set(
+    existing
+      .filter((r) => !excludeProfileId || r.slug !== excludeProfileId)
+      .map((r) => r.slug)
+  );
+  return nextAvailableSlug(base, taken);
+}
 
 export async function getProfileByUserId(userId: string) {
   const result = await db
@@ -11,7 +27,7 @@ export async function getProfileByUserId(userId: string) {
   return result[0] ?? null;
 }
 
-export async function getProfileWithUser(profileId: string) {
+export async function getProfileWithUser(slug: string) {
   const result = await db
     .select({
       profile: profiles,
@@ -19,7 +35,7 @@ export async function getProfileWithUser(profileId: string) {
     })
     .from(profiles)
     .innerJoin(users, eq(profiles.userId, users.id))
-    .where(eq(profiles.id, profileId))
+    .where(eq(profiles.slug, slug))
     .limit(1);
   return result[0] ?? null;
 }
@@ -38,10 +54,18 @@ export async function upsertProfile(
 ) {
   const existing = await getProfileByUserId(userId);
 
+  // Fetch user name for slug generation
+  const [user] = await db
+    .select({ name: users.name })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+  const slug = await uniqueSlug(user.name, existing?.id);
+
   if (existing) {
     const [updated] = await db
       .update(profiles)
-      .set({ ...data, updatedAt: new Date() })
+      .set({ ...data, slug, updatedAt: new Date() })
       .where(eq(profiles.id, existing.id))
       .returning();
     return updated;
@@ -50,7 +74,7 @@ export async function upsertProfile(
   const id = crypto.randomUUID();
   const [created] = await db
     .insert(profiles)
-    .values({ id, userId, ...data })
+    .values({ id, userId, slug, ...data })
     .returning();
   return created;
 }

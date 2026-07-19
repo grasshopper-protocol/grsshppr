@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/sessions/auto-complete",
+      "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/feedback/nudge",
+      "schedule": "0 9 * * *"
+    }
+  ]
+}

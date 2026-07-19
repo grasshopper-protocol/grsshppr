@@ -1,8 +1,12 @@
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import Link from "next/link";
+import { headers } from "next/headers";
 import { getProfileWithUser } from "@/core/profiles/queries";
-import { getCompletedSessionCount } from "@/core/booking/queries";
+import { getCompletedSessionCount, getActiveSessionBetween } from "@/core/booking/queries";
 import { getCompletedGoalsForMentor } from "@/modules/goals/queries";
+import { getGoalsForUser } from "@/modules/goals/queries";
+import { auth } from "@/lib/auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -13,10 +17,37 @@ import {
   CalendarCheck,
   Clock,
   Trophy,
+  SignIn,
 } from "@phosphor-icons/react/dist/ssr";
 import { BookSessionForm } from "@/core/booking/book-session-form";
 
 type Params = Promise<{ id: string }>;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Params;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const data = await getProfileWithUser(id);
+  if (!data || data.profile.role !== "mentor") return {};
+  const { profile, user } = data;
+  const description = profile.headline ?? `Mentor on Grsshppr`;
+  return {
+    title: `${user.name} — Grsshppr`,
+    description,
+    openGraph: {
+      title: user.name,
+      description,
+      type: "profile",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: user.name,
+      description,
+    },
+  };
+}
 
 function getLinkIcon(url: string) {
   try {
@@ -52,9 +83,27 @@ export default async function MentorProfilePage({
     notFound();
   }
 
+  const session = await auth.api.getSession({ headers: await headers() });
+  const isLoggedIn = !!session;
+
   const { profile, user } = data;
   const sessionsCompleted = await getCompletedSessionCount(profile.userId);
   const mentorGoals = await getCompletedGoalsForMentor(profile.userId);
+  const activeSession = isLoggedIn
+    ? await getActiveSessionBetween(session.user.id, profile.userId)
+    : null;
+
+  // Goal-mentor matching: find mentee goals that overlap with mentor expertise
+  let matchingGoals: { id: string; title: string }[] = [];
+  if (isLoggedIn && profile.expertise?.length) {
+    const menteeGoals = await getGoalsForUser(session.user.id);
+    const activeGoals = menteeGoals.filter((g) => g.status === "active");
+    const expertiseLower = profile.expertise.map((e) => e.toLowerCase());
+    matchingGoals = activeGoals.filter((g) => {
+      const words = g.title.toLowerCase().split(/\s+/);
+      return words.some((w) => expertiseLower.some((e) => e.includes(w) || w.includes(e)));
+    });
+  }
 
   const initials = user.name
     .split(" ")
@@ -77,6 +126,32 @@ export default async function MentorProfilePage({
         <ArrowLeft size={14} />
         Back to explore
       </Link>
+
+      {activeSession && (
+        <div className="mt-4 flex items-center gap-3 rounded-lg border border-blue-500/30 bg-blue-500/5 px-4 py-3 text-sm">
+          <span className="flex-1">
+            You have a <strong>{activeSession.status}</strong> session on{" "}
+            <strong>
+              {new Date(activeSession.startsAt).toLocaleDateString("en-US", {
+                weekday: "short",
+                month: "short",
+                day: "numeric",
+              })}
+            </strong>{" "}
+            at{" "}
+            {new Date(activeSession.startsAt).toLocaleTimeString("en-US", {
+              hour: "numeric",
+              minute: "2-digit",
+            })}
+          </span>
+          <Link
+            href={`/session/${activeSession.id}`}
+            className="text-xs font-medium text-foreground hover:underline underline-offset-4"
+          >
+            View
+          </Link>
+        </div>
+      )}
 
       <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_320px]">
         {/* Left column */}
@@ -191,7 +266,23 @@ export default async function MentorProfilePage({
 
           {/* Booking — inline on mobile */}
           <div className="mt-10 lg:hidden">
-            {profile.available ? (
+            {matchingGoals.length > 0 && (
+              <p className="mb-3 text-sm text-muted-foreground">
+                Based on your goals, {user.name} may help with:{" "}
+                <span className="font-medium text-foreground">
+                  {matchingGoals.map((g) => g.title).join(", ")}
+                </span>
+              </p>
+            )}
+            {!isLoggedIn ? (
+              <Link
+                href="/sign-in"
+                className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+              >
+                <SignIn size={16} />
+                Sign in to book a session
+              </Link>
+            ) : profile.available ? (
               <BookSessionForm mentorId={user.id} />
             ) : (
               <p className="text-sm text-muted-foreground">
@@ -209,7 +300,7 @@ export default async function MentorProfilePage({
                 <span
                   className={`h-2 w-2 rounded-full ${
                     profile.available
-                      ? "bg-green-500"
+                      ? "bg-success"
                       : "bg-muted-foreground/40"
                   }`}
                 />
@@ -219,7 +310,27 @@ export default async function MentorProfilePage({
                     : "Not taking new mentees"}
                 </span>
               </div>
-              {profile.available && <BookSessionForm mentorId={user.id} />}
+              {!isLoggedIn ? (
+                <Link
+                  href="/sign-in"
+                  className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                >
+                  <SignIn size={16} />
+                  Sign in to book a session
+                </Link>
+              ) : (
+                <>
+                  {matchingGoals.length > 0 && (
+                    <p className="mb-3 text-xs text-muted-foreground">
+                      May help with:{" "}
+                      <span className="font-medium text-foreground">
+                        {matchingGoals.map((g) => g.title).join(", ")}
+                      </span>
+                    </p>
+                  )}
+                  {profile.available && <BookSessionForm mentorId={user.id} />}
+                </>
+              )}
             </div>
           </div>
         </aside>

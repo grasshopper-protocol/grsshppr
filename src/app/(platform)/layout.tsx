@@ -1,8 +1,10 @@
+import Image from "next/image";
 import Link from "next/link";
-import { Compass, SquaresFour } from "@phosphor-icons/react/dist/ssr";
+import { Compass, SquaresFour, CalendarDots } from "@phosphor-icons/react/dist/ssr";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "@/components/user-menu";
 import { MobileNav } from "@/components/mobile-nav";
+import { NotificationBell } from "@/components/notification-bell";
 
 export default function PlatformLayout({
   children,
@@ -14,11 +16,9 @@ export default function PlatformLayout({
       <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-sm">
         <nav className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
           <div className="flex items-center gap-6">
-            <Link
-              href="/"
-              className="text-base font-semibold tracking-tight text-foreground"
-            >
-              Grasshopper
+            <Link href="/" className="flex items-center gap-2">
+              <Image src="/logo.svg" alt="" width={60} height={60} priority />
+              <span className="text-base font-semibold tracking-tight text-foreground">Grsshppr</span>
             </Link>
             <div className="hidden items-center gap-1 sm:flex">
               <Link
@@ -35,10 +35,18 @@ export default function PlatformLayout({
                 <SquaresFour size={16} />
                 Dashboard
               </Link>
+              <Link
+                href="/sessions"
+                className="inline-flex h-9 items-center gap-1.5 rounded-md px-3 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <CalendarDots size={16} />
+                Sessions
+              </Link>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <MobileNav />
+            <NotificationBell />
             <ThemeToggle />
             <UserMenu />
           </div>

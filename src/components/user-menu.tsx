@@ -11,12 +11,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { SignOut, Gear, CalendarDots } from "@phosphor-icons/react";
+import { SignOut, Gear, CalendarDots, UserCircle } from "@phosphor-icons/react";
 
 export function UserMenu() {
   const router = useRouter();
   const { data: session } = authClient.useSession();
   const [isMentor, setIsMentor] = useState(false);
+  const [profileSlug, setProfileSlug] = useState<string | null>(null);
 
   useEffect(() => {
     if (!session?.user) return;
@@ -24,6 +25,7 @@ export function UserMenu() {
       .then((r) => r.json())
       .then(({ profile }) => {
         if (profile?.role === "mentor") setIsMentor(true);
+        if (profile?.slug) setProfileSlug(profile.slug);
       })
       .catch(() => {});
   }, [session?.user]);
@@ -46,14 +48,23 @@ export function UserMenu() {
           </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
-        <div className="px-2 py-1.5">
-          <p className="text-sm font-medium">{session.user.name}</p>
-          <p className="text-xs text-muted-foreground">{session.user.email}</p>
-        </div>
+        {profileSlug ? (
+          <DropdownMenuItem onClick={() => router.push(`/mentor/${profileSlug}`)}>
+            <div>
+              <p className="text-sm font-medium">{session.user.name}</p>
+              <p className="text-xs text-muted-foreground">{session.user.email}</p>
+            </div>
+          </DropdownMenuItem>
+        ) : (
+          <div className="px-2 py-1.5">
+            <p className="text-sm font-medium">{session.user.name}</p>
+            <p className="text-xs text-muted-foreground">{session.user.email}</p>
+          </div>
+        )}
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => router.push("/settings")}>
-          <Gear size={16} />
-          Settings
+        <DropdownMenuItem onClick={() => router.push("/profile")}>
+          <UserCircle size={16} />
+          Edit profile
         </DropdownMenuItem>
         {isMentor && (
           <DropdownMenuItem onClick={() => router.push("/settings/availability")}>
@@ -61,6 +72,10 @@ export function UserMenu() {
             Availability
           </DropdownMenuItem>
         )}
+        <DropdownMenuItem onClick={() => router.push("/settings")}>
+          <Gear size={16} />
+          Account
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={async () => {

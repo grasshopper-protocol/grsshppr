@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { getSessionWithUsers } from "@/core/booking/queries";
+import { getProfileByUserId } from "@/core/profiles/queries";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
@@ -99,6 +100,8 @@ export default async function SessionPage({
         sessionId={session.id}
         status={session.status}
         isMentor={isMentor}
+        mentorSlug={isMentor ? undefined : (await getProfileByUserId(session.mentorId))?.slug}
+        cancelReason={session.cancelReason}
       />
 
       <div className="mt-8">

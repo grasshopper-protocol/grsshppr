@@ -3,10 +3,20 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { getSessionById, updateSessionStatus } from "@/core/booking/queries";
 import { z } from "zod";
-import { safeJson, uuidParam } from "@/lib/api-utils";
+import { safeJson, uuidParam, rateLimit } from "@/lib/api-utils";
+import { sendEmail } from "@/lib/email";
+import {
+  SessionConfirmedEmail,
+  SessionCancelledEmail,
+} from "@/lib/emails/session-emails";
+import { createNotification, resolveNotification } from "@/core/notifications/queries";
+import { db } from "@/lib/db";
+import { users } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
 
 const statusSchema = z.object({
   status: z.enum(["confirmed", "completed", "cancelled"]),
+  cancelReason: z.string().max(200).optional(),
 });
 
 // Valid state transitions
@@ -23,6 +33,9 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Params }
 ) {
+  const limited = rateLimit(request, { limit: 10, windowMs: 60_000 });
+  if (limited) return limited;
+
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -65,6 +78,71 @@ export async function PATCH(
     return NextResponse.json({ error: "Only the mentor can confirm or complete sessions" }, { status: 403 });
   }
 
-  const updated = await updateSessionStatus(id, parsed.data.status);
+  const updated = await updateSessionStatus(id, parsed.data.status, parsed.data.cancelReason);
+
+  // Send email notifications (fire-and-forget)
+  const [mentor] = await db
+    .select({ name: users.name, email: users.email })
+    .from(users)
+    .where(eq(users.id, existing.mentorId));
+  const [mentee] = await db
+    .select({ name: users.name, email: users.email })
+    .from(users)
+    .where(eq(users.id, existing.menteeId));
+
+  if (parsed.data.status === "confirmed" && mentee?.email) {
+    sendEmail({
+      to: mentee.email,
+      subject: `Session confirmed with ${mentor?.name}`,
+      react: SessionConfirmedEmail({
+        mentorName: mentor?.name ?? "your mentor",
+        menteeName: mentee.name,
+        startsAt: existing.startsAt.toISOString(),
+        endsAt: existing.endsAt.toISOString(),
+      }),
+    });
+  }
+
+  if (parsed.data.status === "cancelled") {
+    const cancelledBy = session.user.id === existing.mentorId ? mentor : mentee;
+    const other = session.user.id === existing.mentorId ? mentee : mentor;
+    if (other?.email) {
+      sendEmail({
+        to: other.email,
+        subject: `Session cancelled by ${cancelledBy?.name}`,
+        react: SessionCancelledEmail({
+          recipientName: other.name,
+          cancelledByName: cancelledBy?.name ?? "the other participant",
+          startsAt: existing.startsAt.toISOString(),
+        }),
+      });
+    }
+  }
+
+  // Create in-app notifications
+  if (parsed.data.status === "confirmed") {
+    // Resolve the mentor's "confirm" action notification
+    resolveNotification(id, "action_required:confirm");
+  } else if (parsed.data.status === "cancelled") {
+    // Resolve the mentor's "confirm" action notification (if declining)
+    resolveNotification(id, "action_required:confirm");
+  } else if (parsed.data.status === "completed") {
+    // Create action notifications for feedback
+    createNotification({
+      userId: existing.menteeId,
+      type: "action_required:feedback",
+      message: `Leave feedback for session with ${mentor?.name}`,
+      resourceId: id,
+      priority: "action",
+    });
+    createNotification({
+      userId: existing.mentorId,
+      type: "action_required:feedback",
+      message: `Leave feedback for session with ${mentee?.name}`,
+      resourceId: id,
+      priority: "action",
+    });
+  }
+
   return NextResponse.json({ session: updated });
 }

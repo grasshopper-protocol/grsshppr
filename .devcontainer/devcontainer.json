@@ -1,0 +1,17 @@
+{
+  "name": "grasshopper",
+  "dockerComposeFile": ["../docker-compose.yml", "docker-compose.yml"],
+  "service": "app",
+  "workspaceFolder": "/workspace",
+  "forwardPorts": [3000, 5432],
+  "portsAttributes": {
+    "3000": { "label": "Next.js dev", "onAutoForward": "openbrowser" },
+    "5432": { "label": "PostgreSQL", "onAutoForward": "silent" }
+  },
+  "postCreateCommand": "corepack enable && pnpm install && cp -n .env.example .env.local && pnpm db:push && (pnpm db:seed || true)",
+  "customizations": {
+    "vscode": {
+      "extensions": ["esbenp.prettier-vscode", "dbaeumer.vscode-eslint"]
+    }
+  }
+}

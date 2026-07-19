@@ -58,3 +58,7 @@ next-env.d.ts
 
 # docker
 docker-compose.override.yml
+.env*
+
+# Temporary design-token staging/reference notes (not for commit)
+design/tokens/*.staging.md

@@ -1,6 +1,6 @@
-import { eq, or, and, desc, count } from "drizzle-orm";
+import { eq, or, and, desc, count, gt, notInArray } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { sessions, users } from "@/lib/db/schema";
+import { sessions, users, sessionFeedback, profiles } from "@/lib/db/schema";
 
 export async function createSession(data: {
   mentorId: string;
@@ -64,11 +64,40 @@ export async function getSessionsForUser(userId: string) {
         .from(users)
         .where(eq(users.id, partnerId));
       const role = s.mentorId === userId ? "mentor" : "mentee";
-      return { session: s, partner, role };
+
+      // For mentee sessions, include mentor slug (rebook, reschedule)
+      let mentorSlug: string | undefined;
+      if (role === "mentee") {
+        const [profile] = await db
+          .select({ slug: profiles.slug })
+          .from(profiles)
+          .where(eq(profiles.userId, s.mentorId));
+        mentorSlug = profile?.slug;
+      }
+
+      return { session: s, partner, role, mentorSlug };
     })
   );
 
   return enriched;
+}
+
+/** Active (requested or confirmed) session between a mentee and mentor */
+export async function getActiveSessionBetween(menteeId: string, mentorId: string) {
+  const result = await db
+    .select()
+    .from(sessions)
+    .where(
+      and(
+        eq(sessions.menteeId, menteeId),
+        eq(sessions.mentorId, mentorId),
+        or(eq(sessions.status, "requested"), eq(sessions.status, "confirmed")),
+        gt(sessions.startsAt, new Date())
+      )
+    )
+    .orderBy(sessions.startsAt)
+    .limit(1);
+  return result[0] ?? null;
 }
 
 export async function getCompletedSessionCount(userId: string) {
@@ -79,13 +108,52 @@ export async function getCompletedSessionCount(userId: string) {
   return row?.count ?? 0;
 }
 
+// ponytail: returns completed sessions within 48h that user hasn't reviewed yet
+export async function getSessionsNeedingFeedback(userId: string) {
+  const cutoff = new Date(Date.now() - 48 * 60 * 60 * 1000);
+
+  // Get sessions user already reviewed
+  const reviewed = await db
+    .select({ sessionId: sessionFeedback.sessionId })
+    .from(sessionFeedback)
+    .where(eq(sessionFeedback.userId, userId));
+  const reviewedIds = reviewed.map((r) => r.sessionId);
+
+  const completed = await db
+    .select()
+    .from(sessions)
+    .where(
+      and(
+        eq(sessions.status, "completed"),
+        or(eq(sessions.mentorId, userId), eq(sessions.menteeId, userId)),
+        gt(sessions.endsAt, cutoff),
+        reviewedIds.length > 0 ? notInArray(sessions.id, reviewedIds) : undefined
+      )
+    )
+    .orderBy(desc(sessions.endsAt));
+
+  // Enrich with partner info
+  const enriched = await Promise.all(
+    completed.map(async (s) => {
+      const partnerId = s.mentorId === userId ? s.menteeId : s.mentorId;
+      const [partner] = await db
+        .select({ id: users.id, name: users.name, image: users.image })
+        .from(users)
+        .where(eq(users.id, partnerId));
+      return { session: s, partner };
+    })
+  );
+  return enriched;
+}
+
 export async function updateSessionStatus(
   id: string,
-  status: "confirmed" | "completed" | "cancelled"
+  status: "confirmed" | "completed" | "cancelled",
+  cancelReason?: string
 ) {
   const [updated] = await db
     .update(sessions)
-    .set({ status })
+    .set({ status, ...(cancelReason && status === "cancelled" ? { cancelReason } : {}) })
     .where(eq(sessions.id, id))
     .returning();
   return updated;
@@ -98,9 +166,34 @@ export async function getMentorsForMentee(menteeId: string) {
       mentorId: sessions.mentorId,
       name: users.name,
       image: users.image,
+      slug: profiles.slug,
     })
     .from(sessions)
     .innerJoin(users, eq(sessions.mentorId, users.id))
+    .leftJoin(profiles, eq(profiles.userId, sessions.mentorId))
     .where(eq(sessions.menteeId, menteeId));
   return rows;
+}
+
+/** Last completed/confirmed session date per mentor for a mentee */
+export async function getLastSessionByMentor(menteeId: string) {
+  const rows = await db
+    .selectDistinctOn([sessions.mentorId], {
+      mentorId: sessions.mentorId,
+      endsAt: sessions.endsAt,
+    })
+    .from(sessions)
+    .where(
+      and(
+        eq(sessions.menteeId, menteeId),
+        or(eq(sessions.status, "completed"), eq(sessions.status, "confirmed"))
+      )
+    )
+    .orderBy(sessions.mentorId, desc(sessions.endsAt));
+
+  const map: Record<string, string> = {};
+  for (const r of rows) {
+    map[r.mentorId] = r.endsAt.toISOString();
+  }
+  return map;
 }

@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { Analytics } from "@vercel/analytics/react";
-import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 
@@ -20,20 +18,29 @@ export const metadata: Metadata = {
     process.env.BETTER_AUTH_URL ?? "http://localhost:3000"
   ),
   title: {
-    default: "Grasshopper",
-    template: "%s · Grasshopper",
+    default: "Grsshppr",
+    template: "%s · Grsshppr",
   },
   description: "Free, open-source mentoring platform for tech & design professionals",
   openGraph: {
-    title: "Grasshopper",
+    title: "Grsshppr",
     description: "Free, open-source mentoring for tech & design professionals",
-    siteName: "Grasshopper",
+    siteName: "Grsshppr",
     type: "website",
+    images: [
+      {
+        url: "/og-linkedin.png",
+        width: 1200,
+        height: 630,
+        alt: "Grasshopper — Free, open-source mentoring platform",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Grasshopper",
+    title: "Grsshppr",
     description: "Free, open-source mentoring for tech & design professionals",
+    images: ["/og-linkedin.png"],
   },
 };
 
@@ -50,8 +57,6 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <ThemeProvider>{children}</ThemeProvider>
-        <Analytics />
-        <SpeedInsights />
       </body>
     </html>
   );
