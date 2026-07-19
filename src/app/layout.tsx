@@ -27,11 +27,20 @@ export const metadata: Metadata = {
     description: "Free, open-source mentoring for tech & design professionals",
     siteName: "Grsshppr",
     type: "website",
+    images: [
+      {
+        url: "/og-linkedin.png",
+        width: 1200,
+        height: 630,
+        alt: "Grasshopper — Free, open-source mentoring platform",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Grsshppr",
     description: "Free, open-source mentoring for tech & design professionals",
+    images: ["/og-linkedin.png"],
   },
 };
 
