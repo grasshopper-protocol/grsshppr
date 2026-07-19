@@ -5,6 +5,8 @@ title: "[feature] "
 labels: enhancement
 ---
 
+Enhancement requests are tracked in GitHub Issues first. Larger or architectural ideas may be promoted to an RFC during triage.
+
 ## Problem
 
 What problem does this solve? Who has it? (Don't lead with the solution.)

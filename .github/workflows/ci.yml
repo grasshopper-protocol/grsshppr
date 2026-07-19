@@ -1,9 +1,9 @@
 name: CI
 
-# Fast correctness gates on every PR and push to main. No secrets needed:
-# typecheck and lint are pure static analysis. `next build` is intentionally
-# omitted — it can hit the database during static generation, which would make
-# CI flaky without production secrets.
+# Correctness gates on every PR and push to main. No secrets needed:
+# all checks are pure static analysis or self-contained unit tests.
+# `next build` is intentionally omitted — it hits the DB during static
+# generation and would be flaky without production secrets.
 
 on:
   push:
@@ -18,13 +18,18 @@ jobs:
   quality:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+
+      # Hard gate: tests must pass and pure-logic coverage must hold.
+      # Thresholds are enforced in the `test:coverage` script (src/lib only).
+      - name: Test + coverage
+        run: pnpm test:coverage
 
       # Hard gate: the build must typecheck.
       - name: Typecheck

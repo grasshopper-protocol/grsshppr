@@ -1,6 +1,7 @@
 # Grasshopper
 
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/grasshopper-protocol/grsshppr/badge)](https://scorecard.dev/viewer/?uri=github.com/grasshopper-protocol/grsshppr)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/13606/badge)](https://www.bestpractices.dev/projects/13606)
 
 Open-source mentoring platform for tech & design professionals.
 
@@ -40,7 +41,7 @@ no resets, no credential stuffing. See
 
 ## Status
 
-🦗 **Alpha** — Core features implemented. Ready for local testing.
+🦗 **Beta** — Feature-complete, hardening.
 
 ## Tech Stack
 
@@ -111,7 +112,11 @@ The app runs on `http://localhost:3000`. See `Dockerfile` for the multi-stage bu
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for setup instructions, code conventions, and PR guidelines.
+- **Get the code** — clone or fork the repo; see [Getting Started](#getting-started) above for local setup.
+- **Report a bug** — [open an issue](https://github.com/grasshopper-protocol/grsshppr/issues/new?template=bug.md) using the bug template. Bugs are auto-escalated for triage and ownership by @natos.
+- **Request a feature** — [open a feature issue](https://github.com/grasshopper-protocol/grsshppr/issues/new?template=feature.md) or start a [Discussion](https://github.com/grasshopper-protocol/grsshppr/discussions).
+- **Contribute** — read [CONTRIBUTING.md](CONTRIBUTING.md) for setup, conventions, PR guidelines, and the current feedback workflow.
+- **Response target** — we aim to acknowledge new issues within two weeks, with urgent regressions handled faster when the impact is clear.
 
 AI agents: read [AGENTS.md](AGENTS.md) for how to operate (RFCs, ADRs, traceability) and [ENGINEERING.md](ENGINEERING.md) before writing any code.
 
@@ -133,6 +138,8 @@ Contributions are welcome across every layer — product, design, and engineerin
 <a href="https://github.com/grasshopper-protocol/grsshppr/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=grasshopper-protocol/grsshppr" />
 </a>
+
+Built in collaboration with [Claude](https://claude.ai) — an AI pair-programming partner that helped architect, code, and refine Grasshopper from first commit to beta.
 
 ## License
 
