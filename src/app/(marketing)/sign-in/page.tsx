@@ -13,12 +13,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { GithubLogo, GoogleLogo, Fingerprint } from "@phosphor-icons/react";
+import { GithubLogo, GoogleLogo, Fingerprint, CircleNotch } from "@phosphor-icons/react";
 
 export default function SignInPage() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [githubLoading, setGithubLoading] = useState(false);
 
   async function handlePasskey() {
     setError(null);
@@ -30,6 +32,18 @@ export default function SignInPage() {
       router.push("/dashboard");
     }
     setLoading(false);
+  }
+
+  async function handleGoogle() {
+    setGoogleLoading(true);
+    await authClient.signIn.social({ provider: "google", callbackURL: "/dashboard" });
+    setGoogleLoading(false);
+  }
+
+  async function handleGithub() {
+    setGithubLoading(true);
+    await authClient.signIn.social({ provider: "github", callbackURL: "/dashboard" });
+    setGithubLoading(false);
   }
 
   return (
@@ -45,7 +59,11 @@ export default function SignInPage() {
             onClick={handlePasskey}
             disabled={loading}
           >
-            <Fingerprint size={18} weight="bold" />
+            {loading ? (
+              <CircleNotch className="animate-spin" size={18} />
+            ) : (
+              <Fingerprint size={18} weight="bold" />
+            )}
             {loading ? "Waiting for passkey…" : "Sign in with passkey"}
           </Button>
 
@@ -62,22 +80,28 @@ export default function SignInPage() {
             <Button
               variant="outline"
               className="flex-1"
-              onClick={() =>
-                authClient.signIn.social({ provider: "google", callbackURL: "/dashboard" })
-              }
+              onClick={handleGoogle}
+              disabled={googleLoading}
             >
-              <GoogleLogo size={16} />
-              Google
+              {googleLoading ? (
+                <CircleNotch className="animate-spin" size={16} />
+              ) : (
+                <GoogleLogo size={16} />
+              )}
+              {googleLoading ? "Loading..." : "Google"}
             </Button>
             <Button
               variant="outline"
               className="flex-1"
-              onClick={() =>
-                authClient.signIn.social({ provider: "github", callbackURL: "/dashboard" })
-              }
+              onClick={handleGithub}
+              disabled={githubLoading}
             >
-              <GithubLogo size={16} />
-              GitHub
+              {githubLoading ? (
+                <CircleNotch className="animate-spin" size={16} />
+              ) : (
+                <GithubLogo size={16} />
+              )}
+              {githubLoading ? "Loading..." : "GitHub"}
             </Button>
           </div>
 
