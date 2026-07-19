@@ -139,6 +139,8 @@ Contributions are welcome across every layer — product, design, and engineerin
   <img src="https://contrib.rocks/image?repo=grasshopper-protocol/grsshppr" />
 </a>
 
+Built in collaboration with [Claude](https://claude.ai) — an AI pair-programming partner that helped architect, code, and refine Grasshopper from first commit to beta.
+
 ## License
 
 [MIT](LICENSE)
