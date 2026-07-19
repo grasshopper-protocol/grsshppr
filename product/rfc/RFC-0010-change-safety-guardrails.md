@@ -4,7 +4,7 @@
 - **Author:** @natos
 - **Created:** 2026-07-19
 - **Discipline:** Engineering
-- **Tracking issue:** —
+- **Tracking issue:** [#103](https://github.com/grasshopper-protocol/grsshppr/issues/103)
 
 ## Summary
 
