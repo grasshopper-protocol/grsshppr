@@ -18,6 +18,14 @@ You don't have to be a coder. Code, design, product, and docs are equal layers
   [design/](design/README.md) and the component inventory in
   [design/patterns/](design/patterns/README.md).
 
+### Feedback and issue handling
+
+- **Default channel:** use GitHub Issues for bugs, enhancements, and product feedback.
+- **Bugs:** bug reports are auto-escalated for triage and ownership by @natos.
+- **Response target:** we aim to acknowledge new issues within two weeks, with urgent regressions handled faster when the impact is clear.
+- **Enhancements:** feature ideas and small improvements are tracked as issues first; larger or architectural changes may be promoted to an RFC.
+- **Not sure what it is?** Open an issue and we will classify it during triage.
+
 ### Labels
 
 | Label | Meaning |
@@ -97,7 +105,11 @@ Read [AGENTS.md](AGENTS.md) for how change happens (RFCs, ADRs, traceability), [
 
 ### Testing
 
-Non-trivial logic gets ONE runnable check (assert-based, no frameworks needed). Trivial one-liners don't need tests.
+Non-trivial logic gets at least one test (Node's built-in runner, no framework). Run
+`pnpm test` locally, or `pnpm test:coverage` to check the coverage gate. If your logic is
+buried in a route or component, extract the pure part into a helper under `src/lib` (see
+`booking-dates.ts`, `slug.ts`) and test that. Both run in CI and must pass before merge.
+Trivial one-liners don't need tests.
 
 ### Error Handling
 

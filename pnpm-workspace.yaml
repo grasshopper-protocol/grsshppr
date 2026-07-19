@@ -1,3 +1,11 @@
 ignoredBuiltDependencies:
   - sharp
   - unrs-resolver
+
+# Security overrides — force safe versions of transitive deps flagged by OSV.
+#   postcss <8.5.10  → XSS via unescaped </style>  (GHSA-qx2v-qp2m-jg93), via next
+#   esbuild <0.25.0  → dev-server request leak      (GHSA-67mh-4wv8-2f99), via the
+#                      deprecated @esbuild-kit loader under drizzle-kit (dev-only)
+overrides:
+  postcss@<8.5.10: '>=8.5.10'
+  esbuild@<0.25.0: '>=0.25.0'

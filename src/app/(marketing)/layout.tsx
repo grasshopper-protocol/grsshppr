@@ -4,6 +4,28 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 
+const REPO = "https://github.com/grasshopper-protocol/grsshppr";
+
+const footerGroups = [
+  {
+    title: "Project",
+    links: [
+      { label: "License (MIT)", href: `${REPO}/blob/main/LICENSE` },
+      { label: "Roadmap", href: `${REPO}/blob/main/product/roadmap/README.md` },
+      { label: "Decisions", href: `${REPO}/blob/main/decisions/README.md` },
+      { label: "Security", href: `${REPO}/blob/main/SECURITY.md` },
+    ],
+  },
+  {
+    title: "Community",
+    links: [
+      { label: "GitHub", href: REPO },
+      { label: "Contribute", href: `${REPO}/blob/main/CONTRIBUTING.md` },
+      { label: "Code of Conduct", href: `${REPO}/blob/main/CODE_OF_CONDUCT.md` },
+    ],
+  },
+];
+
 export default async function MarketingLayout({
   children,
 }: {
@@ -40,19 +62,50 @@ export default async function MarketingLayout({
         </nav>
       </header>
       <main className="flex-1">{children}</main>
-      <footer className="border-t border-border py-6">
-        <div className="mx-auto flex max-w-5xl flex-col items-center gap-3 px-4 text-sm text-muted-foreground">
-          <Image src="/logo.svg" alt="Grsshppr" width={100} height={100} className="opacity-90" />
-          <div className="flex items-center gap-3">
-            <span>Open source · MIT</span>
-            <a
-              href="https://github.com/grasshopper-protocol/grsshppr"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-foreground"
-            >
-              GitHub
-            </a>
+      <footer className="border-t border-border">
+        <div className="mx-auto max-w-5xl px-4 py-12 text-sm text-muted-foreground">
+          <div className="grid gap-10 sm:grid-cols-3">
+            <div className="flex flex-col gap-3">
+              <Link href="/" className="flex items-center gap-2">
+                <Image src="/logo.svg" alt="" width={36} height={36} className="opacity-90" />
+                <span className="text-base font-semibold tracking-tight text-foreground">Grsshppr</span>
+              </Link>
+              <p className="max-w-xs">Free, open-source mentoring, owned by everyone.</p>
+              <p>
+                Built by volunteers —{" "}
+                <a
+                  href={`${REPO}/blob/main/CONTRIBUTING.md`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-foreground underline-offset-4 hover:underline"
+                >
+                  contribute
+                </a>
+                .
+              </p>
+            </div>
+            {footerGroups.map((group) => (
+              <nav key={group.title} className="flex flex-col gap-3">
+                <h2 className="font-medium text-foreground">{group.title}</h2>
+                <ul className="flex flex-col gap-2">
+                  {group.links.map((link) => (
+                    <li key={link.label}>
+                      <a
+                        href={link.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="transition-colors hover:text-foreground"
+                      >
+                        {link.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            ))}
+          </div>
+          <div className="mt-10 border-t border-border pt-6">
+            © {new Date().getFullYear()} Grsshppr · Open source under MIT
           </div>
         </div>
       </footer>

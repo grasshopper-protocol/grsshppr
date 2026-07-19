@@ -1,0 +1,47 @@
+version: 2
+updates:
+  # npm dependencies (managed via pnpm; Dependabot reads pnpm-lock.yaml).
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    # Wait after a release before opening a PR — lets bad releases get yanked
+    # and lets same-day follow-up patches collapse into a single bump.
+    cooldown:
+      default-days: 5
+      semver-major-days: 14
+    groups:
+      # Batch non-major bumps into one PR to keep review noise low. Majors are
+      # left ungrouped — each breaking upgrade gets its own PR for focused review.
+      npm-minor-and-patch:
+        update-types:
+          - minor
+          - patch
+
+  # GitHub Actions — keeps the SHA-pinned actions current (Dependabot bumps the
+  # pin and updates the trailing version comment). Grouped so all action bumps
+  # land in a single PR instead of one per action.
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    cooldown:
+      default-days: 5
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+
+  # Docker base image in the Dockerfile.
+  - package-ecosystem: docker
+    directory: "/"
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 7
+    groups:
+      docker:
+        patterns:
+          - "*"

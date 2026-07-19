@@ -23,6 +23,10 @@ was made and what would change it.
 | [0005](ADR-0005-brand-color-minimal-mapping.md) | Brand color adoption — minimal mapping | Accepted |
 | [0006](ADR-0006-status-token-layer.md) | Status token layer | Accepted |
 | [0007](ADR-0007-interaction-states-motion.md) | Interaction states & motion | Accepted |
+| [0008](ADR-0008-built-with-marketing-strip.md) | "Built with open tools" strip on the marketing page | Accepted |
+| [0009](ADR-0009-marketing-footer.md) | Marketing footer expansion | Accepted |
+| [0010](ADR-0010-supply-chain-hardening.md) | Supply-chain hardening (CI security baseline) | Accepted |
+| [0011](ADR-0011-testing-gate.md) | Testing as a required gate (coverage on pure logic) | Accepted |
 
 ## Historical log
 
