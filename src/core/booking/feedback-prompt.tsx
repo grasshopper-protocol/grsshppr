@@ -3,12 +3,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Star } from "@phosphor-icons/react";
+import type { Session } from "@/types";
 
 export function FeedbackPrompt({
   session,
   partner,
 }: {
-  session: { id: string; startsAt: Date; endsAt: Date };
+  session: Session;
   partner: { name: string; image: string | null };
 }) {
   const router = useRouter();

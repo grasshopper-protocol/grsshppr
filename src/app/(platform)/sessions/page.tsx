@@ -6,6 +6,7 @@ import { getSessionsForUser } from "@/core/booking/queries";
 import { getProfileByUserId } from "@/core/profiles/queries";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import type { Session } from "@/types";
 
 const statusColors: Record<string, string> = {
   requested: "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400",
@@ -80,7 +81,7 @@ function SessionRow({
   role,
   mentorSlug,
 }: {
-  session: { id: string; status: string; startsAt: Date; endsAt: Date };
+  session: Session; 
   partner: { id: string; name: string; image: string | null };
   role: string;
   mentorSlug?: string;

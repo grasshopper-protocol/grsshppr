@@ -6,12 +6,13 @@ import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Check, X } from "@phosphor-icons/react";
+import type { Session } from "@/types";
 
 export function PendingRequestRow({
   session,
   partner,
 }: {
-  session: { id: string; startsAt: Date; endsAt: Date };
+  session: Session;
   partner: { id: string; name: string; image: string | null };
 }) {
   const router = useRouter();
