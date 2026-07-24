@@ -93,4 +93,48 @@ describe("signEmailAction / verifyEmailAction", () => {
       .digest("base64url");
     assert.equal(verifyEmailAction(`${encoded}.${sig}`), null);
   });
+
+  it("allows multiple independent tokens to coexist", () => {
+    const confirm = signEmailAction("session-a", "confirm");
+    const cancel = signEmailAction("session-b", "cancel");
+    const other = signEmailAction("session-c", "confirm");
+
+    const a = verifyEmailAction(confirm);
+    const b = verifyEmailAction(cancel);
+    const c = verifyEmailAction(other);
+
+    assert.ok(a && b && c, "all three tokens must verify independently");
+    assert.equal(a.sessionId, "session-a");
+    assert.equal(a.action, "confirm");
+    assert.equal(b.sessionId, "session-b");
+    assert.equal(b.action, "cancel");
+    assert.equal(c.sessionId, "session-c");
+    // Verifying one token must not invalidate the others.
+    assert.ok(verifyEmailAction(confirm));
+    assert.ok(verifyEmailAction(cancel));
+  });
+
+  it("issues different tokens for the same input (exp/time salt)", () => {
+    const first = signEmailAction("session-same", "confirm");
+    // Busy-wait so Date.now() advances at least 1ms between signs.
+    const start = Date.now();
+    while (Date.now() === start) {
+      /* spin */
+    }
+    const second = signEmailAction("session-same", "confirm");
+    assert.notEqual(
+      first,
+      second,
+      "same sessionId/action must not mint identical wire tokens",
+    );
+    assert.ok(verifyEmailAction(first));
+    assert.ok(verifyEmailAction(second));
+  });
+
+  it("rejects a token with missing signature segment", () => {
+    const token = signEmailAction("s1", "confirm");
+    const [encoded] = token.split(".");
+    assert.equal(verifyEmailAction(encoded), null);
+    assert.equal(verifyEmailAction(`${encoded}.`), null);
+  });
 });
