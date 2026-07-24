@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import type {Mentor} from "@/types";
 import {
   Check,
   Pause,
@@ -25,12 +26,6 @@ type Goal = {
   targetDate: string | null;
 };
 
-type Mentor = {
-  mentorId: string;
-  name: string;
-  image: string | null;
-  slug: string | null;
-};
 
 const statusIcon: Record<string, React.ReactNode> = {
   active: <Play size={12} />,
