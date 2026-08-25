@@ -7,13 +7,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { X, ArrowsClockwise } from "@phosphor-icons/react";
+import type { Session } from "@/types";
 
 export function MenteeRequestRow({
   session,
   partner,
   mentorSlug,
 }: {
-  session: { id: string; startsAt: Date; endsAt: Date; status: string };
+  session: Session;
   partner: { id: string; name: string; image: string | null };
   mentorSlug?: string;
 }) {

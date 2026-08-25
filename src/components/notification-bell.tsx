@@ -3,22 +3,13 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Bell } from "@phosphor-icons/react";
+import type { Notification } from "@/types";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-type Notification = {
-  id: string;
-  type: string;
-  message: string;
-  resourceId: string | null;
-  priority: string;
-  read: boolean;
-  createdAt: string;
-};
 
 export function NotificationBell() {
   const router = useRouter();
