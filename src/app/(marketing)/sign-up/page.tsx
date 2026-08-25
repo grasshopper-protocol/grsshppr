@@ -21,14 +21,20 @@ export default function SignUpPage() {
 
   async function handleGoogle() {
     setGoogleLoading(true);
-    await authClient.signIn.social({ provider: "google", callbackURL: "/welcome" });
-    setGoogleLoading(false);
+    try {
+      await authClient.signIn.social({ provider: "google", callbackURL: "/welcome" });
+    } finally {
+      setGoogleLoading(false);
+    }
   }
 
   async function handleGithub() {
     setGithubLoading(true);
-    await authClient.signIn.social({ provider: "github", callbackURL: "/welcome" });
-    setGithubLoading(false);
+    try {
+      await authClient.signIn.social({ provider: "github", callbackURL: "/welcome" });
+    } finally {
+      setGithubLoading(false);
+    }
   }
 
   return (

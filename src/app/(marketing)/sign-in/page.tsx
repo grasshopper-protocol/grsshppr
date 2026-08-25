@@ -36,14 +36,20 @@ export default function SignInPage() {
 
   async function handleGoogle() {
     setGoogleLoading(true);
-    await authClient.signIn.social({ provider: "google", callbackURL: "/dashboard" });
-    setGoogleLoading(false);
+    try {
+      await authClient.signIn.social({ provider: "google", callbackURL: "/dashboard" });
+    } finally {
+      setGoogleLoading(false);
+    }
   }
 
   async function handleGithub() {
     setGithubLoading(true);
-    await authClient.signIn.social({ provider: "github", callbackURL: "/dashboard" });
-    setGithubLoading(false);
+    try {
+      await authClient.signIn.social({ provider: "github", callbackURL: "/dashboard" });
+    } finally {
+      setGithubLoading(false);
+    }
   }
 
   return (
