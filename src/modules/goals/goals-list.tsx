@@ -38,15 +38,11 @@ const statusIcon: Record<string, React.ReactNode> = {
   completed: <Check size={12} />,
 };
 
-
-//refactor 
 const statusColor: Record<string, string> = {
   active: "bg-info-subtle text-info-foreground",
   paused: "bg-warning-subtle text-warning-foreground",
   completed: "bg-success-subtle text-success-foreground",
 };
-
-
 
 export function GoalsList() {
   const [goals, setGoals] = useState<Goal[]>([]);
