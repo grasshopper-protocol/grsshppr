@@ -81,7 +81,7 @@ function SessionRow({
   role,
   mentorSlug,
 }: {
-  session: Session; 
+  session: Session;
   partner: { id: string; name: string; image: string | null };
   role: string;
   mentorSlug?: string;
