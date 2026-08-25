@@ -13,3 +13,4 @@ root cause, the fix, and the durable lesson (usually an ADR or a rule).
 |------|----------|--------------------|
 | [2026-06-23](2026-06-23-booking-timezone.md) | Booking failed / wrong-day slots across timezones | [ADR-0004](../decisions/ADR-0004-timezone-handling.md) |
 | [2026-06-23](2026-06-23-profiles-slug-drift.md) | Prod 500s: `column profiles.slug does not exist` | [ADR-0003](../decisions/ADR-0003-schema-migrations.md) |
+| [2026-08-24](2026-08-24-next-turbopack-vercel-build.md) | Next 16.3 Turbopack build broke every Vercel deploy | [ADR-0012](../decisions/ADR-0012-change-safety-guardrails.md) |
