@@ -40,3 +40,40 @@ jobs:
       - name: Lint (advisory)
         run: pnpm lint
         continue-on-error: true
+
+  # Hard gate: a real production build must succeed. `quality` only runs `tsc`,
+  # which does NOT catch build/bundler/deploy-time failures (see ADR-0012 and the
+  # 2026-08-24 Next 16.3 Turbopack tracing incident). Uses an ephemeral Postgres
+  # so static generation can run; no production secrets required.
+  build:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17 # ponytail: tag-pinned; upgrade path is a digest pin if supply-chain review requires it
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: grasshopper_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/grasshopper_ci
+      BETTER_AUTH_SECRET: ci-placeholder-secret-not-used-at-runtime
+      BETTER_AUTH_URL: http://localhost:3000
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Apply migrations
+        run: pnpm db:migrate
+      - name: Build
+        run: pnpm build
