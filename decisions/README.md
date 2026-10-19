@@ -28,6 +28,7 @@ was made and what would change it.
 | [0010](ADR-0010-supply-chain-hardening.md) | Supply-chain hardening (CI security baseline) | Accepted |
 | [0011](ADR-0011-testing-gate.md) | Testing as a required gate (coverage on pure logic) | Accepted |
 | [0012](ADR-0012-change-safety-guardrails.md) | Change-safety guardrails (green-before-push, merge hygiene, no red merges, deploy recovery) | Accepted |
+| [0013](ADR-0013-status-text-tokens.md) | Status text tokens (`-text`) — extends 0006 | Accepted |
 
 ## Historical log
 

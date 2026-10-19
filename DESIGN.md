@@ -182,10 +182,13 @@ Status/feedback only — never decorative.
 | `utility/error-subtle`      | `#FEF2F2` | `oklch(97.35% 0.0406 24.16)`  |
 | `utility/error-dark`        | `#F87171` | `oklch(71.13% 0.1693 15.90)`  |
 | `utility/error-subtle-dark` | `#450A0A` | `oklch(25.76% 0.0871 16.74)`  |
+| `utility/error-text`        | `#B91C1C` | `oklch(50.54% 0.1905 27.52)`  |
+| `utility/error-text-dark`   | `#FCA5A5` | `oklch(80.77% 0.1035 19.57)`  |
 | `utility/warning`             | `#D97706` | `oklch(66.59% 0.1565 32.17)` |
 | `utility/warning-subtle`      | `#FFFBEB` | `oklch(98.99% 0.0444 38.67)` |
 | `utility/warning-dark`        | `#FCD34D` | `oklch(88.01% 0.1293 50.88)` |
 | `utility/warning-subtle-dark` | `#451A03` | `oklch(27.91% 0.0753 26.12)` |
+| `utility/warning-text`        | `#92400E` | `oklch(47.32% 0.1247 46.20)` |
 | `utility/info`             | `#2563EB` | `oklch(54.66% 0.2273 217.53)` |
 | `utility/info-subtle`      | `#EFF6FF` | `oklch(97.38% 0.0176 19.14)`  |
 | `utility/info-dark`        | `#60A5FA` | `oklch(71.71% 0.1231 221.03)` |
@@ -253,19 +256,29 @@ the missing triples. Each token resolves per theme, so consumers write `bg-warni
 Tailwind utilities (`bg-error` etc.) were unused and are superseded by these — the
 §1c table remains the primitive *palette* reference.
 
+**Pairing rule ([ADR-0013](decisions/ADR-0013-status-text-tokens.md)):**
+`-foreground` is text on the **solid** base (`bg-warning text-warning-foreground`);
+`-text` is text on the **tint** (`bg-warning-subtle text-warning-text`). Never put
+`-foreground` on `-subtle` — in most cases it is near-invisible. Every `-text` /
+`-subtle` pair passes WCAG AA (≥ 4.5:1) in both themes.
+
 | token | Light primitive | Light HEX | Dark primitive | Dark HEX | Usage |
 |-------|-----------------|-----------|----------------|----------|-------|
 | `success` | `grass/700` | `#3C7209` | `grass/400` | `#83B328` | Success/available/completed fill — grass/700 passes AA on white |
 | `success-subtle` | `grass/50` | `#E1EECC` | `grass/900` | `#05481F` | Success tint background |
 | `success-foreground` | `neutral/white` | `#FFFFFF` | `grass/950` | `#012305` | Text/icon on success |
+| `success-text` | `grass/700` | `#3C7209` | `grass/200` | `#A4C77F` | Text/icon on success-subtle (4.8 / 5.7:1) |
 | `warning` | `utility/warning` | `#D97706` | `utility/warning-dark` | `#FCD34D` | Warning fill |
 | `warning-subtle` | `utility/warning-subtle` | `#FFFBEB` | `utility/warning-subtle-dark` | `#451A03` | Warning tint background |
 | `warning-foreground` | `grass/950` | `#012305` | `grass/950` | `#012305` | Text on warning — stays dark **both** modes (amber is light) |
+| `warning-text` | `utility/warning-text` | `#92400E` | `utility/warning-dark` | `#FCD34D` | Text/icon on warning-subtle (6.8 / 10.4:1) |
 | `info` | `utility/info` | `#2563EB` | `utility/info-dark` | `#60A5FA` | Info fill |
 | `info-subtle` | `utility/info-subtle` | `#EFF6FF` | `utility/info-subtle-dark` | `#172554` | Info tint background |
 | `info-foreground` | `neutral/white` | `#FFFFFF` | `grass/950` | `#012305` | Text on info |
+| `info-text` | `utility/info` | `#2563EB` | `utility/info-dark` | `#60A5FA` | Text/icon on info-subtle (4.8 / 5.8:1) |
 | `destructive-subtle` | `utility/error-subtle` | `#FEF2F2` | `utility/error-subtle-dark` | `#450A0A` | Error tint background (pairs with `destructive`) |
 | `destructive-foreground` | `neutral/white` | `#FFFFFF` | `grass/950` | `#012305` | Text on destructive |
+| `destructive-text` | `utility/error-text` | `#B91C1C` | `utility/error-text-dark` | `#FCA5A5` | Text/icon on destructive-subtle (5.9 / 8.5:1) |
 
 ### 3b. Interaction states
 

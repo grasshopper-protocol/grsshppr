@@ -24,6 +24,9 @@ brand or status color — change a token, every component follows.
 - **Interaction + motion come from tokens.** Hover / focus / disabled / active
   and transitions follow [ADR-0007](../../decisions/ADR-0007-interaction-states-motion.md);
   status colors follow [ADR-0006](../../decisions/ADR-0006-status-token-layer.md).
+  On a status tint, text uses `-text` (`bg-info-subtle text-info-text`);
+  `-foreground` is only for the solid base — see
+  [ADR-0013](../../decisions/ADR-0013-status-text-tokens.md).
   Reuse the same `focus-visible:ring-ring/50` + `focus-visible:ring-3` focus
   pattern across inputs and buttons.
 - **Accessibility is non-negotiable.** Every interactive primitive carries a

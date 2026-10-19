@@ -33,9 +33,9 @@ const statusIcon: Record<string, React.ReactNode> = {
 };
 
 const statusColor: Record<string, string> = {
-  active: "bg-info-subtle text-info-foreground",
-  paused: "bg-warning-subtle text-warning-foreground",
-  completed: "bg-success-subtle text-success-foreground",
+  active: "bg-info-subtle text-info-text",
+  paused: "bg-warning-subtle text-warning-text",
+  completed: "bg-success-subtle text-success-text",
 };
 
 export function GoalsList() {

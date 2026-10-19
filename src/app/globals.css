@@ -27,16 +27,21 @@
   --destructive: oklch(0.5771 0.2103 17.08);         /* utility/error */
   --destructive-subtle: #fef2f2;  /* error-subtle */
   --destructive-foreground: #ffffff;
-  /* Status — semantic, mode-aware (RFC-0003 / ADR-0006). Status only. */
+  --destructive-text: #b91c1c;    /* utility/error-text — 5.9:1 on subtle */
+  /* Status — semantic, mode-aware (RFC-0003 / ADR-0006). Status only.
+     -foreground = text on the solid base; -text = text on -subtle (ADR-0013). */
   --success: #3c7209;             /* grass/700 — passes AA on white */
   --success-subtle: #e1eecc;      /* grass/50 */
   --success-foreground: #ffffff;
+  --success-text: #3c7209;        /* grass/700 — 4.8:1 on subtle */
   --warning: #d97706;             /* utility/warning */
   --warning-subtle: #fffbeb;
   --warning-foreground: #012305;  /* grass/950 — dark in both modes */
+  --warning-text: #92400e;        /* utility/warning-text — 6.8:1 on subtle */
   --info: #2563eb;                /* utility/info */
   --info-subtle: #eff6ff;
   --info-foreground: #ffffff;
+  --info-text: #2563eb;           /* utility/info — 4.8:1 on subtle */
   /* Interaction states (RFC-0004 / ADR-0007) — neutral feedback; brand stays
      the focus ring. */
   --primary-hover: oklch(0.2700 0.0098 66.70);       /* neutral/900 lightened */
@@ -79,21 +84,26 @@
   --color-grass-950: #012305;
   /* Status — semantic & mode-aware (RFC-0003 / ADR-0006). Status only, never
      decorative. `error` is `destructive` (defined in :root); success/warning/info
-     each get base + -subtle + -foreground. The neutral ramp (DESIGN.md §1b) is
+     each get base + -subtle + -foreground, plus -text for text on -subtle
+     (ADR-0013). The neutral ramp (DESIGN.md §1b) is
      still intentionally NOT redefined here — that would clobber Tailwind's
      built-in `neutral-*`. The previously fixed error/warning/info(+dark)
      primitives were unused and are superseded by these — see ADR-0006. */
   --color-success: var(--success);
   --color-success-subtle: var(--success-subtle);
   --color-success-foreground: var(--success-foreground);
+  --color-success-text: var(--success-text);
   --color-warning: var(--warning);
   --color-warning-subtle: var(--warning-subtle);
   --color-warning-foreground: var(--warning-foreground);
+  --color-warning-text: var(--warning-text);
   --color-info: var(--info);
   --color-info-subtle: var(--info-subtle);
   --color-info-foreground: var(--info-foreground);
+  --color-info-text: var(--info-text);
   --color-destructive-subtle: var(--destructive-subtle);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-destructive-text: var(--destructive-text);
   /* Interaction states (RFC-0004 / ADR-0007) */
   --color-primary-hover: var(--primary-hover);
   --color-secondary-hover: var(--secondary-hover);
@@ -165,16 +175,20 @@ body {
   --destructive: oklch(0.7113 0.1693 15.90);         /* utility/error-dark */
   --destructive-subtle: #450a0a;
   --destructive-foreground: #012305;  /* grass/950 */
+  --destructive-text: #fca5a5;    /* utility/error-text-dark — 8.5:1 on subtle */
   /* Status — dark (RFC-0003 / ADR-0006). Do not simply invert. */
   --success: #83b328;             /* grass/400 */
   --success-subtle: #05481f;      /* grass/900 */
   --success-foreground: #012305;  /* grass/950 */
+  --success-text: #a4c77f;        /* grass/200 — 5.7:1 on subtle */
   --warning: #fcd34d;             /* utility/warning-dark */
   --warning-subtle: #451a03;
   --warning-foreground: #012305;  /* grass/950 — stays dark both modes */
+  --warning-text: #fcd34d;        /* utility/warning-dark — 10.4:1 on subtle */
   --info: #60a5fa;                /* utility/info-dark */
   --info-subtle: #172554;
   --info-foreground: #012305;     /* grass/950 */
+  --info-text: #60a5fa;           /* utility/info-dark — 5.8:1 on subtle */
   /* Interaction states — dark (RFC-0004 / ADR-0007) */
   --primary-hover: oklch(0.8800 0.0300 38.37);       /* neutral/100 darkened */
   --secondary-hover: oklch(0.3200 0.0126 65.19);     /* neutral/800 lightened */
