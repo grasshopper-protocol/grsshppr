@@ -11,6 +11,11 @@ updates:
     cooldown:
       default-days: 5
       semver-major-days: 14
+    ignore:
+      # Held at 4.23.7: later tsx (esbuild 0.28) injects a helper that drops
+      # function coverage below the ADR-0011 gate. Remove once #130 is resolved.
+      - dependency-name: "tsx"
+        versions: [">4.23.7"]
     groups:
       # Batch non-major bumps into one PR to keep review noise low. Majors are
       # left ungrouped — each breaking upgrade gets its own PR for focused review.
