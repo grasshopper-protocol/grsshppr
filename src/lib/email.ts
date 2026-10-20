@@ -17,7 +17,9 @@ export async function sendEmail({
   react: React.ReactElement;
 }) {
   if (!resend) {
-    console.log(`[email] Would send to ${to}: ${subject}`);
+    if (process.env.NODE_ENV !== "production") {
+      console.log(`[email] Would send to ${to}: ${subject}`);
+    }
     return;
   }
 
