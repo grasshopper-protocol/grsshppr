@@ -18,6 +18,30 @@ You don't have to be a coder. Code, design, product, and docs are equal layers
   [design/](design/README.md) and the component inventory in
   [design/patterns/](design/patterns/README.md).
 
+### First Time Contributors
+
+Welcome! We're glad you're here. **No experience? No problem!** Contributions
+don't have to be code — docs, design, product ideas, and feedback all help make
+Grasshopper better.
+
+Here's how to make your first pull request:
+
+1. Pick a small task from the
+   [`good first issue` list](https://github.com/grasshopper-protocol/grsshppr/labels/good%20first%20issue).
+2. Read the issue and leave a comment if you'd like to work on it or have
+   questions. If you have an idea of your own, open an issue first so we can
+   discuss the scope.
+3. Fork the repository, clone your fork, and create a branch for your change.
+4. Make the change, following the guidance in this document. Run any relevant
+   checks described in the issue or project docs.
+5. Push your branch to your fork and open a pull request against `main`.
+   Describe what you changed and link the issue.
+6. Respond to review feedback, then celebrate your first contribution!
+
+Need a hand? Start a conversation in
+[GitHub Discussions](https://github.com/grasshopper-protocol/grsshppr/discussions),
+or ping [@natos](https://github.com/natos). We're happy to help you get started.
+
 ### Feedback and issue handling
 
 - **Default channel:** use GitHub Issues for bugs, enhancements, and product feedback.
