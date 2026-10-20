@@ -7,7 +7,8 @@ Thanks for your interest in contributing. Grasshopper is an open-source mentorin
 You don't have to be a coder. Code, design, product, and docs are equal layers
 (see [AGENTS.md](AGENTS.md)).
 
-- **New here?** Browse [`good first issue`](https://github.com/grasshopper-protocol/grsshppr/labels/good%20first%20issue)
+- **New here?** Start with [First-time contributors](#first-time-contributors), then browse
+  [`good first issue`](https://github.com/grasshopper-protocol/grsshppr/labels/good%20first%20issue)
   — small, self-contained, well-described tasks meant for a first PR.
 - **Want something meatier?** [`help wanted`](https://github.com/grasshopper-protocol/grsshppr/labels/help%20wanted)
   marks issues we'd love a hand with.
@@ -18,7 +19,7 @@ You don't have to be a coder. Code, design, product, and docs are equal layers
   [design/](design/README.md) and the component inventory in
   [design/patterns/](design/patterns/README.md).
 
-### First Time Contributors
+### First-time contributors
 
 Welcome! We're glad you're here. **No experience? No problem!** Contributions
 don't have to be code — docs, design, product ideas, and feedback all help make
@@ -32,8 +33,8 @@ Here's how to make your first pull request:
    questions. If you have an idea of your own, open an issue first so we can
    discuss the scope.
 3. Fork the repository, clone your fork, and create a branch for your change.
-4. Make the change, following the guidance in this document. Run any relevant
-   checks described in the issue or project docs.
+4. Make the change, following the guidance in this document. Run `pnpm verify`
+   before you push.
 5. Push your branch to your fork and open a pull request against `main`.
    Describe what you changed and link the issue.
 6. Respond to review feedback, then celebrate your first contribution!
