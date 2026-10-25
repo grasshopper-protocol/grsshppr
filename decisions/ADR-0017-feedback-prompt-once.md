@@ -102,4 +102,5 @@ Adopt **C**, for one producer and one channel:
 ## Links
 
 - Issue: #154 · Related: #138, #155, #156, [ADR-0016](ADR-0016-account-deletion-keeps-partner-history.md), [RFC-0008](../product/rfc/RFC-0008-mentor-mentee-messaging.md)
+- Followed by: [ADR-0018](ADR-0018-one-feedback-window.md)
 - Implementation PR: pending — change A (`fix/feedback-nudge-idempotent`; re-adds the nudge schedule paused in #156)
