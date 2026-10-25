@@ -56,7 +56,7 @@ Committed and in flight. Each item should have an owner and an open issue.
   placeholder, and mentors credited on goals can delete their account (#153,
   closes #149, [ADR-0016](../../decisions/ADR-0016-account-deletion-keeps-partner-history.md)).
 - Cron routes accept Vercel's `GET` and fail closed without `CRON_SECRET`
-  (#155, closes #138); the feedback nudge is paused until change A lands (#156).
+  (#155, closes #138); the feedback nudge is paused until #165 lands (#156).
 - Calendar integration accepted: [RFC-0012](../rfc/RFC-0012-calendar-integration.md) /
   [ADR-0014](../../decisions/ADR-0014-calendar-connection-auth-boundary.md) (#144).
 
