@@ -19,10 +19,11 @@ export default async function SessionPage({
 }: {
   params: Params;
 }) {
-  const authSession = await auth.api.getSession({ headers: await headers() });
-  if (!authSession) redirect("/sign-in");
-
   const { id } = await params;
+  const authSession = await auth.api.getSession({ headers: await headers() });
+  // Expired session: come back here after signing in (#161)
+  if (!authSession) redirect(`/sign-in?callbackUrl=${encodeURIComponent(`/session/${id}`)}`);
+
   const data = await getSessionWithUsers(id);
   if (!data) notFound();
 
