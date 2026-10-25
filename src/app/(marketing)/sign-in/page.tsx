@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
+import { safeCallbackPath } from "@/lib/safe-redirect";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -14,6 +15,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { GithubLogo, GoogleLogo, Fingerprint, CircleNotch } from "@phosphor-icons/react";
+
+// Where to go after signing in: the page that sent the user here (set by the
+// proxy, e.g. a session link from an email), if it's safe — else the dashboard.
+function destination() {
+  return safeCallbackPath(new URLSearchParams(window.location.search).get("callbackUrl"));
+}
 
 export default function SignInPage() {
   const router = useRouter();
@@ -29,7 +36,7 @@ export default function SignInPage() {
     if (error) {
       setError(error.message ?? "Passkey sign-in failed");
     } else {
-      router.push("/dashboard");
+      router.push(destination());
     }
     setLoading(false);
   }
@@ -37,7 +44,7 @@ export default function SignInPage() {
   async function handleGoogle() {
     setGoogleLoading(true);
     try {
-      await authClient.signIn.social({ provider: "google", callbackURL: "/dashboard" });
+      await authClient.signIn.social({ provider: "google", callbackURL: destination() });
     } finally {
       setGoogleLoading(false);
     }
@@ -46,7 +53,7 @@ export default function SignInPage() {
   async function handleGithub() {
     setGithubLoading(true);
     try {
-      await authClient.signIn.social({ provider: "github", callbackURL: "/dashboard" });
+      await authClient.signIn.social({ provider: "github", callbackURL: destination() });
     } finally {
       setGithubLoading(false);
     }
