@@ -1,6 +1,6 @@
 # ADR-0017: The feedback prompt is issued once, recorded by its notification
 
-- **Status:** Proposed (becomes Accepted when its implementation PR merges)
+- **Status:** Accepted
 - **Date:** 2026-10-25
 - **Discipline:** Engineering (Product co-signs the prompt timing)
 - **Source RFC:** none — direct (bug fix for #154, no schema change)
@@ -103,4 +103,4 @@ Adopt **C**, for one producer and one channel:
 
 - Issue: #154 · Related: #138, #155, #156, [ADR-0016](ADR-0016-account-deletion-keeps-partner-history.md), [RFC-0008](../product/rfc/RFC-0008-mentor-mentee-messaging.md)
 - Followed by: [ADR-0018](ADR-0018-one-feedback-window.md)
-- Implementation PR: pending — change A (`fix/feedback-nudge-idempotent`; re-adds the nudge schedule paused in #156)
+- Implementation PR: #165

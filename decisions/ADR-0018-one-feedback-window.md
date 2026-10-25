@@ -1,6 +1,6 @@
 # ADR-0018: One feedback window; every feedback link lands on a working form
 
-- **Status:** Proposed (becomes Accepted when its implementation PR merges)
+- **Status:** Accepted
 - **Date:** 2026-10-25
 - **Discipline:** Product
 - **Source RFC:** none — direct (UX bug fix, no schema change)
@@ -55,4 +55,4 @@ Adopt **B**:
 
 - Builds on: [ADR-0017](ADR-0017-feedback-prompt-once.md)
 - Issue: [#157](https://github.com/grasshopper-protocol/grsshppr/issues/157)
-- Implementation PR: pending — change B (`fix/feedback-lands-on-form`, stacked on change A)
+- Implementation PR: #169 (re-land of #166)
