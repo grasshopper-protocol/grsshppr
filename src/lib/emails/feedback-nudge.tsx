@@ -21,11 +21,11 @@ const LOGO_URL = process.env.EMAIL_LOGO_URL ?? "https://www.grsshppr.org/logo.pn
 export function FeedbackNudgeEmail({
   recipientName,
   partnerName,
-  dashboardUrl,
+  feedbackUrl,
 }: {
   recipientName: string;
   partnerName: string;
-  dashboardUrl: string;
+  feedbackUrl: string;
 }) {
   return (
     <Html>
@@ -48,7 +48,7 @@ export function FeedbackNudgeEmail({
           </Text>
           <Section style={{ marginTop: 16 }}>
             <Link
-              href={dashboardUrl}
+              href={feedbackUrl}
               style={{
                 backgroundColor: "#171717",
                 color: "#fafafa",
