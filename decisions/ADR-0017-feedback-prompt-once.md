@@ -91,10 +91,8 @@ Adopt **C**, for one producer and one channel:
 - **Rollout:** no cut-off is needed. The old nudge's single real run could only
   reach sessions that already have a prompt notification, and it has been
   paused since.
-- **Known gap until the follow-up lands:** the email links to the dashboard,
-  which today shows the feedback form only for sessions that ended in the last
-  48h. A separate change aligns every surface to the 7-day window and makes the
-  links land on the session page.
+- **Where the prompt leads** — one window on every surface, links landing on
+  the session page — is decided in [ADR-0018](ADR-0018-one-feedback-window.md).
 - **Tests:** the rules (`src/lib/feedback-prompts.ts`, `src/lib/email-errors.ts`)
   are unit-tested. The lock, re-check and rollback are verified by a recorded
   run against a throwaway Postgres (two runs in a row, two concurrent runs,

@@ -50,8 +50,12 @@ export async function getUnreadActionCount(userId: string) {
   return row?.count ?? 0;
 }
 
-/** Auto-resolve: mark notification as read when the underlying action is taken */
-export async function resolveNotification(resourceId: string, type: string) {
+/**
+ * Auto-resolve: mark notification as read when the underlying action is taken.
+ * Pass `userId` when only that person acted (e.g. their feedback), so the other
+ * participant's notification stays open.
+ */
+export async function resolveNotification(resourceId: string, type: string, userId?: string) {
   await db
     .update(notifications)
     .set({ read: true })
@@ -59,7 +63,8 @@ export async function resolveNotification(resourceId: string, type: string) {
       and(
         eq(notifications.resourceId, resourceId),
         eq(notifications.type, type),
-        eq(notifications.read, false)
+        eq(notifications.read, false),
+        userId ? eq(notifications.userId, userId) : undefined
       )
     );
 }
