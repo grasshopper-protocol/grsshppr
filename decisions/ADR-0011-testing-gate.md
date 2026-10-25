@@ -60,3 +60,4 @@ Adopt the **enforced built-in runner with a coverage gate scoped to `src/lib`**:
   [ADR-0010](ADR-0010-supply-chain-hardening.md)
 - Implementation: `src/lib/booking-dates.ts`, `src/lib/slug.ts`, `tests/*.test.js`,
   `test:coverage` script, `.github/workflows/ci.yml`
+- Implementation PR: #70

@@ -201,4 +201,6 @@ Adopt **Option E**. Specifically:
   reused for calendar events), [ADR-0010](ADR-0010-supply-chain-hardening.md)
   (dependency scanning), [SECURITY.md](../SECURITY.md)
 - Research: [product/research/calendar-integration-benchmark.md](../product/research/calendar-integration-benchmark.md)
-- Implementation PRs: _to be linked_
+- Tracking issue: [#142](https://github.com/grasshopper-protocol/grsshppr/issues/142)
+- Accepted in: #144 (docs only)
+- Implementation PRs: none yet — Phase 0 not started (see #142)

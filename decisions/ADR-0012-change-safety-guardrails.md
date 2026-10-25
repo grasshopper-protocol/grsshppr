@@ -69,3 +69,5 @@ Adopt the **five guardrails in AGENTS.md**, enforced by the native pre-commit ho
   [ADR-0010](ADR-0010-supply-chain-hardening.md)
 - Implementation: [AGENTS.md](../AGENTS.md) §2–§4, `.githooks/pre-commit`,
   `pnpm verify` / `pnpm typecheck` scripts, `.github/workflows/ci.yml`
+- Implementation PRs: #102 (pre-commit gate), #104 (AGENTS.md guardrails);
+  tracking issue [#103](https://github.com/grasshopper-protocol/grsshppr/issues/103)

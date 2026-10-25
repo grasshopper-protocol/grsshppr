@@ -10,6 +10,40 @@ is cut.
 
 ## [Unreleased]
 
+> Entries below cover 2026-10-25 only. Changes merged between 0.1.0 and
+> 2026-10-24 (for example #117, #134, ADR-0012, ADR-0013) are not yet recorded
+> here.
+
+### Added
+- Privacy Policy and Terms of Service pages, linked from the footer and the
+  sign-in and sign-up forms (#151, closes #147).
+- [RFC-0012](product/rfc/RFC-0012-calendar-integration.md) calendar integration
+  and [ADR-0014](decisions/ADR-0014-calendar-connection-auth-boundary.md)
+  accepted; implementation tracked in #142 (#144).
+
+### Changed
+- Public mentor profiles show only the number of mentee goals achieved, never
+  goal titles or mentee names ([ADR-0015](decisions/ADR-0015-private-mentee-goals.md),
+  #150, closes #148).
+- Deleting an account keeps the partner's shared sessions and notes under a
+  "Deleted user" placeholder and cancels upcoming sessions with a notification
+  ([ADR-0016](decisions/ADR-0016-account-deletion-keeps-partner-history.md),
+  #153, closes #149).
+- The daily feedback-nudge cron is paused until it can't send duplicates
+  (#156, refs #154).
+
+### Fixed
+- Mentors credited on a mentee's goal can delete their account (#153).
+- Cron routes accept Vercel Cron's `GET`, so scheduled runs execute (#155,
+  closes #138).
+
+### Security
+- Next.js 16.4.0 → 16.4.2 for a critical RCE advisory (#146, closes #145).
+- Cron routes fail closed when `CRON_SECRET` is unset and compare it in
+  constant time (#155).
+- Mentee names and goal titles are no longer published on public, indexed
+  pages (#150).
+
 ## [0.1.0] - 2026-07-14
 
 First tagged pre-release. Core mentoring platform (profiles, booking, notes,

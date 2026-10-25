@@ -51,3 +51,4 @@ ADR-0006 stays Accepted.
 - Extends: [ADR-0006](ADR-0006-status-token-layer.md)
 - Tokens: [DESIGN.md](../DESIGN.md) §1c, §3a
 - Fixes the regression from #120 (issue #43)
+- Implementation PR: #134
