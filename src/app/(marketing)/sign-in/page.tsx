@@ -115,7 +115,18 @@ export default function SignInPage() {
             <p className="text-sm text-destructive text-center">{error}</p>
           )}
         </CardContent>
-        <CardFooter className="justify-center">
+        <CardFooter className="flex-col gap-3 text-center">
+          <p className="text-xs text-muted-foreground">
+            By continuing, you agree to our{" "}
+            <Link href="/terms-of-service" className="text-foreground underline-offset-4 hover:underline">
+              Terms of Service
+            </Link>{" "}
+            and{" "}
+            <Link href="/privacy-policy" className="text-foreground underline-offset-4 hover:underline">
+              Privacy Policy
+            </Link>
+            .
+          </p>
           <p className="text-sm text-muted-foreground">
             Don&apos;t have an account?{" "}
             <Link href="/sign-up" className="text-foreground underline-offset-4 hover:underline">

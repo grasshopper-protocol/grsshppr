@@ -73,7 +73,18 @@ export default function SignUpPage() {
             {githubLoading ? "Loading..." : "Continue with GitHub"}
           </Button>
         </CardContent>
-        <CardFooter className="justify-center">
+        <CardFooter className="flex-col gap-3 text-center">
+          <p className="text-xs text-muted-foreground">
+            By continuing, you agree to our{" "}
+            <Link href="/terms-of-service" className="text-foreground underline-offset-4 hover:underline">
+              Terms of Service
+            </Link>{" "}
+            and{" "}
+            <Link href="/privacy-policy" className="text-foreground underline-offset-4 hover:underline">
+              Privacy Policy
+            </Link>
+            , and confirm you are 18 or older.
+          </p>
           <p className="text-sm text-muted-foreground">
             Already have an account?{" "}
             <Link href="/sign-in" className="text-foreground underline-offset-4 hover:underline">
