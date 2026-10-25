@@ -1,6 +1,6 @@
 # RFC-0013: A light track for small, additive schema changes
 
-- **Status:** Draft
+- **Status:** Accepted (2026-10-26)
 - **Author:** natos
 - **Created:** 2026-10-26
 - **Discipline:** Engineering (governance change — amends AGENTS.md §6)
@@ -87,9 +87,9 @@ on an RFC nobody wants to write.
   conforms.
 - The migration generated with `pnpm db:generate`. Hand edits only to add a
   pre-check or the clean-up allowed by rule 6, called out in the PR.
-- Evidence it applies: `pnpm db:migrate` against a throwaway Postgres, and a
-  second `pnpm db:generate` reporting no further changes. (Once #163 adds a
-  Postgres job to CI, CI provides this.)
+- Evidence it applies — provided by CI: the `build` job applies every
+  migration to a fresh Postgres, and the `quality` job fails if `schema.ts` has
+  changes with no migration (§2).
 - The "Light-track schema change" box ticked in the PR template.
 
 **Decision:** lazy consensus. The PR stays open for **48 hours** for comment,
@@ -100,16 +100,23 @@ data-integrity fix may merge sooner; the PR says why.
 making an existing column `NOT NULL`; data migrations or backfills; Better
 Auth's tables; new kinds of personal data; anything a reviewer objects to.
 
-### 2. A guard in CI
+### 2. Guards in CI
 
-A ~40-line script, `scripts/check-migrations.mjs`, run in the existing
-`quality` job, scans migration files added by the PR for destructive SQL
-(`DROP`, `RENAME`, `ALTER COLUMN … TYPE`, `SET NOT NULL`, `TRUNCATE`,
-`DELETE`, `UPDATE`). It fails unless the file carries a marker comment naming
-the approval: `-- approved-by: RFC-NNNN` (full track) or
-`-- approved-by: ADR-NNNN` for a rule-6 clean-up. It's a tripwire, not a
-parser: its job is to make a destructive change impossible to merge by
-accident under the light track.
+In the existing `quality` job:
+
+- **Destructive SQL needs a marker.** `pnpm db:check`
+  (`scripts/check-migrations.ts`, rules in `src/lib/migration-guard.ts`) scans
+  every migration for statements that start with `DROP`, `TRUNCATE`,
+  `DELETE FROM`, `UPDATE … SET`, or alter a table to drop, rename, retype or
+  set `NOT NULL`. It fails unless the file carries
+  `-- approved-by: RFC-NNNN` (full track) or `-- approved-by: ADR-NNNN` (a
+  rule-6 clean-up). Clauses such as `ON DELETE cascade` don't count. It's a
+  tripwire, not a parser: its job is to make a destructive change impossible
+  to merge by accident under the light track.
+- **No drift.** `drizzle-kit generate` must have nothing to write, i.e.
+  `schema.ts` matches the committed migrations.
+
+The `build` job already applies every migration to a fresh Postgres.
 
 ### 3. The ADR lifecycle, written down
 
@@ -188,10 +195,17 @@ no drift between `schema.ts` and `drizzle/` as of 2026-10-26.)
 
 ## Open questions
 
-1. **Window length:** 48h (proposed), 24h, or 72h?
-2. **The ledger:** agree to defer it until one of ADR-0017's triggers lands?
-3. **The CI guard:** ship it with the docs change (proposed), or as a follow-up?
+Resolved at acceptance (natos, 2026-10-26):
+
+1. **Window length:** 48h.
+2. **The ledger:** deferred until one of ADR-0017's triggers lands.
+3. **The CI guard:** ships with the docs change.
 
 ## Outcome
 
-_To be filled on acceptance — link the resulting ADR and implementation PRs._
+Accepted 2026-10-26 by natos (sole maintainer; lazy consensus per
+[GOVERNANCE.md](../../governance/GOVERNANCE.md)). Decision record:
+[ADR-0019](../../decisions/ADR-0019-light-track-schema-changes.md).
+Implemented in [#176](https://github.com/grasshopper-protocol/grsshppr/pull/176)
+(docs, PR template, CI guards). First light-track candidate: the
+`session_feedback` unique index.

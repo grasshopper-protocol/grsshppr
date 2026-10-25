@@ -12,6 +12,7 @@
     "verify": "pnpm typecheck && pnpm lint",
     "prepare": "git config core.hooksPath .githooks || true",
     "db:generate": "drizzle-kit generate",
+    "db:check": "tsx scripts/check-migrations.ts",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",

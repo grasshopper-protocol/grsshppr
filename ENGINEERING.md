@@ -175,6 +175,23 @@ public/
 docker-compose.yml            # Local Postgres
 ```
 
+## Changing the schema
+
+1. Edit `src/lib/db/schema.ts`, then `pnpm db:generate` — never `db:push`
+   against a shared database ([ADR-0003](decisions/ADR-0003-schema-migrations.md)).
+2. Pick the track ([RFC-0013](product/rfc/RFC-0013-light-track-schema-changes.md)):
+   **additive** changes compatible with the running code (new table, nullable
+   column, index, a constraint existing data already meets, enum value) take
+   the light track — issue + ADR + migration in one PR, open ≥ 48h. Anything
+   destructive or data-rewriting needs an RFC.
+3. `pnpm db:check` must pass. Destructive SQL needs an
+   `-- approved-by: RFC-NNNN` (or `ADR-NNNN` for a light-track clean-up) marker
+   in the migration file. CI also fails if `schema.ts` and `drizzle/` disagree,
+   and applies every migration to a fresh Postgres in the `build` job.
+4. Migrations reach production on merge (`.github/workflows/db-migrate.yml`),
+   separately from the code deploy — so the code already running must keep
+   working against the new schema.
+
 ## Decisions
 
 Decisions are recorded as ADRs in [`/decisions`](decisions/README.md). The

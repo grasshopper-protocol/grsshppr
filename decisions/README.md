@@ -9,6 +9,12 @@ was made and what would change it.
 - One ADR per decision. Use [ADR-template.md](ADR-template.md).
 - ADRs are **immutable** once accepted. To change a decision, write a new ADR
   that supersedes the old one and link both directions.
+- **Lifecycle** ([ADR-0019](ADR-0019-light-track-schema-changes.md)): an ADR is
+  **Proposed** while the PR that implements it is open, and flipped to
+  **Accepted** in that PR's last commit, so it merges with its change — an
+  Accepted ADR on `main` always describes code on `main`. Pure process ADRs are
+  Accepted when their docs PR merges. Replaced ADRs become **Superseded by
+  ADR-NNNN**; rejected options stay recorded.
 - Major decisions come from an [RFC](../product/rfc). The ADR is the record of
   what was decided; the RFC is the proposal and discussion.
 
@@ -34,6 +40,7 @@ was made and what would change it.
 | [0016](ADR-0016-account-deletion-keeps-partner-history.md) | Account deletion keeps partners' history under a "Deleted user" placeholder | Accepted |
 | [0017](ADR-0017-feedback-prompt-once.md) | The feedback prompt is issued once, recorded by its notification | Accepted |
 | [0018](ADR-0018-one-feedback-window.md) | One feedback window; every feedback link lands on a working form | Accepted |
+| [0019](ADR-0019-light-track-schema-changes.md) | A light track for small, additive schema changes; the ADR lifecycle | Accepted |
 
 ## Historical log
 
