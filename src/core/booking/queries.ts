@@ -1,7 +1,8 @@
-import { eq, or, and, desc, count, gt, ne, notInArray } from "drizzle-orm";
+import { eq, or, and, desc, count, gt, lte, ne, notInArray } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { sessions, users, sessionFeedback, profiles } from "@/lib/db/schema";
 import { DELETED_USER } from "@/lib/account-deletion";
+import { FEEDBACK_WINDOW_MS } from "@/lib/feedback-prompts";
 
 export async function createSession(data: {
   mentorId: string;
@@ -109,9 +110,10 @@ export async function getCompletedSessionCount(userId: string) {
   return row?.count ?? 0;
 }
 
-// ponytail: returns completed sessions within 48h that user hasn't reviewed yet
+// Completed sessions in the feedback window that the user hasn't reviewed yet —
+// the same window the emailed prompt uses (ADR-0018), so its link never dead-ends.
 export async function getSessionsNeedingFeedback(userId: string) {
-  const cutoff = new Date(Date.now() - 48 * 60 * 60 * 1000);
+  const cutoff = new Date(Date.now() - FEEDBACK_WINDOW_MS);
 
   // Get sessions user already reviewed
   const reviewed = await db
@@ -128,6 +130,9 @@ export async function getSessionsNeedingFeedback(userId: string) {
         eq(sessions.status, "completed"),
         or(eq(sessions.mentorId, userId), eq(sessions.menteeId, userId)),
         gt(sessions.endsAt, cutoff),
+        lte(sessions.endsAt, new Date()),
+        ne(sessions.mentorId, DELETED_USER.id),
+        ne(sessions.menteeId, DELETED_USER.id),
         reviewedIds.length > 0 ? notInArray(sessions.id, reviewedIds) : undefined
       )
     )
@@ -197,4 +202,14 @@ export async function getLastSessionByMentor(menteeId: string) {
     map[r.mentorId] = r.endsAt.toISOString();
   }
   return map;
+}
+
+/** The rating a participant gave a session, or null if they haven't. */
+export async function getMyFeedbackRating(sessionId: string, userId: string) {
+  const [row] = await db
+    .select({ rating: sessionFeedback.rating })
+    .from(sessionFeedback)
+    .where(and(eq(sessionFeedback.sessionId, sessionId), eq(sessionFeedback.userId, userId)))
+    .limit(1);
+  return row?.rating ?? null;
 }
