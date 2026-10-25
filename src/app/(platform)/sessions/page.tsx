@@ -104,17 +104,21 @@ function SessionRow({
     minute: "2-digit",
   });
 
+  // The whole card links to the session via a stretched link (its ::after
+  // covers the card), so Rebook can sit above it as a sibling link — no
+  // nested <a>, and no event handler in this server component (#172).
   return (
-    <Link
-      href={`/session/${s.id}`}
-      className="flex items-center gap-3 rounded-lg border border-border p-3 transition-colors hover:border-foreground/20"
-    >
+    <div className="relative flex items-center gap-3 rounded-lg border border-border p-3 transition-colors hover:border-foreground/20">
       <Avatar className="h-11 w-11">
         <AvatarImage src={partner.image ?? undefined} alt={partner.name} />
         <AvatarFallback className="text-xs">{initials}</AvatarFallback>
       </Avatar>
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-medium">{partner.name}</p>
+        <p className="text-sm font-medium">
+          <Link href={`/session/${s.id}`} className="after:absolute after:inset-0 after:rounded-lg">
+            {partner.name}
+          </Link>
+        </p>
         <p className="text-xs text-muted-foreground">
           {dateStr} at {timeStr} · {role === "mentor" ? "You're mentoring" : "You're learning"}
         </p>
@@ -125,12 +129,11 @@ function SessionRow({
       {s.status === "completed" && mentorSlug && (
         <Link
           href={`/mentor/${mentorSlug}`}
-          onClick={(e) => e.stopPropagation()}
-          className="text-xs font-medium text-foreground hover:underline underline-offset-4"
+          className="relative z-10 text-xs font-medium text-foreground hover:underline underline-offset-4"
         >
           Rebook
         </Link>
       )}
-    </Link>
+    </div>
   );
 }
