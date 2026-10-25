@@ -12,12 +12,14 @@ export function SessionActions({
   isMentor,
   mentorSlug,
   cancelReason,
+  hasEnded,
 }: {
   sessionId: string;
   status: string;
   isMentor: boolean;
   mentorSlug?: string;
   cancelReason?: string | null;
+  hasEnded: boolean;
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -93,7 +95,8 @@ export function SessionActions({
                 Confirm session
               </Button>
             )}
-            {status === "confirmed" && isMentor && (
+            {/* Completing opens feedback, so it's only offered once the session has ended */}
+            {status === "confirmed" && isMentor && hasEnded && (
               <Button onClick={() => updateStatus("completed")} disabled={loading}>
                 Mark completed
               </Button>
