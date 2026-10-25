@@ -163,9 +163,11 @@ export default function PrivacyPolicyPage() {
       <LegalSection title="How long we keep it">
         <p>
           We keep your data while your account exists. When you delete your account, we delete your
-          profile, availability, goals, notifications, sign-in records and passkeys. Sessions you
-          took part in are also deleted, including their notes and feedback, so they disappear from
-          the other participant&apos;s history too. Copies may persist in encrypted backups and
+          name, email, picture, profile, availability, goals, the feedback you gave, notifications,
+          sign-in records and passkeys. Upcoming sessions are cancelled and the other participant
+          is told. Past sessions stay in the other participant&apos;s history, with you shown only
+          as &ldquo;Deleted user&rdquo;: the session times, the shared notes you wrote together and
+          any feedback they gave are kept for them. Copies may persist in encrypted backups and
           provider logs for a short period before they are overwritten.
         </p>
       </LegalSection>
