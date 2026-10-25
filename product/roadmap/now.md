@@ -24,22 +24,6 @@ Committed and in flight. Each item should have an owner and an open issue.
   _Why now:_ confirmed sessions don't reach people's calendars and
   cancellations never propagate. Prerequisite cron fix shipped (#155).
 
-## Post-session feedback that works
-- **Prompt once, land on a working form, accessible rating** — three PRs in
-  review. Owner: natos.
-  - Prompt issued once per person; re-enables the daily nudge paused in #156 —
-    [#154](https://github.com/grasshopper-protocol/grsshppr/issues/154),
-    PR [#165](https://github.com/grasshopper-protocol/grsshppr/pull/165), ADR-0017 (Proposed).
-  - One 7-day feedback window; every link lands on the session page —
-    [#157](https://github.com/grasshopper-protocol/grsshppr/issues/157),
-    PR [#166](https://github.com/grasshopper-protocol/grsshppr/pull/166) (stacked on #165), ADR-0018 (Proposed).
-  - Accessible rating form —
-    [#158](https://github.com/grasshopper-protocol/grsshppr/issues/158),
-    PR [#167](https://github.com/grasshopper-protocol/grsshppr/pull/167).
-
-  _Why now:_ since #155 the crons actually run; without #165 the nudge
-  can send duplicate emails, so it stays paused until #165 merges.
-
 > Update this list as items ship. Move completed items into the decision log
 > ([decisions/LOG.md](../../decisions/LOG.md)) / release notes, not here.
 
@@ -47,6 +31,11 @@ Committed and in flight. Each item should have an owner and an open issue.
 
 **2026-10-25 — unreleased (see [CHANGELOG](../../CHANGELOG.md#unreleased)).**
 
+- Post-session feedback: the prompt goes out once per person (#165, closes #154,
+  [ADR-0017](../../decisions/ADR-0017-feedback-prompt-once.md)); every feedback
+  link lands on a working form within one 7-day window (#169, re-land of #166,
+  closes #157, [ADR-0018](../../decisions/ADR-0018-one-feedback-window.md));
+  accessible rating form (#167, closes #158). The daily nudge is back on.
 - Next.js 16.4.0 → 16.4.2 for a critical RCE advisory (#146, closes #145).
 - Public mentor profiles show only an anonymous count of mentee goals
   achieved (#150, closes #148,
@@ -56,7 +45,7 @@ Committed and in flight. Each item should have an owner and an open issue.
   placeholder, and mentors credited on goals can delete their account (#153,
   closes #149, [ADR-0016](../../decisions/ADR-0016-account-deletion-keeps-partner-history.md)).
 - Cron routes accept Vercel's `GET` and fail closed without `CRON_SECRET`
-  (#155, closes #138); the feedback nudge is paused until #165 lands (#156).
+  (#155, closes #138); the feedback nudge was paused (#156) until #165 made it safe.
 - Calendar integration accepted: [RFC-0012](../rfc/RFC-0012-calendar-integration.md) /
   [ADR-0014](../../decisions/ADR-0014-calendar-connection-auth-boundary.md) (#144).
 
