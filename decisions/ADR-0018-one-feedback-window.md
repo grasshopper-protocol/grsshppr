@@ -48,11 +48,11 @@ Adopt **B**:
   recent sessions, which is what they're for.
 - A signed-out user who opens the email is sent to the dashboard after sign-in
   (sign-in doesn't yet honour `callbackUrl`); it shows the same form for that
-  session, so it isn't a dead end. To be tracked in its own issue (not yet
-  opened).
+  session, so it isn't a dead end. Tracked in
+  [#161](https://github.com/grasshopper-protocol/grsshppr/issues/161).
 
 ## Links
 
 - Builds on: [ADR-0017](ADR-0017-feedback-prompt-once.md)
-- Issue: pending — change B needs its own issue
+- Issue: [#157](https://github.com/grasshopper-protocol/grsshppr/issues/157)
 - Implementation PR: pending — change B (`fix/feedback-lands-on-form`, stacked on change A)
