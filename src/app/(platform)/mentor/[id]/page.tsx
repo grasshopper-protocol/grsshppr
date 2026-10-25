@@ -20,6 +20,7 @@ import {
   SignIn,
 } from "@phosphor-icons/react/dist/ssr";
 import { BookSessionForm } from "@/core/booking/book-session-form";
+import { LocalTime } from "@/components/local-time";
 
 type Params = Promise<{ id: string }>;
 
@@ -112,10 +113,7 @@ export default async function MentorProfilePage({
     .slice(0, 2)
     .toUpperCase();
 
-  const memberSince = new Date(profile.createdAt).toLocaleDateString(undefined, {
-    month: "long",
-    year: "numeric",
-  });
+  const memberSince = <LocalTime value={profile.createdAt} options={{ month: "long", year: "numeric" }} />;
 
   return (
     <div>
@@ -132,17 +130,10 @@ export default async function MentorProfilePage({
           <span className="flex-1">
             You have a <strong>{activeSession.status}</strong> session on{" "}
             <strong>
-              {new Date(activeSession.startsAt).toLocaleDateString("en-US", {
-                weekday: "short",
-                month: "short",
-                day: "numeric",
-              })}
+              <LocalTime value={new Date(activeSession.startsAt)} options={{ weekday: "short", month: "short", day: "numeric", }} />
             </strong>{" "}
             at{" "}
-            {new Date(activeSession.startsAt).toLocaleTimeString("en-US", {
-              hour: "numeric",
-              minute: "2-digit",
-            })}
+            <LocalTime value={new Date(activeSession.startsAt)} options={{ hour: "numeric", minute: "2-digit", }} />
           </span>
           <Link
             href={`/session/${activeSession.id}`}

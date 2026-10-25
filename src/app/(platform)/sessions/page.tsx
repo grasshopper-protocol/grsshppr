@@ -7,6 +7,7 @@ import { getProfileByUserId } from "@/core/profiles/queries";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import type { Session } from "@/types";
+import { LocalTime } from "@/components/local-time";
 
 const statusColors: Record<string, string> = {
   requested: "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400",
@@ -94,15 +95,8 @@ function SessionRow({
     .toUpperCase();
 
   const start = new Date(s.startsAt);
-  const dateStr = start.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-  const timeStr = start.toLocaleTimeString("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-  });
+  const dateStr = <LocalTime value={start} options={{ month: "short", day: "numeric", year: "numeric" }} />;
+  const timeStr = <LocalTime value={start} options={{ hour: "numeric", minute: "2-digit" }} />;
 
   // The whole card links to the session via a stretched link (its ::after
   // covers the card), so Rebook can sit above it as a sibling link — no

@@ -11,6 +11,7 @@ import { SessionActions } from "./actions";
 import { SessionNotes } from "@/modules/notes/session-notes";
 import { FeedbackPrompt } from "@/core/booking/feedback-prompt";
 import { feedbackState } from "@/lib/feedback-prompts";
+import { LocalTime } from "@/components/local-time";
 
 type Params = Promise<{ id: string }>;
 
@@ -85,19 +86,15 @@ export default async function SessionPage({
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Date</span>
           <span>
-            {start.toLocaleDateString("en-US", {
-              weekday: "long",
-              month: "long",
-              day: "numeric",
-            })}
+            <LocalTime value={start} options={{ weekday: "long", month: "long", day: "numeric", }} />
           </span>
         </div>
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Time</span>
           <span>
-            {start.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+            <LocalTime value={start} options={{ hour: "numeric", minute: "2-digit" }} />
             {" – "}
-            {end.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+            <LocalTime value={end} options={{ hour: "numeric", minute: "2-digit" }} />
           </span>
         </div>
         <div className="flex justify-between text-sm">

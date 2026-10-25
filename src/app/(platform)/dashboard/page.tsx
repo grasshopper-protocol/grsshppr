@@ -17,6 +17,7 @@ import { ProfileNudge } from "@/components/profile-nudge";
 import { StatCard } from "@/core/dashboard/stat-card";
 import { NextSession, NextSessionEmpty } from "@/core/dashboard/next-session";
 import { CalendarDots, PencilSimple, ArrowRight, Fire } from "@phosphor-icons/react/dist/ssr";
+import { LocalTime } from "@/components/local-time";
 
 export default async function DashboardPage() {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -168,10 +169,10 @@ async function MentorDashboard({
                   className="flex items-center gap-3 rounded-md border border-border px-3 py-2 text-sm transition-colors hover:border-foreground/20"
                 >
                   <span className="w-8 font-medium">
-                    {start.toLocaleDateString("en-US", { weekday: "short" })}
+                    <LocalTime value={start} options={{ weekday: "short" }} />
                   </span>
                   <span className="text-muted-foreground">
-                    {start.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+                    <LocalTime value={start} options={{ hour: "numeric", minute: "2-digit" }} />
                   </span>
                 </Link>
               );
@@ -249,13 +250,9 @@ async function MentorDashboard({
               <div className="mt-3 space-y-2">
                 {myMentors.map((m) => {
                   const lastDate = lastSessionMap[m.mentorId];
-                  const lastSessionLabel = lastDate
-                    ? new Intl.DateTimeFormat("en", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      }).format(new Date(lastDate))
-                    : null;
+                  const lastSessionLabel = lastDate ? (
+                    <LocalTime value={lastDate} options={{ month: "short", day: "numeric", year: "numeric" }} />
+                  ) : null;
                   const initials = m.name
                     .split(" ")
                     .map((n) => n[0])
