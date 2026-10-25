@@ -44,3 +44,4 @@ options are recorded, not erased.
 | [RFC-0009](RFC-0009-testing-policy.md) | Testing policy & coverage gate | Accepted | [ADR-0011](../../decisions/ADR-0011-testing-gate.md) |
 | [RFC-0010](RFC-0010-change-safety-guardrails.md) | Change-safety guardrails | Accepted | [ADR-0012](../../decisions/ADR-0012-change-safety-guardrails.md) |
 | [RFC-0011](RFC-0011-status-text-tokens.md) | Status text tokens (`-text`) | Accepted | [ADR-0013](../../decisions/ADR-0013-status-text-tokens.md) |
+| [RFC-0012](RFC-0012-calendar-integration.md) | Calendar integration (subscription feed + Google event push) | Accepted | [ADR-0014](../../decisions/ADR-0014-calendar-connection-auth-boundary.md) |
