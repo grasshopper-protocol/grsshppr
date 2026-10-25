@@ -1,6 +1,7 @@
-import { eq, or, and, desc, count, gt, notInArray } from "drizzle-orm";
+import { eq, or, and, desc, count, gt, ne, notInArray } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { sessions, users, sessionFeedback, profiles } from "@/lib/db/schema";
+import { DELETED_USER } from "@/lib/account-deletion";
 
 export async function createSession(data: {
   mentorId: string;
@@ -171,7 +172,7 @@ export async function getMentorsForMentee(menteeId: string) {
     .from(sessions)
     .innerJoin(users, eq(sessions.mentorId, users.id))
     .leftJoin(profiles, eq(profiles.userId, sessions.mentorId))
-    .where(eq(sessions.menteeId, menteeId));
+    .where(and(eq(sessions.menteeId, menteeId), ne(sessions.mentorId, DELETED_USER.id)));
   return rows;
 }
 

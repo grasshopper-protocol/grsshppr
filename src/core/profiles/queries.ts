@@ -1,7 +1,14 @@
-import { eq, and, or, ilike, sql } from "drizzle-orm";
+import { eq, and, or, ilike, sql, inArray } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { profiles, users, sessions, availability, goals } from "@/lib/db/schema";
 import { slugify, nextAvailableSlug } from "@/lib/slug";
+import {
+  ACCOUNT_DELETED_REASON,
+  DELETED_USER,
+  isDeletedUser,
+  planSessionsOnAccountDeletion,
+} from "@/lib/account-deletion";
+import { createNotification, resolveNotification } from "@/core/notifications/queries";
 
 // Collision ceiling: linear scan with LIKE prefix. Fine for <10k profiles.
 async function uniqueSlug(name: string, excludeProfileId?: string) {
@@ -79,17 +86,70 @@ export async function upsertProfile(
   return created;
 }
 
+/**
+ * Deletes a user and their personal data while keeping their partners' session
+ * history (ADR-0016). Shared sessions are reassigned to the DELETED_USER
+ * placeholder; upcoming ones are cancelled and the partner is notified.
+ */
 export async function deleteProfile(userId: string) {
-  // ponytail: sessions/goals don't cascade on user delete, clean up explicitly
-  // auth tables (auth_sessions, accounts, passkey) cascade from users FK
-  await db.delete(goals).where(eq(goals.menteeId, userId));
-  await db
-    .delete(sessions)
-    .where(or(eq(sessions.mentorId, userId), eq(sessions.menteeId, userId)));
-  await db.delete(availability).where(eq(availability.userId, userId));
-  await db.delete(profiles).where(eq(profiles.userId, userId));
-  // nuke the user row last — cascades auth_sessions, accounts, passkeys
-  await db.delete(users).where(eq(users.id, userId));
+  if (isDeletedUser(userId)) throw new Error("The deleted-user placeholder cannot be deleted");
+
+  const involving = or(eq(sessions.mentorId, userId), eq(sessions.menteeId, userId));
+
+  const plan = await db.transaction(async (tx) => {
+    await tx
+      .insert(users)
+      .values({ id: DELETED_USER.id, name: DELETED_USER.name, email: DELETED_USER.email })
+      .onConflictDoNothing();
+
+    const userSessions = await tx
+      .select({
+        id: sessions.id,
+        mentorId: sessions.mentorId,
+        menteeId: sessions.menteeId,
+        status: sessions.status,
+        startsAt: sessions.startsAt,
+      })
+      .from(sessions)
+      .where(involving);
+    const plan = planSessionsOnAccountDeletion(userSessions, userId, new Date());
+
+    if (plan.cancel.length > 0) {
+      await tx
+        .update(sessions)
+        .set({ status: "cancelled", cancelReason: ACCOUNT_DELETED_REASON })
+        .where(inArray(sessions.id, plan.cancel));
+    }
+
+    // Keep shared sessions (and their notes) for the partner, under the placeholder.
+    await tx.update(sessions).set({ mentorId: DELETED_USER.id }).where(eq(sessions.mentorId, userId));
+    await tx.update(sessions).set({ menteeId: DELETED_USER.id }).where(eq(sessions.menteeId, userId));
+
+    // Goals are the mentee's data: delete theirs, and drop this user's mentor
+    // credit on other people's goals (the FK has no ON DELETE, so it would block).
+    await tx.delete(goals).where(eq(goals.menteeId, userId));
+    await tx.update(goals).set({ mentorId: null }).where(eq(goals.mentorId, userId));
+
+    await tx.delete(availability).where(eq(availability.userId, userId));
+    await tx.delete(profiles).where(eq(profiles.userId, userId));
+    // User row last — cascades auth_sessions, accounts, passkeys, notifications
+    // and the feedback this user left.
+    await tx.delete(users).where(eq(users.id, userId));
+
+    return plan;
+  });
+
+  // ponytail: notifications are best-effort after commit — the deletion itself must not fail on them
+  for (const { userId: partnerId, sessionId } of plan.notify) {
+    resolveNotification(sessionId, "action_required:confirm");
+    createNotification({
+      userId: partnerId,
+      type: "session_cancelled",
+      message: "A session was cancelled because the other participant deleted their account",
+      resourceId: sessionId,
+      priority: "info",
+    });
+  }
 }
 
 export type ExploreFilters = {

@@ -159,8 +159,10 @@ export default function SettingsPage() {
           Danger zone
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Permanently delete your account and all data — profile, sessions,
-          goals, passkeys, everything. This cannot be undone.
+          Permanently delete your account — profile, goals, feedback you gave,
+          passkeys and sign-in data. Upcoming sessions are cancelled. Past
+          sessions stay in your partners&apos; history, shown as &ldquo;Deleted
+          user&rdquo;, with no name or picture. This cannot be undone.
         </p>
         {!showDeleteConfirm ? (
           <Button

@@ -31,6 +31,7 @@ was made and what would change it.
 | [0013](ADR-0013-status-text-tokens.md) | Status text tokens (`-text`) — extends 0006 | Accepted |
 | [0014](ADR-0014-calendar-connection-auth-boundary.md) | Calendar connection auth boundary & token security | Accepted |
 | [0015](ADR-0015-private-mentee-goals.md) | Mentee goals are private on public mentor profiles | Accepted |
+| [0016](ADR-0016-account-deletion-keeps-partner-history.md) | Account deletion keeps partners' history under a "Deleted user" placeholder | Accepted |
 
 ## Historical log
 
