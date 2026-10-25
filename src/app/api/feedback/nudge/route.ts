@@ -4,13 +4,14 @@ import { sessions, sessionFeedback, users } from "@/lib/db/schema";
 import { eq, and, lt, gt, or } from "drizzle-orm";
 import { sendEmail } from "@/lib/email";
 import { FeedbackNudgeEmail } from "@/lib/emails/feedback-nudge";
+import { isAuthorizedCronRequest } from "@/lib/cron-auth";
 
-// ponytail: called by Vercel cron daily — nudges users who haven't left feedback
-// within 48h of session completion. Only sends once (won't re-nudge after 72h).
-export async function POST(request: Request) {
-  const authHeader = request.headers.get("authorization");
-  const cronSecret = process.env.CRON_SECRET;
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+// ponytail: Vercel cron invokes GET daily (POST kept for manual runs) — nudges
+// users who haven't left feedback within 48h of session completion. Only sends
+// once (won't re-nudge after 72h). Hobby-plan cron fires anywhere in its hour,
+// so a session near the window edge can occasionally get zero or two nudges.
+async function nudge(request: Request) {
+  if (!isAuthorizedCronRequest(request.headers.get("authorization"), process.env.CRON_SECRET)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -85,3 +86,5 @@ export async function POST(request: Request) {
 
   return NextResponse.json({ nudgesSent: sent });
 }
+
+export { nudge as GET, nudge as POST };

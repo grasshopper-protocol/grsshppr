@@ -2,14 +2,12 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { sessions } from "@/lib/db/schema";
 import { eq, and, lt } from "drizzle-orm";
+import { isAuthorizedCronRequest } from "@/lib/cron-auth";
 
-// ponytail: called by Vercel cron (vercel.json) or manually
+// ponytail: Vercel cron (vercel.json) invokes GET; POST kept for manual runs
 // Auto-completes confirmed sessions whose endsAt is >24h in the past
-export async function POST(request: Request) {
-  // Simple shared secret to prevent unauthorized calls
-  const authHeader = request.headers.get("authorization");
-  const cronSecret = process.env.CRON_SECRET;
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+async function autoComplete(request: Request) {
+  if (!isAuthorizedCronRequest(request.headers.get("authorization"), process.env.CRON_SECRET)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -23,3 +21,5 @@ export async function POST(request: Request) {
 
   return NextResponse.json({ completed: updated.length });
 }
+
+export { autoComplete as GET, autoComplete as POST };
