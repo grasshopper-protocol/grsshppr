@@ -108,4 +108,4 @@ and implemented as edits to [AGENTS.md](../../AGENTS.md).
 
 Accepted. Recorded as [ADR-0012](../../decisions/ADR-0012-change-safety-guardrails.md).
 Implemented by the guardrail edits to [AGENTS.md](../../AGENTS.md) §2–§4 and the
-existing `.githooks/pre-commit` hook / `pnpm verify` script.
+existing `.githooks/pre-commit` hook / `pnpm verify` script (#102, #104).

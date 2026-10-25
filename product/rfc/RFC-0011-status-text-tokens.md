@@ -88,3 +88,4 @@ First consumer: the goal-status badges in `src/modules/goals/goals-list.tsx`.
 
 Accepted by @natos (design) on 2026-10-19 — option 2 of the trade-off above.
 Recorded as [ADR-0013](../../decisions/ADR-0013-status-text-tokens.md).
+Implemented in #134.

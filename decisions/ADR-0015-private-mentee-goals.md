@@ -67,5 +67,6 @@ outside the mentoring pair requires the mentee's explicit opt-in and a new ADR.
 ## Links
 
 - Superseded log entry: [LOG.md](LOG.md) (2026-06-22, Impact section)
-- Related: Privacy Policy (`/privacy-policy`)
-- Implementation PR: _to be linked_
+- Related: Privacy Policy (`/privacy-policy`, #151)
+- Issue: #148
+- Implementation PR: #150

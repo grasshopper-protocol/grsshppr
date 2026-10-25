@@ -474,7 +474,7 @@ practical. Coverage gate stays green.
 **Prerequisites (separate bug issues, not part of this RFC):** [#138](https://github.com/grasshopper-protocol/grsshppr/issues/138) — the existing
 cron routes export only `POST` while Vercel invokes `GET`, and allow
 unauthenticated calls when `CRON_SECRET` is unset. Fix both before adding a
-third cron.
+third cron. _Fixed by #155 (merged 2026-10-25)._
 
 **Phase 0 — Tier A**
 1. Extract `src/lib/ical.ts` with full escaping; switch the one-shot export to it.
@@ -606,4 +606,5 @@ Recorded so the research isn't lost; **not** accepted by this RFC.
 Accepted 2026-10-25 by natos (sole maintainer; lazy consensus per
 [GOVERNANCE.md](../../governance/GOVERNANCE.md)). Decision record:
 [ADR-0014](../../decisions/ADR-0014-calendar-connection-auth-boundary.md).
-Implementation PRs: _to be linked_.
+Accepted in #144 (docs only). Implementation PRs: none yet — Phase 0 not
+started; tracked in [#142](https://github.com/grasshopper-protocol/grsshppr/issues/142).

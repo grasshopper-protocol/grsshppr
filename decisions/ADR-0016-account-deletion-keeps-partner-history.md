@@ -68,5 +68,7 @@ Feedback the partner gave about a kept session stays with the partner.
 ## Links
 
 - Issue: #149
+- Implementation PR: #153
 - Related: [ADR-0015](ADR-0015-private-mentee-goals.md) (mentee goals are the mentee's data)
 - Privacy Policy: `/privacy-policy` § How long we keep it
+- Followed by: ADR-0017 (feedback prompts are deleted on account deletion; proposed)

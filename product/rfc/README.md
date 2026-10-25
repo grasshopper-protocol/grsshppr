@@ -30,18 +30,21 @@ When in doubt, write the RFC. It's cheaper than unwinding a shipped decision.
 An RFC captures **alternatives considered**, not just the chosen path. Rejected
 options are recorded, not erased.
 
-## Open RFCs
+## Index
 
-| RFC | Title | Status | Issue |
-|-----|-------|--------|-------|
-| [RFC-0001](RFC-0001-mentor-visibility-ranking.md) | Mentor visibility & ranking system | Discussion | [#31](https://github.com/grasshopper-protocol/grsshppr/issues/31) |
-| [RFC-0002](RFC-0002-brand-color-adoption.md) | Brand color adoption | Accepted (A) | [ADR-0005](../../decisions/ADR-0005-brand-color-minimal-mapping.md) |
-| [RFC-0003](RFC-0003-status-token-layer.md) | Status token layer | Accepted | [ADR-0006](../../decisions/ADR-0006-status-token-layer.md) |
-| [RFC-0004](RFC-0004-interaction-states-motion.md) | Interaction states & motion | Accepted | [ADR-0007](../../decisions/ADR-0007-interaction-states-motion.md) |
-| [RFC-0005](RFC-0005-built-with-marketing.md) | "Built with open tools" strip on the marketing page | Accepted | [ADR-0008](../../decisions/ADR-0008-built-with-marketing-strip.md) |
-| [RFC-0006](RFC-0006-marketing-footer.md) | Marketing footer expansion | Accepted | [ADR-0009](../../decisions/ADR-0009-marketing-footer.md) |
-| [RFC-0007](RFC-0007-session-reschedule.md) | Session reschedule | Draft | — |
-| [RFC-0009](RFC-0009-testing-policy.md) | Testing policy & coverage gate | Accepted | [ADR-0011](../../decisions/ADR-0011-testing-gate.md) |
-| [RFC-0010](RFC-0010-change-safety-guardrails.md) | Change-safety guardrails | Accepted | [ADR-0012](../../decisions/ADR-0012-change-safety-guardrails.md) |
-| [RFC-0011](RFC-0011-status-text-tokens.md) | Status text tokens (`-text`) | Accepted | [ADR-0013](../../decisions/ADR-0013-status-text-tokens.md) |
-| [RFC-0012](RFC-0012-calendar-integration.md) | Calendar integration (subscription feed + Google event push) | Accepted | [ADR-0014](../../decisions/ADR-0014-calendar-connection-auth-boundary.md) |
+All RFCs, open and closed.
+
+| RFC | Title | Status | Issue | ADR |
+|-----|-------|--------|-------|-----|
+| [RFC-0001](RFC-0001-mentor-visibility-ranking.md) | Mentor visibility & ranking system | Discussion (no activity since 2026-06-25) | [#31](https://github.com/grasshopper-protocol/grsshppr/issues/31) | — |
+| [RFC-0002](RFC-0002-brand-color-adoption.md) | Brand color adoption | Accepted (A) | — | [ADR-0005](../../decisions/ADR-0005-brand-color-minimal-mapping.md) |
+| [RFC-0003](RFC-0003-status-token-layer.md) | Status token layer | Accepted | — | [ADR-0006](../../decisions/ADR-0006-status-token-layer.md) |
+| [RFC-0004](RFC-0004-interaction-states-motion.md) | Interaction states & motion | Accepted | — | [ADR-0007](../../decisions/ADR-0007-interaction-states-motion.md) |
+| [RFC-0005](RFC-0005-built-with-marketing.md) | "Built with open tools" strip on the marketing page | Accepted | — | [ADR-0008](../../decisions/ADR-0008-built-with-marketing-strip.md) |
+| [RFC-0006](RFC-0006-marketing-footer.md) | Marketing footer expansion | Accepted | — | [ADR-0009](../../decisions/ADR-0009-marketing-footer.md) |
+| [RFC-0007](RFC-0007-session-reschedule.md) | Session reschedule | Draft (no activity since 2026-07-13) | — | — |
+| [RFC-0008](RFC-0008-mentor-mentee-messaging.md) | Mentor↔Mentee messaging | Draft (no activity since 2026-07-13) | — | — |
+| [RFC-0009](RFC-0009-testing-policy.md) | Testing policy & coverage gate | Accepted | — | [ADR-0011](../../decisions/ADR-0011-testing-gate.md) |
+| [RFC-0010](RFC-0010-change-safety-guardrails.md) | Change-safety guardrails | Accepted | [#103](https://github.com/grasshopper-protocol/grsshppr/issues/103) | [ADR-0012](../../decisions/ADR-0012-change-safety-guardrails.md) |
+| [RFC-0011](RFC-0011-status-text-tokens.md) | Status text tokens (`-text`) | Accepted | [#43](https://github.com/grasshopper-protocol/grsshppr/issues/43) | [ADR-0013](../../decisions/ADR-0013-status-text-tokens.md) |
+| [RFC-0012](RFC-0012-calendar-integration.md) | Calendar integration (subscription feed + Google event push) | Accepted | [#142](https://github.com/grasshopper-protocol/grsshppr/issues/142) | [ADR-0014](../../decisions/ADR-0014-calendar-connection-auth-boundary.md) |

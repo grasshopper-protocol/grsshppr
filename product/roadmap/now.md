@@ -8,8 +8,12 @@ Committed and in flight. Each item should have an owner and an open issue.
   [ADR-0007](../../decisions/ADR-0007-interaction-states-motion.md)) but most
   components still use ad-hoc colors and transitions. Roll `success` / `warning`
   / `info`, hover / disabled, and motion tokens into buttons, inputs, and a
-  status badge/alert primitive. _Why now:_ the tokens are defined but unused —
-  the value only lands when components consume them.
+  status badge/alert primitive. Issues: [#46](https://github.com/grasshopper-protocol/grsshppr/issues/46)
+  (badge variants), [#47](https://github.com/grasshopper-protocol/grsshppr/issues/47)
+  (alert primitive); both consume the `-text` tokens from
+  [ADR-0013](../../decisions/ADR-0013-status-text-tokens.md). _Why now:_ the
+  tokens are defined but unused — the value only lands when components consume
+  them.
 
 ## Calendar integration
 - **Subscription feed, then Google Calendar event push** — a private `.ics`
@@ -18,12 +22,43 @@ Committed and in flight. Each item should have an owner and an open issue.
   [RFC-0012](../rfc/RFC-0012-calendar-integration.md) /
   [ADR-0014](../../decisions/ADR-0014-calendar-connection-auth-boundary.md).
   _Why now:_ confirmed sessions don't reach people's calendars and
-  cancellations never propagate.
+  cancellations never propagate. Prerequisite cron fix shipped (#155).
+
+## Post-session feedback that works
+- **Prompt once, land on a working form, accessible rating** — three PRs in
+  review. Owner: natos.
+  - Prompt issued once per person; re-enables the daily nudge paused in #156 —
+    [#154](https://github.com/grasshopper-protocol/grsshppr/issues/154),
+    PR [#165](https://github.com/grasshopper-protocol/grsshppr/pull/165), ADR-0017 (Proposed).
+  - One 7-day feedback window; every link lands on the session page —
+    [#157](https://github.com/grasshopper-protocol/grsshppr/issues/157),
+    PR [#166](https://github.com/grasshopper-protocol/grsshppr/pull/166) (stacked on #165), ADR-0018 (Proposed).
+  - Accessible rating form —
+    [#158](https://github.com/grasshopper-protocol/grsshppr/issues/158),
+    PR [#167](https://github.com/grasshopper-protocol/grsshppr/pull/167).
+
+  _Why now:_ since #155 the crons actually run; without #165 the nudge
+  can send duplicate emails, so it stays paused until #165 merges.
 
 > Update this list as items ship. Move completed items into the decision log
 > ([decisions/LOG.md](../../decisions/LOG.md)) / release notes, not here.
 
 ## Recently shipped (moved out of Now)
+
+**2026-10-25 — unreleased (see [CHANGELOG](../../CHANGELOG.md#unreleased)).**
+
+- Next.js 16.4.0 → 16.4.2 for a critical RCE advisory (#146, closes #145).
+- Public mentor profiles show only an anonymous count of mentee goals
+  achieved (#150, closes #148,
+  [ADR-0015](../../decisions/ADR-0015-private-mentee-goals.md)).
+- Privacy Policy and Terms of Service pages (#151, closes #147).
+- Account deletion keeps partners' session history under a "Deleted user"
+  placeholder, and mentors credited on goals can delete their account (#153,
+  closes #149, [ADR-0016](../../decisions/ADR-0016-account-deletion-keeps-partner-history.md)).
+- Cron routes accept Vercel's `GET` and fail closed without `CRON_SECRET`
+  (#155, closes #138); the feedback nudge is paused until #165 lands (#156).
+- Calendar integration accepted: [RFC-0012](../rfc/RFC-0012-calendar-integration.md) /
+  [ADR-0014](../../decisions/ADR-0014-calendar-connection-auth-boundary.md) (#144).
 
 **[v0.1.0](../../CHANGELOG.md) — first tagged pre-release (Beta), 2026-07-14.**
 

@@ -87,4 +87,4 @@ lower the coverage gate. This is recorded as [ADR-0011](../../decisions/ADR-0011
 
 Accepted. Recorded as [ADR-0011](../../decisions/ADR-0011-testing-gate.md). Implemented by
 the test-coverage work on `src/lib` (`booking-dates`, `slug`, `email-tokens`, `api-utils`),
-the `test:coverage` script, the CI `quality` gate, and the AGENTS.md testing rule.
+the `test:coverage` script, the CI `quality` gate, and the AGENTS.md testing rule (#70).
