@@ -11,6 +11,15 @@ Committed and in flight. Each item should have an owner and an open issue.
   status badge/alert primitive. _Why now:_ the tokens are defined but unused —
   the value only lands when components consume them.
 
+## Calendar integration
+- **Subscription feed, then Google Calendar event push** — a private `.ics`
+  feed for every user, then opt-in Google event push with Meet links.
+  Owner: natos · [#142](https://github.com/grasshopper-protocol/grsshppr/issues/142) ·
+  [RFC-0012](../rfc/RFC-0012-calendar-integration.md) /
+  [ADR-0014](../../decisions/ADR-0014-calendar-connection-auth-boundary.md).
+  _Why now:_ confirmed sessions don't reach people's calendars and
+  cancellations never propagate.
+
 > Update this list as items ship. Move completed items into the decision log
 > ([decisions/LOG.md](../../decisions/LOG.md)) / release notes, not here.
 

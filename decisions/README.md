@@ -29,6 +29,7 @@ was made and what would change it.
 | [0011](ADR-0011-testing-gate.md) | Testing as a required gate (coverage on pure logic) | Accepted |
 | [0012](ADR-0012-change-safety-guardrails.md) | Change-safety guardrails (green-before-push, merge hygiene, no red merges, deploy recovery) | Accepted |
 | [0013](ADR-0013-status-text-tokens.md) | Status text tokens (`-text`) — extends 0006 | Accepted |
+| [0014](ADR-0014-calendar-connection-auth-boundary.md) | Calendar connection auth boundary & token security | Accepted |
 
 ## Historical log
 
