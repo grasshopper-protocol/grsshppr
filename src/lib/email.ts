@@ -51,6 +51,7 @@ export async function sendEmail({
     return { ok: true };
   } catch (err) {
     console.error(`[email] Failed to send to @${domainOf(to)}: ${err instanceof Error ? err.message : "network error"}`);
-    return { ok: false, failure: "transient" };
+    // The provider may have sent it before the connection failed — don't retry.
+    return { ok: false, failure: classifyEmailFailure(null) };
   }
 }

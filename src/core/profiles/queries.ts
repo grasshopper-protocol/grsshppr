@@ -9,7 +9,8 @@ import {
   planSessionsOnAccountDeletion,
 } from "@/lib/account-deletion";
 import { createNotification, resolveNotification } from "@/core/notifications/queries";
-import { closeFeedbackPrompts } from "@/core/booking/feedback-prompts";
+import { deleteFeedbackPrompts, lockPrompt } from "@/core/booking/feedback-prompts";
+import { promptKey } from "@/lib/feedback-prompts";
 
 // Collision ceiling: linear scan with LIKE prefix. Fine for <10k profiles.
 async function uniqueSlug(name: string, excludeProfileId?: string) {
@@ -113,6 +114,13 @@ export async function deleteProfile(userId: string) {
       })
       .from(sessions)
       .where(involving);
+    // Wait out any in-flight feedback claim on these sessions, and block new
+    // ones until this commits — so no prompt or email names the departing user.
+    for (const s of userSessions) {
+      await lockPrompt(tx, promptKey(s.id, s.mentorId));
+      await lockPrompt(tx, promptKey(s.id, s.menteeId));
+    }
+
     const plan = planSessionsOnAccountDeletion(userSessions, userId, new Date());
 
     if (plan.cancel.length > 0) {
@@ -137,8 +145,9 @@ export async function deleteProfile(userId: string) {
     // and the feedback this user left.
     await tx.delete(users).where(eq(users.id, userId));
 
-    // No one can rate a deleted user: close the partners' open feedback prompts.
-    await closeFeedbackPrompts({ sessionIds: userSessions.map((s) => s.id) }, tx);
+    // No one can rate a deleted user, and their name shouldn't outlive them in
+    // the partners' notifications: delete those feedback prompts.
+    await deleteFeedbackPrompts(userSessions.map((s) => s.id), tx);
 
     return plan;
   });

@@ -51,16 +51,24 @@ Adopt **C**, for one producer and one channel:
 - Inside the lock the claim re-checks that the session is still completed,
   that neither side has deleted their account (ADR-0016), that the person
   hasn't rated it, and that no concurrent run has prompted them.
+- The claim reads the partner's name inside the lock, and that name is used
+  for both the notification and the email.
 - The email is sent with the pair as the provider's idempotency key.
-  - **Transient** failure (network, 409, 429, 5xx): the claim is undone — the
-    notification is **deleted** — and the next run retries both.
-  - **Permanent** failure (other 4xx, or no email key in production, e.g. a
-    Preview deployment): the in-app prompt is kept and the email is given up.
+  - **Retryable** failure — only 429 and 5xx, where the provider certainly
+    didn't send: the claim is undone (the notification is **deleted**) and the
+    next run retries both.
+  - **Anything else** — other 4xx, a network error or timeout (the provider may
+    already have sent it), or no email key in production (e.g. a Preview
+    deployment): the in-app prompt is kept and the email is given up. A lost
+    email is preferred to a duplicate one.
 - Each run stops claiming after `PROMPT_RUN_BUDGET_MS` (40s, under the route's
   60s `maxDuration`), so it is never killed between a claim and its email;
   the rest carry over.
-- The sweep closes prompts whose window has passed; deleting an account
-  closes the partner's open prompts.
+- The sweep closes prompts whose window has passed.
+- Deleting an account takes the same per-pair locks, then **deletes** the
+  feedback prompts on that person's sessions, so their name doesn't outlive
+  them in the partner's notifications and no in-flight run can name them in an
+  email (ADR-0016).
 - Every run logs one counts-only line (`[feedback-prompts] {…}`) and returns
   500 if any email was retried or lost, so failures show in Vercel's cron view.
 
@@ -72,7 +80,8 @@ Adopt **C**, for one producer and one channel:
   notification predates this change (sessions completed by hand before it).
 - **Notifications now carry correctness:** deleting or rewriting
   `action_required:feedback` rows inside the window re-triggers prompts. Only
-  this code deletes them (transient rollback). **Move to option A before**
+  this code deletes them: the retryable-failure rollback, and account deletion
+  (which also makes the session ineligible, so nothing is re-issued). **Move to option A before**
   any of these lands: a second reminder; per-user email preferences or
   digests (RFC-0008); a notification retention job or user-deletable
   notifications; a second prompt type copying this pattern.

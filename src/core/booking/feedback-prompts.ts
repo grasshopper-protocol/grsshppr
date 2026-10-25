@@ -94,7 +94,7 @@ export async function issueFeedbackPrompts(
   const people = await db
     .select({ id: users.id, name: users.name, email: users.email })
     .from(users)
-    .where(inArray(users.id, [...new Set(plan.flatMap((p) => [p.userId, p.partnerId]))]));
+    .where(inArray(users.id, [...new Set(plan.map((p) => p.userId))]));
   const byId = new Map(people.map((p) => [p.id, p]));
   const baseUrl = process.env.BETTER_AUTH_URL ?? "https://www.grsshppr.org";
 
@@ -107,11 +107,13 @@ export async function issueFeedbackPrompts(
     }
     const user = byId.get(userId);
     if (!user) continue;
-    const partnerName = byId.get(partnerId)?.name ?? "your session partner";
     const key = promptKey(sessionId, userId);
 
-    const notificationId = await claimPrompt(sessionId, userId, partnerName, key);
-    if (!notificationId) continue;
+    // The partner's name is read inside the claim, after the lock, so an
+    // account deleted mid-run is never named in a prompt or email.
+    const claim = await claimPrompt(sessionId, userId, partnerId, key);
+    if (!claim) continue;
+    const { notificationId, partnerName } = claim;
     result.prompted++;
     if (userId === skipEmailFor) continue;
 
@@ -144,9 +146,9 @@ export async function issueFeedbackPrompts(
  * (feedback given, partner deleted, prompted by a concurrent run), and record
  * the prompt. Returns the new notification's id, or null if nothing is due.
  */
-async function claimPrompt(sessionId: string, userId: string, partnerName: string, key: string) {
+async function claimPrompt(sessionId: string, userId: string, partnerId: string, key: string) {
   return db.transaction(async (tx) => {
-    await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${key}))`);
+    await lockPrompt(tx, key);
 
     const [s] = await tx
       .select({ status: sessions.status, mentorId: sessions.mentorId, menteeId: sessions.menteeId })
@@ -175,6 +177,9 @@ async function claimPrompt(sessionId: string, userId: string, partnerName: strin
       .limit(1);
     if (rated) return null;
 
+    const [partner] = await tx.select({ name: users.name }).from(users).where(eq(users.id, partnerId));
+    const partnerName = partner?.name ?? "your session partner";
+
     const id = crypto.randomUUID();
     await tx.insert(notifications).values({
       id,
@@ -184,8 +189,16 @@ async function claimPrompt(sessionId: string, userId: string, partnerName: strin
       resourceId: sessionId,
       priority: "action",
     });
-    return id;
+    return { notificationId: id, partnerName };
   });
+}
+
+/**
+ * Serialise work on one (session, participant) pair. Account deletion takes
+ * the same locks, so a claim can't race a deletion (ADR-0017).
+ */
+export async function lockPrompt(executor: Executor, key: string) {
+  await executor.execute(sql`select pg_advisory_xact_lock(hashtext(${key}))`);
 }
 
 /**
@@ -213,4 +226,17 @@ export async function closeFeedbackPrompts(
     .where(and(eq(notifications.type, FEEDBACK_PROMPT_TYPE), eq(notifications.read, false), scope))
     .returning({ id: notifications.id });
   return closed.length;
+}
+
+/**
+ * Delete the feedback prompts for these sessions — used when a participant
+ * deletes their account, so their name doesn't outlive them in the partner's
+ * notifications (ADR-0016). The claim re-checks for deleted users, so nothing
+ * is re-issued.
+ */
+export async function deleteFeedbackPrompts(sessionIds: string[], executor: Executor = db) {
+  if (sessionIds.length === 0) return;
+  await executor
+    .delete(notifications)
+    .where(and(eq(notifications.type, FEEDBACK_PROMPT_TYPE), inArray(notifications.resourceId, sessionIds)));
 }
