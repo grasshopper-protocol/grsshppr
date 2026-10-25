@@ -25,19 +25,20 @@ Committed and in flight. Each item should have an owner and an open issue.
   cancellations never propagate. Prerequisite cron fix shipped (#155).
 
 ## Post-session feedback that works
-- **Prompt once, land on a working form, accessible rating** — three pending
-  changes, not yet open as PRs. Owner: natos.
-  - Change A — the feedback prompt is issued once per person; re-enables the
-    daily nudge paused in #156.
-    [#154](https://github.com/grasshopper-protocol/grsshppr/issues/154) ·
-    ADR-0017 (Proposed).
-  - Change B — one 7-day feedback window; every link lands on the session page.
-    ADR-0018 (Proposed).
-    Issue to be opened.
-  - Change C — accessible rating form. Issue to be opened.
+- **Prompt once, land on a working form, accessible rating** — three PRs in
+  review. Owner: natos.
+  - Prompt issued once per person; re-enables the daily nudge paused in #156 —
+    [#154](https://github.com/grasshopper-protocol/grsshppr/issues/154),
+    PR [#165](https://github.com/grasshopper-protocol/grsshppr/pull/165), ADR-0017 (Proposed).
+  - One 7-day feedback window; every link lands on the session page —
+    [#157](https://github.com/grasshopper-protocol/grsshppr/issues/157),
+    PR [#166](https://github.com/grasshopper-protocol/grsshppr/pull/166) (stacked on #165), ADR-0018 (Proposed).
+  - Accessible rating form —
+    [#158](https://github.com/grasshopper-protocol/grsshppr/issues/158),
+    PR [#167](https://github.com/grasshopper-protocol/grsshppr/pull/167).
 
-  _Why now:_ since #155 the crons actually run; without change A the nudge
-  can send duplicate emails, so it stays paused until A merges.
+  _Why now:_ since #155 the crons actually run; without #165 the nudge
+  can send duplicate emails, so it stays paused until #165 merges.
 
 > Update this list as items ship. Move completed items into the decision log
 > ([decisions/LOG.md](../../decisions/LOG.md)) / release notes, not here.
