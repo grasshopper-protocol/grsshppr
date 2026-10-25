@@ -1,6 +1,6 @@
 # ADR-0017: The feedback prompt is issued once, recorded by its notification
 
-- **Status:** Proposed (becomes Accepted when its implementation PR merges)
+- **Status:** Accepted
 - **Date:** 2026-10-25
 - **Discipline:** Engineering (Product co-signs the prompt timing)
 - **Source RFC:** none — direct (bug fix for #154, no schema change)
@@ -91,10 +91,8 @@ Adopt **C**, for one producer and one channel:
 - **Rollout:** no cut-off is needed. The old nudge's single real run could only
   reach sessions that already have a prompt notification, and it has been
   paused since.
-- **Known gap until the follow-up lands:** the email links to the dashboard,
-  which today shows the feedback form only for sessions that ended in the last
-  48h. A separate change aligns every surface to the 7-day window and makes the
-  links land on the session page.
+- **Where the prompt leads** — one window on every surface, links landing on
+  the session page — is decided in [ADR-0018](ADR-0018-one-feedback-window.md).
 - **Tests:** the rules (`src/lib/feedback-prompts.ts`, `src/lib/email-errors.ts`)
   are unit-tested. The lock, re-check and rollback are verified by a recorded
   run against a throwaway Postgres (two runs in a row, two concurrent runs,
@@ -104,4 +102,5 @@ Adopt **C**, for one producer and one channel:
 ## Links
 
 - Issue: #154 · Related: #138, #155, #156, [ADR-0016](ADR-0016-account-deletion-keeps-partner-history.md), [RFC-0008](../product/rfc/RFC-0008-mentor-mentee-messaging.md)
-- Implementation PR: pending — change A (`fix/feedback-nudge-idempotent`; re-adds the nudge schedule paused in #156)
+- Followed by: [ADR-0018](ADR-0018-one-feedback-window.md)
+- Implementation PR: #165

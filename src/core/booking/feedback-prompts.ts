@@ -121,7 +121,7 @@ export async function issueFeedbackPrompts(
     const sent = await sendEmail({
       to: user.email,
       subject: `How was your session with ${partnerName}?`,
-      react: FeedbackNudgeEmail({ recipientName: user.name, partnerName, dashboardUrl: `${baseUrl}/dashboard` }),
+      react: FeedbackNudgeEmail({ recipientName: user.name, partnerName, feedbackUrl: `${baseUrl}/session/${sessionId}` }),
       idempotencyKey: `feedback-prompt:${key}`,
     });
 

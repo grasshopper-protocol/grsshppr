@@ -72,3 +72,23 @@ export function planFeedbackPrompts(
   }
   return prompts;
 }
+
+export type FeedbackState = "open" | "given" | "closed" | "none";
+
+/**
+ * What a participant should see about feedback on a session (ADR-0018): the
+ * form ("open"), their rating ("given"), a closed note ("closed"), or nothing
+ * ("none" — not completed or not ended yet, or the partner has left).
+ */
+export function feedbackState(p: {
+  status: string;
+  endsAt: Date;
+  partnerId: string;
+  hasGiven: boolean;
+  now: Date;
+}): FeedbackState {
+  if (p.status !== "completed" || isDeletedUser(p.partnerId)) return "none";
+  if (p.hasGiven) return "given";
+  if (p.now < p.endsAt) return "none";
+  return isWithinFeedbackWindow(p.endsAt, p.now) ? "open" : "closed";
+}

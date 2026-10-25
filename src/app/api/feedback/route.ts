@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { sessionFeedback, sessions } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { resolveNotification } from "@/core/notifications/queries";
+import { FEEDBACK_PROMPT_TYPE, feedbackState } from "@/lib/feedback-prompts";
 
 const feedbackSchema = z.object({
   sessionId: z.string().uuid(),
@@ -46,6 +47,18 @@ export async function POST(request: NextRequest) {
   if (existing.mentorId !== session.user.id && existing.menteeId !== session.user.id) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
+  // Same rule as every feedback surface (ADR-0018)
+  const partnerId = existing.mentorId === session.user.id ? existing.menteeId : existing.mentorId;
+  const state = feedbackState({
+    status: existing.status,
+    endsAt: existing.endsAt,
+    partnerId,
+    hasGiven: false,
+    now: new Date(),
+  });
+  if (state !== "open") {
+    return NextResponse.json({ error: "Feedback for this session is closed" }, { status: 400 });
+  }
 
   // Check for duplicate feedback
   const [already] = await db
@@ -72,8 +85,8 @@ export async function POST(request: NextRequest) {
     })
     .returning();
 
-  // Resolve the "leave feedback" action notification for this user
-  resolveNotification(sessionId, "action_required:feedback");
+  // Resolve only this user's prompt — the partner's stays open
+  await resolveNotification(sessionId, FEEDBACK_PROMPT_TYPE, session.user.id);
 
   return NextResponse.json({ feedback }, { status: 201 });
 }

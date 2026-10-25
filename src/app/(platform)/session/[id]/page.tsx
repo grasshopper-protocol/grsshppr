@@ -1,7 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { getSessionWithUsers } from "@/core/booking/queries";
+import { getSessionWithUsers, getMyFeedbackRating } from "@/core/booking/queries";
 import { getProfileByUserId } from "@/core/profiles/queries";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +9,8 @@ import Link from "next/link";
 import { ArrowLeft } from "@phosphor-icons/react/dist/ssr";
 import { SessionActions } from "./actions";
 import { SessionNotes } from "@/modules/notes/session-notes";
+import { FeedbackPrompt } from "@/core/booking/feedback-prompt";
+import { feedbackState } from "@/lib/feedback-prompts";
 
 type Params = Promise<{ id: string }>;
 
@@ -43,6 +45,15 @@ export default async function SessionPage({
 
   const start = new Date(session.startsAt);
   const end = new Date(session.endsAt);
+
+  const myRating = session.status === "completed" ? await getMyFeedbackRating(session.id, userId) : null;
+  const feedback = feedbackState({
+    status: session.status,
+    endsAt: end,
+    partnerId: partner.id,
+    hasGiven: myRating !== null,
+    now: new Date(),
+  });
 
   return (
     <div className="max-w-lg">
@@ -95,6 +106,21 @@ export default async function SessionPage({
           </Badge>
         </div>
       </div>
+
+      {/* Where the feedback email and bell prompt land (ADR-0018) */}
+      {feedback === "open" && (
+        <div className="mt-6">
+          <FeedbackPrompt session={session} partner={partner} />
+        </div>
+      )}
+      {feedback === "given" && (
+        <p className="mt-6 text-sm text-muted-foreground">
+          You rated this session {myRating} out of 5. Thanks for your feedback.
+        </p>
+      )}
+      {feedback === "closed" && (
+        <p className="mt-6 text-sm text-muted-foreground">Feedback for this session has closed.</p>
+      )}
 
       <SessionActions
         sessionId={session.id}
