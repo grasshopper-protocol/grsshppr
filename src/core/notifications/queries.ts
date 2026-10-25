@@ -20,33 +20,26 @@ export async function createNotification(data: {
   });
 }
 
-/** Returns only action-priority unread notifications for the bell */
-export async function getActionNotificationsForUser(userId: string, limit = 20) {
+/**
+ * Unread notifications for the bell: things to do ("action") first, then
+ * things to know ("info", e.g. a session cancelled because the other person
+ * left — #159). Info items are cleared by opening them; action items by
+ * taking the action.
+ */
+export async function getBellNotificationsForUser(userId: string, limit = 20) {
   return db
     .select()
     .from(notifications)
-    .where(
-      and(
-        eq(notifications.userId, userId),
-        eq(notifications.priority, "action"),
-        eq(notifications.read, false)
-      )
-    )
-    .orderBy(desc(notifications.createdAt))
+    .where(and(eq(notifications.userId, userId), eq(notifications.read, false)))
+    .orderBy(desc(sql`${notifications.priority} = 'action'`), desc(notifications.createdAt))
     .limit(limit);
 }
 
-export async function getUnreadActionCount(userId: string) {
+export async function getUnreadNotificationCount(userId: string) {
   const [row] = await db
     .select({ count: sql<number>`count(*)::int` })
     .from(notifications)
-    .where(
-      and(
-        eq(notifications.userId, userId),
-        eq(notifications.priority, "action"),
-        eq(notifications.read, false)
-      )
-    );
+    .where(and(eq(notifications.userId, userId), eq(notifications.read, false)));
   return row?.count ?? 0;
 }
 

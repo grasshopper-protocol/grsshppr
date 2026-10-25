@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Bell } from "@phosphor-icons/react";
 import type { Notification } from "@/types";
+import { bellClick } from "@/lib/notifications";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,7 +17,7 @@ export function NotificationBell() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  useEffect(() => {
+  const load = useCallback(() => {
     fetch("/api/notifications")
       .then((r) => r.json())
       .then((data) => {
@@ -26,15 +27,28 @@ export function NotificationBell() {
       .catch(() => {});
   }, []);
 
+  useEffect(() => {
+    load();
+  }, [load]);
+
   function handleClick(n: Notification) {
-    if (n.resourceId) {
-      router.push(`/session/${n.resourceId}`);
+    const { href, markRead } = bellClick(n);
+    if (markRead) {
+      // keepalive: the request survives the navigation below
+      fetch(`/api/notifications/${n.id}`, { method: "PATCH", keepalive: true }).catch(() => {});
+      setNotifications((list) => list.filter((x) => x.id !== n.id));
+      setUnreadCount((c) => Math.max(c - 1, 0));
     }
+    if (href) router.push(href);
   }
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger className="relative rounded-full p-1.5 text-muted-foreground transition-colors hover:text-foreground outline-none ring-ring focus-visible:ring-2">
+    // Refetch on open so the list reflects what was just done elsewhere in the app.
+    <DropdownMenu onOpenChange={(open) => open && load()}>
+      <DropdownMenuTrigger
+        aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : "Notifications"}
+        className="relative rounded-full p-1.5 text-muted-foreground transition-colors hover:text-foreground outline-none ring-ring focus-visible:ring-2"
+      >
         <Bell size={18} />
         {unreadCount > 0 && (
           <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground">
@@ -45,7 +59,7 @@ export function NotificationBell() {
       <DropdownMenuContent align="end" className="w-72">
         {notifications.length === 0 ? (
           <div className="px-3 py-4 text-center text-sm text-muted-foreground">
-            Nothing needs your attention
+            You&apos;re all caught up
           </div>
         ) : (
           notifications.map((n) => (
@@ -54,7 +68,7 @@ export function NotificationBell() {
               onClick={() => handleClick(n)}
               className="flex flex-col items-start gap-0.5 py-2 cursor-pointer"
             >
-              <span className="text-sm font-medium">{n.message}</span>
+              <span className={n.priority === "action" ? "text-sm font-medium" : "text-sm"}>{n.message}</span>
               <span className="text-xs text-muted-foreground">
                 {new Date(n.createdAt).toLocaleDateString("en-US", {
                   month: "short",
