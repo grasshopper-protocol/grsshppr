@@ -11,6 +11,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: baseUrl, lastModified: new Date(), changeFrequency: "weekly", priority: 1 },
     { url: `${baseUrl}/sign-up`, changeFrequency: "yearly", priority: 0.5 },
     { url: `${baseUrl}/sign-in`, changeFrequency: "yearly", priority: 0.3 },
+    { url: `${baseUrl}/privacy-policy`, changeFrequency: "yearly", priority: 0.2 },
+    { url: `${baseUrl}/terms-of-service`, changeFrequency: "yearly", priority: 0.2 },
   ];
 
   // Public mentor profiles (/mentor/[slug]) are the main indexable surface.

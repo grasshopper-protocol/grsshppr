@@ -104,8 +104,16 @@ export default async function MarketingLayout({
               </nav>
             ))}
           </div>
-          <div className="mt-10 border-t border-border pt-6">
-            © {new Date().getFullYear()} Grsshppr · Open source under MIT
+          <div className="mt-10 flex flex-col gap-3 border-t border-border pt-6 sm:flex-row sm:items-center sm:justify-between">
+            <span>© {new Date().getFullYear()} Grsshppr · Open source under MIT</span>
+            <nav aria-label="Legal" className="flex gap-4">
+              <Link href="/privacy-policy" className="transition-colors hover:text-foreground">
+                Privacy Policy
+              </Link>
+              <Link href="/terms-of-service" className="transition-colors hover:text-foreground">
+                Terms of Service
+              </Link>
+            </nav>
           </div>
         </div>
       </footer>
