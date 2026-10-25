@@ -65,3 +65,5 @@ docker-compose.override.yml
 
 # Temporary design-token staging/reference notes (not for commit)
 design/tokens/*.staging.md
+node_modules
+.pnpm-store/
