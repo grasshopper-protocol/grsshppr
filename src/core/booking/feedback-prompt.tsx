@@ -20,7 +20,8 @@ export function FeedbackPrompt({
   const [comment, setComment] = useState("");
   const [loading, setLoading] = useState(false);
   const [dismissed, setDismissed] = useState(false);
-  const [sent, setSent] = useState(false);
+  // "sent": we just recorded it; "already": it was recorded earlier (e.g. another tab).
+  const [sent, setSent] = useState<false | "sent" | "already">(false);
   const [error, setError] = useState<string | null>(null);
   const starRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const thanksRef = useRef<HTMLParagraphElement>(null);
@@ -43,8 +44,10 @@ export function FeedbackPrompt({
         body: JSON.stringify({ sessionId: session.id, rating, comment: comment || undefined }),
       });
       // 409: already submitted (e.g. from another tab) — the outcome the user wanted.
-      if (res.ok || res.status === 409) {
-        setSent(true);
+      if (res.ok) {
+        setSent("sent");
+      } else if (res.status === 409) {
+        setSent("already");
       } else if (res.status < 500) {
         const body = await res.json().catch(() => null);
         setError(typeof body?.error === "string" ? body.error : "Couldn't send your feedback.");
@@ -87,7 +90,9 @@ export function FeedbackPrompt({
     return (
       <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-4">
         <p ref={thanksRef} tabIndex={-1} role="status" className="text-sm font-medium outline-none">
-          Thanks — you rated your session with {partner.name} {rating} out of 5.
+          {sent === "already"
+            ? `You've already rated your session with ${partner.name}. Thanks!`
+            : `Thanks — you rated your session with ${partner.name} ${rating} out of 5.`}
         </p>
         <button
           onClick={() => {
