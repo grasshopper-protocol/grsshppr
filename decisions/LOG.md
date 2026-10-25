@@ -20,5 +20,5 @@ existed. New decisions get a dedicated [ADR](README.md) file.
 | 2026-06-22 | Profile `headline` field (max 100 chars) | One flexible credibility signal — not separate jobTitle+company |
 | 2026-06-22 | Profile `links[]` (up to 5 URLs) | LinkedIn, GitHub, portfolio; auto-detected icons on mentor page |
 | 2026-06-22 | Mentor profile: two-column, sticky booking sidebar | Left: identity→expertise→links→about→stats→impact. Right: book CTA |
-| 2026-06-22 | Impact section on mentor profile | Completed goals attributed to mentor; builds trust via outcomes |
+| 2026-06-22 | Impact section on mentor profile | Completed goals attributed to mentor; builds trust via outcomes. **Superseded by [ADR-0015](ADR-0015-private-mentee-goals.md)** — count only; mentee goals stay private |
 | 2026-06-22 | Contextual avatar sizing | h-8 menu → h-11 dashboard → h-14 explore → h-16 session → h-28/32 hero |
