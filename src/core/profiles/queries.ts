@@ -9,6 +9,7 @@ import {
   planSessionsOnAccountDeletion,
 } from "@/lib/account-deletion";
 import { createNotification, resolveNotification } from "@/core/notifications/queries";
+import { closeFeedbackPrompts } from "@/core/booking/feedback-prompts";
 
 // Collision ceiling: linear scan with LIKE prefix. Fine for <10k profiles.
 async function uniqueSlug(name: string, excludeProfileId?: string) {
@@ -135,6 +136,9 @@ export async function deleteProfile(userId: string) {
     // User row last — cascades auth_sessions, accounts, passkeys, notifications
     // and the feedback this user left.
     await tx.delete(users).where(eq(users.id, userId));
+
+    // No one can rate a deleted user: close the partners' open feedback prompts.
+    await closeFeedbackPrompts({ sessionIds: userSessions.map((s) => s.id) }, tx);
 
     return plan;
   });

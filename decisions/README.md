@@ -32,6 +32,7 @@ was made and what would change it.
 | [0014](ADR-0014-calendar-connection-auth-boundary.md) | Calendar connection auth boundary & token security | Accepted |
 | [0015](ADR-0015-private-mentee-goals.md) | Mentee goals are private on public mentor profiles | Accepted |
 | [0016](ADR-0016-account-deletion-keeps-partner-history.md) | Account deletion keeps partners' history under a "Deleted user" placeholder | Accepted |
+| [0017](ADR-0017-feedback-prompt-once.md) | The feedback prompt is issued once, recorded by its notification | Accepted |
 
 ## Historical log
 

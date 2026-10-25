@@ -1,90 +1,25 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
-import { sessions, sessionFeedback, users } from "@/lib/db/schema";
-import { eq, and, lt, gt, or } from "drizzle-orm";
-import { sendEmail } from "@/lib/email";
-import { FeedbackNudgeEmail } from "@/lib/emails/feedback-nudge";
 import { isAuthorizedCronRequest } from "@/lib/cron-auth";
+import { issueFeedbackPrompts } from "@/core/booking/feedback-prompts";
 
-// ponytail: Vercel cron invokes GET daily (POST kept for manual runs) — nudges
-// users who haven't left feedback within 48h of session completion. Only sends
-// once (won't re-nudge after 72h). Hobby-plan cron fires anywhere in its hour,
-// so a session near the window edge can occasionally get zero or two nudges.
+// The prompt loop stops claiming at PROMPT_RUN_BUDGET_MS, well inside this.
+export const maxDuration = 60;
+
+// ponytail: Vercel cron invokes GET daily (POST kept for manual runs). Prompts
+// every participant of a recently completed session who hasn't been prompted
+// or left feedback yet — once each, however often this runs (ADR-0017).
 async function nudge(request: Request) {
   if (!isAuthorizedCronRequest(request.headers.get("authorization"), process.env.CRON_SECRET)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const now = Date.now();
-  const h48ago = new Date(now - 48 * 60 * 60 * 1000);
-  const h72ago = new Date(now - 72 * 60 * 60 * 1000);
+  const result = await issueFeedbackPrompts();
+  // One counts-only line per run (no personal data), searchable with `vercel logs`.
+  console.info(`[feedback-prompts] ${JSON.stringify(result)}`);
 
-  // Find completed sessions that ended 48-72h ago (the nudge window)
-  const completedSessions = await db
-    .select()
-    .from(sessions)
-    .where(
-      and(
-        eq(sessions.status, "completed"),
-        lt(sessions.endsAt, h48ago),
-        gt(sessions.endsAt, h72ago)
-      )
-    );
-
-  let sent = 0;
-
-  for (const s of completedSessions) {
-    // Check both participants
-    for (const userId of [s.mentorId, s.menteeId]) {
-      // Already left feedback?
-      const [existing] = await db
-        .select({ id: sessionFeedback.id })
-        .from(sessionFeedback)
-        .where(
-          and(
-            eq(sessionFeedback.sessionId, s.id),
-            eq(sessionFeedback.userId, userId)
-          )
-        );
-      if (existing) continue;
-
-      // Get user info
-      const [user] = await db
-        .select({ name: users.name, email: users.email })
-        .from(users)
-        .where(eq(users.id, userId));
-      if (!user?.email) continue;
-
-      // Get partner name
-      const partnerId = userId === s.mentorId ? s.menteeId : s.mentorId;
-      const [partner] = await db
-        .select({ name: users.name })
-        .from(users)
-        .where(eq(users.id, partnerId));
-
-      const sessionDate = new Date(s.endsAt).toLocaleDateString("en-US", {
-        weekday: "short",
-        month: "short",
-        day: "numeric",
-      });
-
-      const baseUrl = process.env.BETTER_AUTH_URL ?? "https://www.grsshppr.org";
-
-      await sendEmail({
-        to: user.email,
-        subject: `How was your session with ${partner?.name ?? "your mentor"}?`,
-        react: FeedbackNudgeEmail({
-          recipientName: user.name,
-          partnerName: partner?.name ?? "your session partner",
-          sessionDate,
-          dashboardUrl: `${baseUrl}/dashboard`,
-        }),
-      });
-      sent++;
-    }
-  }
-
-  return NextResponse.json({ nudgesSent: sent });
+  // Fail the run visibly when any email didn't go out — Vercel's cron view only shows status.
+  const status = result.retrying > 0 || result.emailLost > 0 ? 500 : 200;
+  return NextResponse.json({ nudgesSent: result.emailed, ...result }, { status });
 }
 
 export { nudge as GET, nudge as POST };

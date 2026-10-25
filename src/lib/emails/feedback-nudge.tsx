@@ -21,12 +21,10 @@ const LOGO_URL = process.env.EMAIL_LOGO_URL ?? "https://www.grsshppr.org/logo.pn
 export function FeedbackNudgeEmail({
   recipientName,
   partnerName,
-  sessionDate,
   dashboardUrl,
 }: {
   recipientName: string;
   partnerName: string;
-  sessionDate: string;
   dashboardUrl: string;
 }) {
   return (
@@ -45,8 +43,8 @@ export function FeedbackNudgeEmail({
           <Heading as="h2" style={{ fontSize: 20 }}>How did it go?</Heading>
           <Text>Hi {recipientName},</Text>
           <Text>
-            Your session with <strong>{partnerName}</strong> on {sessionDate} recently
-            completed. We&apos;d love to hear how it went — it only takes a few seconds.
+            Your session with <strong>{partnerName}</strong> has finished. A quick
+            rating takes a few seconds and helps us keep mentoring on Grsshppr good.
           </Text>
           <Section style={{ marginTop: 16 }}>
             <Link

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { getSessionById, updateSessionStatus } from "@/core/booking/queries";
@@ -9,7 +9,8 @@ import {
   SessionConfirmedEmail,
   SessionCancelledEmail,
 } from "@/lib/emails/session-emails";
-import { createNotification, resolveNotification } from "@/core/notifications/queries";
+import { resolveNotification } from "@/core/notifications/queries";
+import { issueFeedbackPrompts } from "@/core/booking/feedback-prompts";
 import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
@@ -78,6 +79,11 @@ export async function PATCH(
     return NextResponse.json({ error: "Only the mentor can confirm or complete sessions" }, { status: 403 });
   }
 
+  // A session can only be completed once it has ended — feedback opens then (ADR-0017)
+  if (parsed.data.status === "completed" && existing.endsAt > new Date()) {
+    return NextResponse.json({ error: "You can mark a session complete once it has ended" }, { status: 400 });
+  }
+
   const updated = await updateSessionStatus(id, parsed.data.status, parsed.data.cancelReason);
 
   // Send email notifications (fire-and-forget)
@@ -127,21 +133,9 @@ export async function PATCH(
     // Resolve the mentor's "confirm" action notification (if declining)
     resolveNotification(id, "action_required:confirm");
   } else if (parsed.data.status === "completed") {
-    // Create action notifications for feedback
-    createNotification({
-      userId: existing.menteeId,
-      type: "action_required:feedback",
-      message: `Leave feedback for session with ${mentor?.name}`,
-      resourceId: id,
-      priority: "action",
-    });
-    createNotification({
-      userId: existing.mentorId,
-      type: "action_required:feedback",
-      message: `Leave feedback for session with ${mentee?.name}`,
-      resourceId: id,
-      priority: "action",
-    });
+    // Same once-only prompt the daily cron issues (ADR-0017). The mentor who
+    // just completed it is in the app, so they get the in-app prompt only.
+    after(() => issueFeedbackPrompts([id], { skipEmailFor: session.user.id }));
   }
 
   return NextResponse.json({ session: updated });
