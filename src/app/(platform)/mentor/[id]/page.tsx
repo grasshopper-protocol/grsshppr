@@ -4,7 +4,7 @@ import Link from "next/link";
 import { headers } from "next/headers";
 import { getProfileWithUser } from "@/core/profiles/queries";
 import { getCompletedSessionCount, getActiveSessionBetween } from "@/core/booking/queries";
-import { getCompletedGoalsForMentor } from "@/modules/goals/queries";
+import { getCompletedGoalCountForMentor } from "@/modules/goals/queries";
 import { getGoalsForUser } from "@/modules/goals/queries";
 import { auth } from "@/lib/auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -88,7 +88,7 @@ export default async function MentorProfilePage({
 
   const { profile, user } = data;
   const sessionsCompleted = await getCompletedSessionCount(profile.userId);
-  const mentorGoals = await getCompletedGoalsForMentor(profile.userId);
+  const goalsAchieved = await getCompletedGoalCountForMentor(profile.userId);
   const activeSession = isLoggedIn
     ? await getActiveSessionBetween(session.user.id, profile.userId)
     : null;
@@ -236,31 +236,16 @@ export default async function MentorProfilePage({
             </div>
           </div>
 
-          {/* Impact — goals mentees achieved with this mentor */}
-          {mentorGoals.length > 0 && (
+          {/* Impact — an anonymous count only; mentee goals stay private (ADR-0015) */}
+          {goalsAchieved > 0 && (
             <div className="mt-8">
               <h2 className="flex items-center gap-2 text-sm font-medium uppercase tracking-wider text-muted-foreground">
                 <Trophy size={14} />
                 Impact
               </h2>
-              <p className="mt-1 text-xs text-muted-foreground">
-                {mentorGoals.length} mentee goal{mentorGoals.length !== 1 ? "s" : ""} achieved
+              <p className="mt-1 text-sm text-foreground">
+                {goalsAchieved} mentee goal{goalsAchieved !== 1 ? "s" : ""} achieved
               </p>
-              <div className="mt-3 space-y-2">
-                {mentorGoals.map((g) => (
-                  <div key={g.id} className="flex items-start gap-2 rounded-md border border-border px-3 py-2">
-                    <Badge variant="secondary" className="gap-1 text-xs bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 shrink-0">
-                      <Trophy size={10} />
-                    </Badge>
-                    <div className="min-w-0">
-                      <p className="text-sm">{g.title}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {g.menteeName} &middot; {new Date(g.updatedAt).toLocaleDateString(undefined, { month: "short", year: "numeric" })}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
             </div>
           )}
 

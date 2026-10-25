@@ -1,6 +1,6 @@
-import { eq, and } from "drizzle-orm";
+import { eq, and, count } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { goals, users } from "@/lib/db/schema";
+import { goals } from "@/lib/db/schema";
 
 export async function getGoalsForUser(userId: string) {
   return db
@@ -56,17 +56,15 @@ export async function deleteGoal(id: string) {
   await db.delete(goals).where(eq(goals.id, id));
 }
 
-/** Completed goals attributed to a specific mentor (for their profile "Impact" section) */
-export async function getCompletedGoalsForMentor(mentorId: string) {
-  return db
-    .select({
-      id: goals.id,
-      title: goals.title,
-      updatedAt: goals.updatedAt,
-      menteeName: users.name,
-    })
+/**
+ * Number of completed goals attributed to a mentor, for their public profile
+ * "Impact" section. Count only: goal titles and mentee identities are the
+ * mentee's private data and must never reach a public page (ADR-0015).
+ */
+export async function getCompletedGoalCountForMentor(mentorId: string) {
+  const [row] = await db
+    .select({ count: count() })
     .from(goals)
-    .innerJoin(users, eq(goals.menteeId, users.id))
-    .where(and(eq(goals.mentorId, mentorId), eq(goals.status, "completed")))
-    .orderBy(goals.updatedAt);
+    .where(and(eq(goals.mentorId, mentorId), eq(goals.status, "completed")));
+  return row?.count ?? 0;
 }
