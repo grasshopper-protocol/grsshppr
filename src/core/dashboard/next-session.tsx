@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CalendarDots } from "@phosphor-icons/react/dist/ssr";
 import type { Session } from "@/types";
+import { LocalTime } from "@/components/local-time";
 
 export function NextSession({
   session,
@@ -31,15 +32,8 @@ export function NextSession({
     timeUntil = days === 1 ? "tomorrow" : `in ${days} days`;
   }
 
-  const dateStr = start.toLocaleDateString("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-  });
-  const timeStr = start.toLocaleTimeString("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-  });
+  const dateStr = <LocalTime value={start} options={{ weekday: "short", month: "short", day: "numeric" }} />;
+  const timeStr = <LocalTime value={start} options={{ hour: "numeric", minute: "2-digit" }} />;
 
   const initials = partner.name
     .split(" ")

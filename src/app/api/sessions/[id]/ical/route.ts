@@ -57,7 +57,8 @@ export async function GET(
   }
   descLines.push("");
   descLines.push(
-    `Date: ${startDate.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })} at ${startDate.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })} — ${endDate.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}`
+    // The event itself uses exact instants; this description line can't know the reader's zone, so it says UTC (#160).
+    `Date: ${startDate.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" })} at ${startDate.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: "UTC" })} — ${endDate.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: "UTC", timeZoneName: "short" })}`
   );
   if (linkedGoals.length > 0) {
     descLines.push("");
