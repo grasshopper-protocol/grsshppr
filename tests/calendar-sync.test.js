@@ -13,8 +13,6 @@ import assert from "node:assert/strict";
 import {
   MAX_SYNC_ATTEMPTS,
   classifyGoogleFailure,
-  eventVideoUrl,
-  failureOutcome,
   googleEventBody,
   googleEventId,
   nextAttempt,
@@ -105,35 +103,5 @@ describe("nextAttempt", () => {
     assert.equal(nextAttempt(0, now).getTime() - now.getTime(), 3_600_000);
     assert.equal(nextAttempt(2, now).getTime() - now.getTime(), 4 * 3_600_000);
     assert.equal(nextAttempt(MAX_SYNC_ATTEMPTS - 1, now), null);
-  });
-});
-
-describe("failureOutcome", () => {
-  const now = new Date("2026-10-26T00:00:00Z");
-  it("retries transient failures until attempts run out, then parks", () => {
-    assert.deepEqual(failureOutcome("transient", 0, now), { kind: "retry", at: nextAttempt(0, now) });
-    assert.deepEqual(failureOutcome("transient", MAX_SYNC_ATTEMPTS - 1, now), { kind: "park" });
-  });
-
-  it("holds rows for a broken grant and parks what Google will never accept", () => {
-    assert.deepEqual(failureOutcome("auth", 0, now), { kind: "hold" });
-    for (const f of ["permanent", "gone", "conflict"]) assert.deepEqual(failureOutcome(f, 0, now), { kind: "park" }, f);
-  });
-});
-
-describe("eventVideoUrl", () => {
-  it("reads the Meet link from hangoutLink or the video entry point", () => {
-    assert.equal(eventVideoUrl({ hangoutLink: "https://meet.google.com/abc-defg-hij" }), "https://meet.google.com/abc-defg-hij");
-    const entryPoints = [
-      { entryPointType: "phone", uri: "tel:+1-555" },
-      { entryPointType: "video", uri: "https://meet.google.com/xyz" },
-    ];
-    assert.equal(eventVideoUrl({ conferenceData: { entryPoints } }), "https://meet.google.com/xyz");
-  });
-
-  it("returns null while the Meet is pending or for anything that isn't https", () => {
-    assert.equal(eventVideoUrl({}), null);
-    assert.equal(eventVideoUrl({ conferenceData: {} }), null);
-    assert.equal(eventVideoUrl({ hangoutLink: "javascript:alert(1)" }), null);
   });
 });

@@ -5,8 +5,6 @@ import { decryptToken, encryptToken, needsReencryption } from "@/lib/calendar/to
 import type { CalendarConfig } from "@/lib/calendar/config";
 import { GoogleError, refreshAccessToken, revokeToken, type GoogleTokens } from "./google-client";
 import { enqueueSessionSync, markConnectionError } from "./sync-queries";
-import { CALENDAR_RECONNECT } from "@/lib/notifications";
-import { resolveNotification } from "@/core/notifications/queries";
 
 type Enabled = Extract<CalendarConfig, { enabled: true }>;
 
@@ -50,7 +48,6 @@ export async function saveConnection(p: {
     .insert(calendarConnections)
     .values({ id, userId: p.userId, ...values })
     .onConflictDoUpdate({ target: calendarConnections.userId, set: values });
-  await resolveNotification(id, CALENDAR_RECONNECT, p.userId); // reconnected: the nudge is done
   return id;
 }
 

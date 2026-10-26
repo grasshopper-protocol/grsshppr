@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import { GoogleLogo } from "@phosphor-icons/react";
 
 type Connection = { email: string | null; status: string; createdAt: string } | null;
@@ -73,7 +72,7 @@ export function GoogleCalendarSettings() {
             Grsshppr only creates, updates and removes events for your sessions — it doesn&apos;t read your other
             events, and adds no one&apos;s email address.
           </p>
-          <a href="/api/calendar/connect/google" className={cn(buttonVariants({ variant: "outline", className: "mt-3" }))}>
+          <a href="/api/calendar/connect/google" className={buttonVariants({ variant: "outline", className: "mt-3" })}>
             <GoogleLogo size={16} />
             Connect Google Calendar
           </a>
@@ -105,7 +104,7 @@ export function GoogleCalendarSettings() {
             sessions up to date.
           </p>
           <div className="mt-3 flex gap-2">
-            <a href="/api/calendar/connect/google" className={cn(buttonVariants({ variant: "outline" }))}>
+            <a href="/api/calendar/connect/google" className={buttonVariants({ variant: "outline" })}>
               <GoogleLogo size={16} />
               Reconnect
             </a>

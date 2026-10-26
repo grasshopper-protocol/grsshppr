@@ -7,10 +7,6 @@
     {
       "path": "/api/feedback/nudge",
       "schedule": "0 9 * * *"
-    },
-    {
-      "path": "/api/calendar/drain",
-      "schedule": "0 3 * * *"
     }
   ]
 }
