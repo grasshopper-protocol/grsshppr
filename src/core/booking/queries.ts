@@ -152,12 +152,15 @@ export async function getSessionsNeedingFeedback(userId: string) {
   return enriched;
 }
 
+// Pass a transaction to change the status atomically with other writes
+// (e.g. queueing calendar sync, RFC-0012 §5).
 export async function updateSessionStatus(
   id: string,
   status: "confirmed" | "completed" | "cancelled",
-  cancelReason?: string
+  cancelReason?: string,
+  executor: Pick<typeof db, "update"> = db
 ) {
-  const [updated] = await db
+  const [updated] = await executor
     .update(sessions)
     .set({ status, ...(cancelReason && status === "cancelled" ? { cancelReason } : {}) })
     .where(eq(sessions.id, id))

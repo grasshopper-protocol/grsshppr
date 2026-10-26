@@ -6,6 +6,7 @@ import {
   integer,
   pgEnum,
   unique,
+  index,
 } from "drizzle-orm/pg-core";
 
 // --- Enums ---
@@ -68,6 +69,8 @@ export const sessions = pgTable("sessions", {
   startsAt: timestamp("starts_at").notNull(),
   endsAt: timestamp("ends_at").notNull(),
   cancelReason: text("cancel_reason"),
+  // Meet link, set by the video host's calendar event (RFC-0012 §5)
+  videoUrl: text("video_url"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -153,6 +156,72 @@ export const calendarFeeds = pgTable("calendar_feeds", {
   tokenHash: text("token_hash").notNull().unique(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
+
+// Phase 1: a connected Google Calendar (ADR-0014) — decoupled from login.
+export const calendarProviderEnum = pgEnum("calendar_provider", ["google"]);
+
+export const calendarConnections = pgTable("calendar_connections", {
+  id: text("id").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .unique() // v1: one connection per user
+    .references(() => users.id, { onDelete: "cascade" }),
+  provider: calendarProviderEnum("provider").notNull(),
+  providerAccountId: text("provider_account_id").notNull(), // id_token `sub`
+  email: text("email"),
+  // AES-256-GCM envelopes (src/lib/calendar/token-crypto.ts), never plaintext.
+  accessTokenEnc: text("access_token_enc").notNull(),
+  refreshTokenEnc: text("refresh_token_enc").notNull(),
+  accessTokenExpiresAt: timestamp("access_token_expires_at").notNull(),
+  scope: text("scope").notNull(),
+  writeTargetCalendarId: text("write_target_calendar_id").notNull().default("primary"), // no picker in v1
+  status: text("status").notNull().default("active"), // active | error
+  lastError: text("last_error"), // error class only — never tokens or bodies
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// One row per (session, connection) Google event we created.
+export const calendarEventLinks = pgTable(
+  "calendar_event_links",
+  {
+    id: text("id").primaryKey(),
+    sessionId: text("session_id")
+      .notNull()
+      .references(() => sessions.id, { onDelete: "cascade" }),
+    connectionId: text("connection_id")
+      .notNull()
+      .references(() => calendarConnections.id, { onDelete: "cascade" }),
+    externalEventId: text("external_event_id").notNull(),
+    etag: text("etag"),
+    lastSyncedAt: timestamp("last_synced_at").notNull().defaultNow(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (t) => [unique("calendar_event_links_session_connection_unique").on(t.sessionId, t.connectionId)]
+);
+
+// Durable "reconcile this (session, connection)" queue — no operation stored;
+// the drain derives it from the session's current state (RFC-0012 §5).
+export const calendarOutbox = pgTable(
+  "calendar_outbox",
+  {
+    id: text("id").primaryKey(),
+    sessionId: text("session_id")
+      .notNull()
+      .references(() => sessions.id, { onDelete: "cascade" }),
+    connectionId: text("connection_id")
+      .notNull()
+      .references(() => calendarConnections.id, { onDelete: "cascade" }),
+    attempts: integer("attempts").notNull().default(0),
+    nextAttemptAt: timestamp("next_attempt_at").notNull().defaultNow(),
+    lastError: text("last_error"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (t) => [
+    unique("calendar_outbox_session_connection_unique").on(t.sessionId, t.connectionId),
+    index("calendar_outbox_next_attempt_at_idx").on(t.nextAttemptAt),
+  ]
+);
 
 // --- Core: Notifications ---
 

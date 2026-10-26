@@ -5,6 +5,8 @@ import { getSessionById, updateSessionStatus } from "@/core/booking/queries";
 import { z } from "zod";
 import { safeJson, uuidParam, rateLimit } from "@/lib/api-utils";
 import { runTransitionEffects } from "@/core/booking/transition-effects";
+import { enqueueSessionSync } from "@/modules/calendar/sync-queries";
+import { db } from "@/lib/db";
 
 const statusSchema = z.object({
   status: z.enum(["confirmed", "completed", "cancelled"]),
@@ -75,7 +77,12 @@ export async function PATCH(
     return NextResponse.json({ error: "You can mark a session complete once it has ended" }, { status: 400 });
   }
 
-  const updated = await updateSessionStatus(id, parsed.data.status, parsed.data.cancelReason);
+  // Status change and calendar sync queue commit together (RFC-0012 §5)
+  const updated = await db.transaction(async (tx) => {
+    const row = await updateSessionStatus(id, parsed.data.status, parsed.data.cancelReason, tx);
+    await enqueueSessionSync(tx, existing);
+    return row;
+  });
 
   // Emails and notifications — shared with the one-click email route (#140)
   after(() => runTransitionEffects({ session: existing, to: parsed.data.status, actorId: session.user.id }));
