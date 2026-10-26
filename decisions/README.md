@@ -41,7 +41,7 @@ was made and what would change it.
 | [0017](ADR-0017-feedback-prompt-once.md) | The feedback prompt is issued once, recorded by its notification | Accepted |
 | [0018](ADR-0018-one-feedback-window.md) | One feedback window; every feedback link lands on a working form | Accepted |
 | [0019](ADR-0019-light-track-schema-changes.md) | A light track for small, additive schema changes; the ADR lifecycle | Accepted |
-| [0020](ADR-0020-one-rating-per-person.md) | One rating per person per session, enforced by the database | Proposed |
+| [0020](ADR-0020-one-rating-per-person.md) | One rating per person per session, enforced by the database | Accepted |
 
 ## Historical log
 
