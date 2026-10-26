@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { upsertProfile, getProfileByUserId, deleteProfile } from "@/core/profiles/queries";
+import { enqueueSessionSync } from "@/modules/calendar/sync-queries";
 import { z } from "zod";
 import { safeJson } from "@/lib/api-utils";
 
@@ -51,6 +52,11 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "Name doesn't match" }, { status: 400 });
   }
 
-  await deleteProfile(session.user.id);
+  // Cancelled sessions leave the partner's Google Calendar too (RFC-0012)
+  await deleteProfile(session.user.id, {
+    onSessionsCancelled: async (tx, cancelled) => {
+      for (const s of cancelled) await enqueueSessionSync(tx, s);
+    },
+  });
   return NextResponse.json({ ok: true });
 }

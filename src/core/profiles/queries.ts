@@ -93,7 +93,17 @@ export async function upsertProfile(
  * history (ADR-0016). Shared sessions are reassigned to the DELETED_USER
  * placeholder; upcoming ones are cancelled and the partner is notified.
  */
-export async function deleteProfile(userId: string) {
+type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
+
+/**
+ * `onSessionsCancelled` runs inside the deletion transaction with the upcoming
+ * sessions it cancelled — e.g. so the app can queue removing them from the
+ * partner's calendar (RFC-0012) without core importing that module.
+ */
+export async function deleteProfile(
+  userId: string,
+  { onSessionsCancelled }: { onSessionsCancelled?: (tx: Tx, sessions: { id: string; mentorId: string; menteeId: string }[]) => Promise<void> } = {}
+) {
   if (isDeletedUser(userId)) throw new Error("The deleted-user placeholder cannot be deleted");
 
   const involving = or(eq(sessions.mentorId, userId), eq(sessions.menteeId, userId));
@@ -128,6 +138,7 @@ export async function deleteProfile(userId: string) {
         .update(sessions)
         .set({ status: "cancelled", cancelReason: ACCOUNT_DELETED_REASON })
         .where(inArray(sessions.id, plan.cancel));
+      await onSessionsCancelled?.(tx, userSessions.filter((s) => plan.cancel.includes(s.id)));
     }
 
     // Keep shared sessions (and their notes) for the partner, under the placeholder.
