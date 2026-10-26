@@ -26,7 +26,7 @@ describe("bellClick", () => {
 
   it("sends a calendar reconnect to Settings and leaves it unread until reconnected", () => {
     assert.deepEqual(bellClick({ type: CALENDAR_RECONNECT, priority: "action", resourceId: "conn-1" }), {
-      href: "/settings",
+      href: "/settings#calendar",
       markRead: false,
     });
   });

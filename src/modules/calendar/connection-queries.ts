@@ -1,4 +1,4 @@
-import { and, eq, gt, or } from "drizzle-orm";
+import { and, eq, gt, inArray, or } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { calendarConnections, calendarEventLinks, sessions } from "@/lib/db/schema";
 import { decryptToken, encryptToken, needsReencryption } from "@/lib/calendar/token-crypto";
@@ -17,6 +17,28 @@ export async function getConnectionSummary(userId: string) {
     .from(calendarConnections)
     .where(eq(calendarConnections.userId, userId));
   return row ?? null;
+}
+
+/**
+ * Which of these sessions are already in this user's Google Calendar (an event
+ * we created through an active connection). The session page and dashboard
+ * show "In your Google Calendar" for these instead of offering an .ics
+ * download, which would add a second copy.
+ */
+export async function sessionsInGoogleCalendar(userId: string, sessionIds: string[]): Promise<Set<string>> {
+  if (sessionIds.length === 0) return new Set();
+  const rows = await db
+    .select({ sessionId: calendarEventLinks.sessionId })
+    .from(calendarEventLinks)
+    .innerJoin(calendarConnections, eq(calendarConnections.id, calendarEventLinks.connectionId))
+    .where(
+      and(
+        eq(calendarConnections.userId, userId),
+        eq(calendarConnections.status, "active"),
+        inArray(calendarEventLinks.sessionId, sessionIds)
+      )
+    );
+  return new Set(rows.map((r) => r.sessionId));
 }
 
 /**

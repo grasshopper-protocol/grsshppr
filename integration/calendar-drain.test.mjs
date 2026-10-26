@@ -22,7 +22,7 @@ const { db, closeDb } = await import("../src/lib/db/index.ts");
 const { users, sessions, calendarConnections, calendarOutbox, calendarEventLinks, notifications } = await import("../src/lib/db/schema.ts");
 const { sql, eq } = await import("drizzle-orm");
 const { drainCalendar } = await import("../src/modules/calendar/drain.ts");
-const { saveConnection, disconnectGoogle } = await import("../src/modules/calendar/connection-queries.ts");
+const { saveConnection, disconnectGoogle, sessionsInGoogleCalendar } = await import("../src/modules/calendar/connection-queries.ts");
 const { updateSessionStatus } = await import("../src/core/booking/queries.ts");
 const { getCalendarConfig } = await import("../src/modules/calendar/runtime.ts");
 const q = await import("../src/modules/calendar/sync-queries.ts");
@@ -253,6 +253,17 @@ describe("calendar drain", () => {
       mock.timers.reset();
     }
     assert.equal(calendar("m").length, 1);
+  });
+
+  it("knows which sessions are in a person's Google Calendar, so the app doesn't offer a second copy", async () => {
+    const connectionId = await connect("m");
+    await setStatus("confirmed");
+    await drainCalendar({ sessionId: "s1" });
+    assert.deepEqual([...(await sessionsInGoogleCalendar("m", ["s1", "nope"]))], ["s1"]);
+    assert.equal((await sessionsInGoogleCalendar("e", ["s1"])).size, 0, "the mentee isn't connected");
+    assert.equal((await sessionsInGoogleCalendar("m", [])).size, 0);
+    await q.markConnectionError(connectionId, "invalid_grant");
+    assert.equal((await sessionsInGoogleCalendar("m", ["s1"])).size, 0, "a broken connection can't vouch for its events");
   });
 
   it("does nothing when calendar sync is switched off", async () => {

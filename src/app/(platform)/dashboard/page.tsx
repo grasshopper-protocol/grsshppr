@@ -16,6 +16,7 @@ import { FeedbackPrompt } from "@/core/booking/feedback-prompt";
 import { ProfileNudge } from "@/components/profile-nudge";
 import { StatCard } from "@/core/dashboard/stat-card";
 import { NextSession, NextSessionEmpty } from "@/core/dashboard/next-session";
+import { sessionsInGoogleCalendar } from "@/modules/calendar/connection-queries";
 import { CalendarDots, PencilSimple, ArrowRight, Fire } from "@phosphor-icons/react/dist/ssr";
 import { LocalTime } from "@/components/local-time";
 
@@ -33,6 +34,10 @@ export default async function DashboardPage() {
   if (!profile) redirect("/welcome");
 
   const isMentor = profile.role === "mentor";
+  // Already pushed to their Google Calendar? Then don't offer a second copy (.ics).
+  const nextInGoogleCalendar = nextSession
+    ? (await sessionsInGoogleCalendar(session.user.id, [nextSession.session.id])).has(nextSession.session.id)
+    : false;
 
   if (isMentor) {
     return (
@@ -42,6 +47,7 @@ export default async function DashboardPage() {
         windows={windows}
         needsFeedback={needsFeedback}
         nextSession={nextSession}
+        nextInGoogleCalendar={nextInGoogleCalendar}
       />
     );
   }
@@ -53,6 +59,7 @@ export default async function DashboardPage() {
       windows={windows}
       needsFeedback={needsFeedback}
       nextSession={nextSession}
+      nextInGoogleCalendar={nextInGoogleCalendar}
     />
   );
 }
@@ -63,12 +70,14 @@ async function MentorDashboard({
   windows,
   needsFeedback,
   nextSession,
+  nextInGoogleCalendar,
 }: {
   userId: string;
   profile: { role: "mentor" | "mentee"; bio: string | null; headline: string | null; expertise: string[] | null };
   windows: { dayOfWeek: number; startTime: string; endTime: string }[];
   needsFeedback: Awaited<ReturnType<typeof getSessionsNeedingFeedback>>;
   nextSession: Awaited<ReturnType<typeof getNextUpcomingSession>>;
+  nextInGoogleCalendar: boolean;
 }) {
   const [stats, allSessions, weekSessions, repeatRate, menteeStats, myMentors, lastSessionMap] = await Promise.all([
     getMentorStats(userId),
@@ -115,7 +124,7 @@ async function MentorDashboard({
         <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Next up</h2>
         <div className="mt-3">
           {nextSession ? (
-            <NextSession session={nextSession.session} partner={nextSession.partner} isMentor />
+            <NextSession session={nextSession.session} partner={nextSession.partner} isMentor inGoogleCalendar={nextInGoogleCalendar} />
           ) : (
             <NextSessionEmpty isMentor />
           )}
@@ -297,12 +306,14 @@ async function MenteeDashboard({
   windows,
   needsFeedback,
   nextSession,
+  nextInGoogleCalendar,
 }: {
   userId: string;
   profile: { role: "mentor" | "mentee"; bio: string | null; headline: string | null; expertise: string[] | null };
   windows: { dayOfWeek: number; startTime: string; endTime: string }[];
   needsFeedback: Awaited<ReturnType<typeof getSessionsNeedingFeedback>>;
   nextSession: Awaited<ReturnType<typeof getNextUpcomingSession>>;
+  nextInGoogleCalendar: boolean;
 }) {
   const [stats, allSessions, mentors, lastSessionMap] = await Promise.all([
     getMenteeStats(userId),
@@ -351,7 +362,7 @@ async function MenteeDashboard({
         <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Next up</h2>
         <div className="mt-3">
           {nextSession ? (
-            <NextSession session={nextSession.session} partner={nextSession.partner} isMentor={false} />
+            <NextSession session={nextSession.session} partner={nextSession.partner} isMentor={false} inGoogleCalendar={nextInGoogleCalendar} />
           ) : (
             <NextSessionEmpty isMentor={false} />
           )}

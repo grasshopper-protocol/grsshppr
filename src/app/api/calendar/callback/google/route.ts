@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
   if (!config.enabled) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const done = (outcome: "connected" | "denied" | "permission" | "failed") => {
-    const response = NextResponse.redirect(new URL(`/settings?calendar=${outcome}`, request.url));
+    const response = NextResponse.redirect(new URL(`/settings?calendar=${outcome}#calendar`, request.url));
     response.cookies.set(OAUTH_STATE_COOKIE, "", { path: OAUTH_STATE_COOKIE_PATH, maxAge: 0 });
     return response;
   };

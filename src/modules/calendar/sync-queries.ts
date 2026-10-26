@@ -161,7 +161,7 @@ export async function markConnectionError(connectionId: string, errorClass: stri
   await createNotification({
     userId: broken.userId,
     type: CALENDAR_RECONNECT,
-    message: "Your Google Calendar connection stopped working. Reconnect it in Settings to keep your sessions up to date.",
+    message: "Google Calendar disconnected. Reconnect so new and cancelled sessions keep updating.",
     resourceId: connectionId,
     priority: "action",
   });

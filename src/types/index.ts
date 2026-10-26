@@ -20,4 +20,5 @@ export type Session = {
   startsAt: Date;
   endsAt: Date;
   status: string;
+  videoUrl?: string | null; // the Google Meet link, when calendar sync created one (RFC-0012)
 };

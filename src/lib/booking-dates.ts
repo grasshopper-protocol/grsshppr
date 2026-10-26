@@ -112,6 +112,15 @@ export function slotsForWeek(
   return result.sort((a, b) => a.startsAt.localeCompare(b.startsAt));
 }
 
+/**
+ * Whether it's time to join a session's video call: from `leadMinutes` before
+ * the start until the end. The session page makes "Join video call" the
+ * primary action then. Pure: the clock is passed in.
+ */
+export function isTimeToJoin(startsAt: Date, endsAt: Date, now: Date, leadMinutes = 15): boolean {
+  return now.getTime() >= startsAt.getTime() - leadMinutes * 60_000 && now < endsAt;
+}
+
 /** A session that occupies the mentor's time. */
 export interface BookedInterval {
   startsAt: Date;

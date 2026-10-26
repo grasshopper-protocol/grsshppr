@@ -17,6 +17,7 @@ import {
   getMonday,
   slotsForWeek,
   removeBookedSlots,
+  isTimeToJoin,
 } from "../src/lib/booking-dates.js";
 
 // ---------------------------------------------------------------------------
@@ -203,5 +204,21 @@ describe("removeBookedSlots", () => {
 
   it("removes slots inside a longer session", () => {
     assert.deepEqual(removeBookedSlots(slots, [booked("09:00", "10:30")]), []);
+  });
+});
+
+describe("isTimeToJoin", () => {
+  const start = new Date("2026-10-28T03:00:00Z");
+  const end = new Date("2026-10-28T03:30:00Z");
+  const at = (iso) => isTimeToJoin(start, end, new Date(iso));
+  it("opens 15 minutes before the start and closes at the end", () => {
+    assert.equal(at("2026-10-28T02:44:59Z"), false);
+    assert.equal(at("2026-10-28T02:45:00Z"), true);
+    assert.equal(at("2026-10-28T03:29:59Z"), true);
+    assert.equal(at("2026-10-28T03:30:00Z"), false);
+  });
+
+  it("takes a different lead time", () => {
+    assert.equal(isTimeToJoin(start, end, new Date("2026-10-28T02:30:00Z"), 30), true);
   });
 });
