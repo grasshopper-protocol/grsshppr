@@ -5,7 +5,7 @@ import { z } from "zod";
 import { safeJson, rateLimit } from "@/lib/api-utils";
 import { db } from "@/lib/db";
 import { sessionFeedback, sessions } from "@/lib/db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { resolveNotification } from "@/core/notifications/queries";
 import { FEEDBACK_PROMPT_TYPE, feedbackState } from "@/lib/feedback-prompts";
 
@@ -60,20 +60,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Feedback for this session is closed" }, { status: 400 });
   }
 
-  // Check for duplicate feedback
-  const [already] = await db
-    .select()
-    .from(sessionFeedback)
-    .where(
-      and(
-        eq(sessionFeedback.sessionId, sessionId),
-        eq(sessionFeedback.userId, session.user.id)
-      )
-    );
-  if (already) {
-    return NextResponse.json({ error: "Feedback already submitted" }, { status: 409 });
-  }
-
+  // One rating per person per session, enforced by the database (ADR-0020):
+  // a second or concurrent submission inserts nothing. No conflict target, so
+  // this also works before the constraint's migration has reached production.
   const [feedback] = await db
     .insert(sessionFeedback)
     .values({
@@ -83,7 +72,11 @@ export async function POST(request: NextRequest) {
       rating,
       comment: comment ?? null,
     })
+    .onConflictDoNothing()
     .returning();
+  if (!feedback) {
+    return NextResponse.json({ error: "Feedback already submitted" }, { status: 409 });
+  }
 
   // Resolve only this user's prompt — the partner's stays open
   await resolveNotification(sessionId, FEEDBACK_PROMPT_TYPE, session.user.id);
