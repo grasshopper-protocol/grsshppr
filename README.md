@@ -87,14 +87,26 @@ See [ENGINEERING.md](ENGINEERING.md) for architecture guidance and [DESIGN.md](D
 | `GITHUB_CLIENT_SECRET` | No | GitHub OAuth app secret |
 | `GOOGLE_CLIENT_ID` | No | Google OAuth client ID |
 | `GOOGLE_CLIENT_SECRET` | No | Google OAuth client secret |
-| `RESEND_API_KEY` | No | Resend API key for transactional emails |
-| `CRON_SECRET` | No | Shared secret for cron endpoints (`openssl rand -hex 32`) |
+| `RESEND_API_KEY` | No | Resend API key for transactional emails. Without it in production no email is sent (feedback prompts stay in-app only) |
+| `CRON_SECRET` | **Yes, for scheduled jobs** | Shared secret Vercel sends to the cron endpoints (`openssl rand -hex 32`). Without it the jobs refuse every call and never run |
 
 4. Deploy — Vercel auto-detects Next.js
 
 After first deploy, run `pnpm db:migrate` against your production database to
 apply committed migrations. Never use `db:push` against production — see
-[ADR-0003](decisions/ADR-0003-schema-migrations.md).
+[ADR-0003](decisions/ADR-0003-schema-migrations.md). To apply migrations
+automatically on every merge, set the `MIGRATION_DATABASE_URL` secret for the
+**DB Migrate** GitHub Action (`.github/workflows/db-migrate.yml`).
+
+**Scheduled jobs** (`vercel.json`, once a day on Vercel's Hobby plan):
+
+| Job | When (UTC) | What it does |
+|-----|------------|--------------|
+| `/api/sessions/auto-complete` | 00:00 | Marks confirmed sessions that ended over 24h ago as completed |
+| `/api/feedback/nudge` | 09:00 | Sends each participant of a recently completed session one feedback prompt — in-app and by email — at most once ([ADR-0017](decisions/ADR-0017-feedback-prompt-once.md)) |
+
+Both require `CRON_SECRET` and are safe to run again by hand (`GET` or `POST`
+with `Authorization: Bearer $CRON_SECRET`).
 
 ### Self-Hosting (Docker)
 
