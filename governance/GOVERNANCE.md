@@ -30,6 +30,16 @@ bureaucracy for *work*.
 - **Cross-discipline changes**: need sign-off from each affected discipline's
   maintainer.
 
+## Merging to `main`
+
+Branch protection applies to everyone, admins included
+([ADR-0023](../decisions/ADR-0023-branch-protection-for-everyone.md)): the
+required checks (`Analyze`, `quality`, `build`, `integration`) must pass and the
+branch must be up to date. While there's one maintainer, no approving review is
+required, because you can't approve your own PR. When a second maintainer joins,
+one review is required again. If CI itself is broken, an admin may lift the rule
+for a single merge and must record it in a post-mortem.
+
 ## How decisions are finalised
 
 1. Proposal raised (issue → RFC for major changes).
