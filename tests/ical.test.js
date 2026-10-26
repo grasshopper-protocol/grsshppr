@@ -84,6 +84,13 @@ describe("buildCalendar", () => {
     assert.ok(!/^X-EVIL/m.test(ics));
   });
 
+  it("writes an escaped LOCATION only when there is one", () => {
+    assert.ok(!/^LOCATION/m.test(unfold(buildCalendar({ events: [event()] }, NOW))));
+    const ics = unfold(buildCalendar({ events: [event({ location: "https://meet.google.com/a;b\nX-EVIL:1" })] }, NOW));
+    assert.ok(ics.includes("LOCATION:https://meet.google.com/a\\;b\\nX-EVIL:1\r\n"));
+    assert.ok(!/^X-EVIL/m.test(ics));
+  });
+
   it("adds a display alarm when asked", () => {
     const ics = buildCalendar({ events: [event({ alarmMinutesBefore: 15 })] }, NOW);
     assert.ok(ics.includes("BEGIN:VALARM\r\nTRIGGER:-PT15M\r\nACTION:DISPLAY\r\n"));

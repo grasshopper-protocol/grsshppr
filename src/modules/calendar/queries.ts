@@ -47,6 +47,7 @@ export async function getFeedSessions(userId: string, now: Date): Promise<FeedSe
       endsAt: sessions.endsAt,
       mentorId: sessions.mentorId,
       menteeId: sessions.menteeId,
+      videoUrl: sessions.videoUrl,
     })
     .from(sessions)
     .where(
@@ -76,6 +77,7 @@ export async function getFeedSessions(userId: string, now: Date): Promise<FeedSe
       endsAt: r.endsAt,
       partnerName: nameOf.get(isMentor ? r.menteeId : r.mentorId) ?? "your session partner",
       role: isMentor ? "mentor" : "mentee",
+      videoUrl: r.videoUrl,
     };
   });
 }

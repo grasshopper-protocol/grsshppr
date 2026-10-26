@@ -68,8 +68,8 @@ describe("calendar drain", () => {
     assert.deepEqual(result, { synced: 3, failed: 0 }, "two creates, then the mentee's update with the link");
     const [mentorEvent] = calendar("m");
     const [menteeEvent] = calendar("e");
-    assert.equal(mentorEvent.summary, "Session with Emery");
-    assert.equal(menteeEvent.summary, "Session with Morgan");
+    assert.equal(mentorEvent.summary, "Grsshppr session with Emery");
+    assert.equal(menteeEvent.summary, "Grsshppr session with Morgan");
     for (const ev of [mentorEvent, menteeEvent]) {
       assert.equal(ev.visibility, "private");
       assert.equal(ev.attendees, undefined, "no attendees");
@@ -78,7 +78,7 @@ describe("calendar drain", () => {
     const { videoUrl } = await session();
     assert.equal(videoUrl, mentorEvent.hangoutLink);
     assert.equal(menteeEvent.hangoutLink, undefined, "only the host's event asks Google for a Meet");
-    assert.match(menteeEvent.description, new RegExp(`Video call: ${videoUrl}`));
+    assert.match(menteeEvent.description, new RegExp(`Join video call: ${videoUrl}`));
     assert.equal((await outbox()).length, 0);
     assert.equal((await links()).length, 2);
   });
@@ -119,7 +119,7 @@ describe("calendar drain", () => {
     await setStatus("confirmed");
     await drainCalendar({ sessionId: "s1" });
     assert.equal(calendar("m").length, 1);
-    assert.equal(calendar("m")[0].summary, "Session with Emery");
+    assert.equal(calendar("m")[0].summary, "Grsshppr session with Emery");
     assert.equal((await links())[0].externalEventId, id);
   });
 
@@ -221,7 +221,7 @@ describe("calendar drain", () => {
     await db.insert(notifications).values({ id: "n1", userId: "m", type: "action_required:calendar_reconnect", message: "x", resourceId: connectionId, priority: "action" });
 
     await disconnectGoogle("m", getCalendarConfig());
-    assert.deepEqual(calendar("m").map((e) => e.summary), ["Session with Emery"], "only the past event stays");
+    assert.deepEqual(calendar("m").map((e) => e.summary), ["Grsshppr session with Emery"], "only the past event stays");
     assert.equal(calendar("m")[0].id, googleEventId("s2", connectionId));
     assert.equal((await db.select().from(calendarConnections)).length, 0);
     assert.equal((await db.select().from(notifications))[0].read, true);
