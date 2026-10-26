@@ -20,7 +20,7 @@ Separately, #192 was merged at 04:11 UTC while review fixes for it were still be
 
 **The bug:** two clocks. Outbox rows got their due time from the database (`now()`, microseconds), but the drain judged "due" with the app server's clock (`new Date()`, milliseconds). If the drain ran within the same millisecond as the enqueue, or the database clock was slightly ahead (Vercel and Neon are different machines), a just-queued row looked "not yet due". The inline drain then did nothing, and the work waited for the daily cron. CI's fast Postgres hit this on every run; a slower local Docker database hid it. The fix's first version brought a second precision mismatch with it: a microsecond lease read back as a millisecond `Date`, which broke the "not re-queued since claim" check. That was caught before pushing.
 
-**Why it reached `main`:** the required checks aren't enforced. GitHub allowed merging with `integration` and `quality` red. The agent also told the maintainer to "merge once CI is green" without checking CI itself before handing over, and kept pushing to a branch that might be merged at any moment.
+**Why it reached `main`:** `quality` and `build` were required checks, but admins can bypass branch protection, and the merges were made as an admin. `integration` wasn't a required check at all. The agent also told the maintainer to "merge once CI is green" without checking CI itself before handing over, and kept pushing to a branch that might be merged at any moment.
 
 ## The fix
 
@@ -30,7 +30,7 @@ Separately, #192 was merged at 04:11 UTC while review fixes for it were still be
 
 ## Lessons
 
-1. **Enforce "no red merges".** Make `quality`, `integration` and `build` required status checks in `main`'s branch protection, so GitHub refuses the merge rather than relying on memory. This is a repository setting the maintainer has to change.
+1. **Enforce "no red merges".** `integration` is now a required check (done 2026-10-26). Admins can still bypass, so a follow-up ADR proposes applying protection to admins too, with the review requirement a sole maintainer can't meet removed.
 2. **Hand over only verified green.** An agent reports a PR as ready only after its checks pass on the latest push, and says which commit that was.
 3. **Don't push to a PR that may be merged.** Fixes found after a PR is marked ready go in a new PR, or the hand-over is withdrawn first.
 4. **One clock per comparison.** Anything compared with a database timestamp is computed by the database. Values that round-trip through JavaScript are stored at millisecond precision.

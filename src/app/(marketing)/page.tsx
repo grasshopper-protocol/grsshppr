@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   ArrowRight,
+  CalendarCheck,
   GithubLogo,
   HandHeart,
 } from "@phosphor-icons/react/dist/ssr";
@@ -140,6 +141,24 @@ export default async function Home() {
               Set goals, link sessions to them, and see your progress over time.
               One-off calls become a journey.
             </p>
+          </div>
+        </div>
+
+        {/* Calendar (RFC-0012): what we do with Google data, stated where Google's reviewers and users look */}
+        <div id="calendar" className="mx-auto mt-14 flex max-w-3xl gap-4 rounded-lg border border-border p-5">
+          <CalendarCheck size={24} className="mt-0.5 shrink-0 text-muted-foreground" aria-hidden />
+          <div className="flex flex-col gap-2">
+            <h3 className="text-sm font-medium text-foreground">Sessions in your calendar</h3>
+            <p className="text-sm text-muted-foreground">
+              Subscribe to your sessions from any calendar app with a private link. Or connect Google Calendar:
+              when a session is confirmed, Grsshppr adds it to your own calendar as a private event with a
+              Google Meet link, updates it if it changes, and removes it if it&apos;s cancelled. We only touch
+              the events we create — we never read your other events or add anyone&apos;s email address — and
+              you can disconnect at any time in Settings.
+            </p>
+            <Link href="/privacy-policy" className="text-sm font-medium text-foreground underline-offset-4 hover:underline">
+              How we handle your calendar data
+            </Link>
           </div>
         </div>
       </section>
