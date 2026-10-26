@@ -62,6 +62,10 @@ function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
+const buttonBase = { padding: "10px 20px", borderRadius: 6, fontSize: 14, fontWeight: 500, textDecoration: "none" } as const;
+const primaryButton = { ...buttonBase, backgroundColor: "#171717", color: "#fff" };
+const secondaryButton = { ...buttonBase, backgroundColor: "#fff", color: "#171717", border: "1px solid #e5e5e5" };
+
 // Mentor receives: new session request
 export function SessionRequestedEmail({
   mentorName,
@@ -97,34 +101,10 @@ export function SessionRequestedEmail({
       )}
       {confirmUrl && declineUrl ? (
         <Section style={{ margin: "20px 0" }}>
-          <Button
-            href={confirmUrl}
-            style={{
-              backgroundColor: "#171717",
-              color: "#fff",
-              padding: "10px 20px",
-              borderRadius: 6,
-              fontSize: 14,
-              fontWeight: 500,
-              textDecoration: "none",
-              marginRight: 8,
-            }}
-          >
+          <Button href={confirmUrl} style={{ ...primaryButton, marginRight: 8 }}>
             Confirm
           </Button>
-          <Button
-            href={declineUrl}
-            style={{
-              backgroundColor: "#fff",
-              color: "#171717",
-              padding: "10px 20px",
-              borderRadius: 6,
-              fontSize: 14,
-              fontWeight: 500,
-              textDecoration: "none",
-              border: "1px solid #e5e5e5",
-            }}
-          >
+          <Button href={declineUrl} style={secondaryButton}>
             Decline
           </Button>
         </Section>
@@ -140,8 +120,9 @@ export function SessionConfirmedEmail({
   mentorName,
   menteeName,
   startsAt,
+  sessionUrl,
   videoUrl,
-}: SessionEmailProps & { videoUrl?: string | null }) {
+}: SessionEmailProps & { sessionUrl: string; videoUrl?: string | null }) {
   return (
     <Layout>
       <Heading as="h2" style={{ fontSize: 20 }}>Session confirmed</Heading>
@@ -150,11 +131,16 @@ export function SessionConfirmedEmail({
         <strong>{mentorName}</strong> confirmed your session on{" "}
         <strong>{formatDateTime(startsAt)}</strong>.
       </Text>
-      {videoUrl && (
-        <Text>
-          Video call: <a href={videoUrl}>{videoUrl}</a>
-        </Text>
-      )}
+      <Section style={{ margin: "20px 0" }}>
+        {videoUrl && (
+          <Button href={videoUrl} style={{ ...primaryButton, marginRight: 8 }}>
+            Join video call
+          </Button>
+        )}
+        <Button href={sessionUrl} style={videoUrl ? secondaryButton : primaryButton}>
+          View session
+        </Button>
+      </Section>
       <Text>You can add it to your calendar from the session page.</Text>
     </Layout>
   );

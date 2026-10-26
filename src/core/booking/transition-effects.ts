@@ -40,6 +40,7 @@ export async function runTransitionEffects({
           startsAt: session.startsAt.toISOString(),
           endsAt: session.endsAt.toISOString(),
           videoUrl: current?.videoUrl,
+          sessionUrl: `${process.env.BETTER_AUTH_URL ?? "https://www.grsshppr.org"}/session/${session.id}`,
         }),
       });
     }

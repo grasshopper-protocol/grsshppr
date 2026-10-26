@@ -13,6 +13,7 @@ export interface IcsEvent {
   end: Date;
   summary: string;
   description?: string;
+  location?: string;
   url?: string;
   /** Adds a display reminder this many minutes before the start. */
   alarmMinutesBefore?: number;
@@ -90,6 +91,7 @@ function eventLines(e: IcsEvent, now: Date): string[] {
     `SUMMARY:${escapeText(e.summary)}`,
   ];
   if (e.description) lines.push(`DESCRIPTION:${escapeText(e.description)}`);
+  if (e.location) lines.push(`LOCATION:${escapeText(e.location)}`);
   if (e.url) lines.push(`URL:${plainValue(e.url)}`);
   if (e.alarmMinutesBefore !== undefined) {
     lines.push(

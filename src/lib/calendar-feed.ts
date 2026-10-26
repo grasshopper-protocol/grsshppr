@@ -9,6 +9,7 @@
 
 import { createHash, randomBytes } from "crypto";
 import type { IcsEvent } from "./ical";
+import { sessionEventText } from "./calendar/event-text";
 
 export const FEED_PAST_DAYS = 30;
 export const FEED_FUTURE_DAYS = 90;
@@ -43,21 +44,24 @@ export interface FeedSession {
   endsAt: Date;
   partnerName: string;
   role: "mentor" | "mentee";
+  videoUrl: string | null;
 }
 
 /** Calendar events for the feed: confirmed and completed sessions only. */
 export function feedEvents(sessions: FeedSession[], baseUrl: string): IcsEvent[] {
   return sessions
     .filter((s) => s.status === "confirmed" || s.status === "completed")
-    .map((s) => ({
-      uid: `session-${s.id}@grsshppr.org`,
-      start: s.startsAt,
-      end: s.endsAt,
-      summary: `Session with ${s.partnerName}`,
-      description: `${s.role === "mentor" ? "You're mentoring" : "You're learning"} on Grsshppr.\n\n${baseUrl}/session/${s.id}`,
-      url: `${baseUrl}/session/${s.id}`,
-      alarmMinutesBefore: 15,
-    }));
+    .map((s) => {
+      const sessionUrl = `${baseUrl}/session/${s.id}`;
+      return {
+        uid: `session-${s.id}@grsshppr.org`,
+        start: s.startsAt,
+        end: s.endsAt,
+        ...sessionEventText({ ...s, sessionUrl, videoUrl: s.status === "confirmed" ? s.videoUrl : null }),
+        url: sessionUrl,
+        alarmMinutesBefore: 15,
+      };
+    });
 }
 
 /** Ways to subscribe: the https URL to paste, webcal:// for Apple/Outlook, and Google's add link. */

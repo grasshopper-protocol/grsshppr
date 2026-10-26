@@ -2,10 +2,8 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { getSessionWithUsers } from "@/core/booking/queries";
-import { db } from "@/lib/db";
-import { sessionGoals, goals } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
 import { buildCalendar } from "@/lib/ical";
+import { sessionEventText } from "@/lib/calendar/event-text";
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://grsshppr.org";
 
@@ -38,40 +36,17 @@ export async function GET(
   const partnerFirstName =
     partnerName.split(" ")[0].toLowerCase().normalize("NFKD").replace(/[^a-z0-9-]/g, "") || "session";
 
-  // Fetch linked goals
-  const linkedGoals = await db
-    .select({ title: goals.title })
-    .from(sessionGoals)
-    .innerJoin(goals, eq(goals.id, sessionGoals.goalId))
-    .where(eq(sessionGoals.sessionId, s.id));
-
   const startDate = new Date(s.startsAt);
   const endDate = new Date(s.endsAt);
-  // Build description
-  const descLines: string[] = [];
-  if (isMentor) {
-    descLines.push(`Mentoring session with ${mentee.name}`);
-  } else {
-    descLines.push(`Session with ${mentor.name}`);
-  }
-  descLines.push("");
-  descLines.push(
-    // The event itself uses exact instants; this description line can't know the reader's zone, so it says UTC (#160).
-    `Date: ${startDate.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" })} at ${startDate.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: "UTC" })} — ${endDate.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: "UTC", timeZoneName: "short" })}`
-  );
-  if (linkedGoals.length > 0) {
-    descLines.push("");
-    descLines.push("Goals:");
-    for (const g of linkedGoals) {
-      descLines.push(`• ${g.title}`);
-    }
-  }
-  descLines.push("");
-  descLines.push(`Session link: ${BASE_URL}/session/${s.id}`);
-
-  const summary = isMentor
-    ? `Mentor: ${mentee.name}`
-    : `Session with ${mentor.name}`;
+  const sessionUrl = `${BASE_URL}/session/${s.id}`;
+  // Same wording as the feed and Google events (RFC-0012): the partner's name,
+  // the video link, the session page — never goals, which stay private (ADR-0015).
+  const text = sessionEventText({
+    partnerName,
+    role: isMentor ? "mentor" : "mentee",
+    sessionUrl,
+    videoUrl: s.status === "confirmed" ? s.videoUrl : null,
+  });
 
   const dateStr = startDate.toISOString().slice(0, 10); // YYYY-MM-DD
   const filename = `grsshppr-${partnerFirstName}-${dateStr}.ics`;
@@ -85,9 +60,8 @@ export async function GET(
           uid: `session-${s.id}@grsshppr.org`,
           start: startDate,
           end: endDate,
-          summary,
-          description: descLines.join("\n"),
-          url: `${BASE_URL}/session/${s.id}`,
+          ...text,
+          url: sessionUrl,
           alarmMinutesBefore: 15,
         },
       ],
