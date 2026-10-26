@@ -48,7 +48,10 @@ When acting on this repository, an agent MUST:
   logic includes a test in the same change and must not lower the coverage gate
   (see [ADR-0011](decisions/ADR-0011-testing-gate.md) and
   [ENGINEERING.md](ENGINEERING.md)). Logic that isn't unit-testable in place is
-  extracted into a pure helper under `src/lib` and tested there.
+  extracted into a pure helper under `src/lib` and tested there. Logic whose
+  correctness depends on the database (transactions, locks, constraints,
+  cascades, concurrency) also ships with an integration test in `integration/`
+  ([ADR-0021](decisions/ADR-0021-postgres-integration-tests.md)).
 - **Verify green before pushing.** Run `pnpm verify` (typecheck + lint) before
   pushing a branch. A branch that fails `pnpm typecheck` must not be pushed —
   typecheck is exactly what `next build` (Vercel) enforces. The

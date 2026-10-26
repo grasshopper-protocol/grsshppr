@@ -63,6 +63,42 @@ jobs:
         run: pnpm lint
         continue-on-error: true
 
+  # Hard gate (RFC-0014): behaviour that only shows against a real database —
+  # locks, transactions, constraints, cascades — runs against an ephemeral
+  # Postgres with every committed migration applied.
+  integration:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17 # ponytail: tag-pinned, same as the build job
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: grasshopper_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      # The suite refuses any database whose name doesn't contain "test".
+      INTEGRATION_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/grasshopper_test
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/grasshopper_test
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Apply migrations
+        run: pnpm db:migrate
+      - name: Integration tests
+        run: pnpm test:integration
+
   # Hard gate: a real production build must succeed. `quality` only runs `tsc`,
   # which does NOT catch build/bundler/deploy-time failures (see ADR-0012 and the
   # 2026-08-24 Next 16.3 Turbopack tracing incident). Uses an ephemeral Postgres

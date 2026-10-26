@@ -9,3 +9,8 @@ if (!process.env.DATABASE_URL) {
 const client = postgres(process.env.DATABASE_URL);
 
 export const db = drizzle(client, { schema });
+
+/** Close the connection pool — for scripts and integration tests that must exit. */
+export async function closeDb() {
+  await client.end();
+}
