@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { ArrowLeft, VideoCamera } from "@phosphor-icons/react/dist/ssr";
 import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { SessionActions } from "./actions";
 import { SessionNotes } from "@/modules/notes/session-notes";
 import { FeedbackPrompt } from "@/core/booking/feedback-prompt";
@@ -112,7 +113,7 @@ export default async function SessionPage({
           href={session.videoUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className={buttonVariants({ variant: "outline", className: "mt-4" })}
+          className={cn(buttonVariants({ variant: "outline", className: "mt-4" }))}
         >
           <VideoCamera size={16} />
           Join video call
