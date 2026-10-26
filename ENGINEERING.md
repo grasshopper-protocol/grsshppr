@@ -30,7 +30,7 @@ core/
 modules/
   notes/          → Shared session notes (opt-in per mentoring pair)
   goals/          → Goal setting + progress tracking (opt-in per mentoring pair)
-  calendar/       → Private calendar subscription feed (opt-in per user, RFC-0012)
+  calendar/       → Calendar feed and Google Calendar connection (opt-in per user, RFC-0012)
 ```
 
 **Rules:**
@@ -125,7 +125,7 @@ This project follows lazy-senior-dev principles:
 - Error messages: actionable, not apologetic (see DESIGN.md tone section)
 
 ### Data Lifecycle
-- `deleteProfile()` in `src/core/profiles/queries.ts` is the canonical account-deletion function ([ADR-0016](decisions/ADR-0016-account-deletion-keeps-partner-history.md)). In one transaction it deletes the user's personal data (profile, availability, goals, the feedback they gave, notifications, sign-in data, calendar feed) — but **keeps partners' history**: shared sessions and their notes are reassigned to the `deleted-user` placeholder, upcoming ones are cancelled with a notification, and feedback prompts naming the user are deleted.
+- `deleteProfile()` in `src/core/profiles/queries.ts` is the canonical account-deletion function ([ADR-0016](decisions/ADR-0016-account-deletion-keeps-partner-history.md)). In one transaction it deletes the user's personal data (profile, availability, goals, the feedback they gave, notifications, sign-in data, calendar feed, Google Calendar connection — revoked at Google first) — but **keeps partners' history**: shared sessions and their notes are reassigned to the `deleted-user` placeholder, upcoming ones are cancelled with a notification, and feedback prompts naming the user are deleted.
 - When adding a new table or storing new user-associated data, decide which side it falls on — the user's own data (delete it, or cascade from `users`) or shared history (keep it, reassigned) — and update `deleteProfile()` and the Privacy Policy to match.
 
 ### Notifications & Feedback
