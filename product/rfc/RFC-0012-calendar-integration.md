@@ -606,5 +606,7 @@ Recorded so the research isn't lost; **not** accepted by this RFC.
 Accepted 2026-10-25 by natos (sole maintainer; lazy consensus per
 [GOVERNANCE.md](../../governance/GOVERNANCE.md)). Decision record:
 [ADR-0014](../../decisions/ADR-0014-calendar-connection-auth-boundary.md).
-Accepted in #144 (docs only). Implementation PRs: none yet — Phase 0 not
-started; tracked in [#142](https://github.com/grasshopper-protocol/grsshppr/issues/142).
+Accepted in #144 (docs only). Tracked in
+[#142](https://github.com/grasshopper-protocol/grsshppr/issues/142).
+Implementation: Phase 0 step 1 (shared ICS builder) #177; step 2 (feed,
+`calendar_feeds`, Settings → Calendar) — see the PR for #142.

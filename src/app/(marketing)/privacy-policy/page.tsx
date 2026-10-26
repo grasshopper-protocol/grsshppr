@@ -18,7 +18,7 @@ const REPO = "https://github.com/grasshopper-protocol/grsshppr";
 
 export default function PrivacyPolicyPage() {
   return (
-    <LegalPage title="Privacy Policy" updated="25 October 2026">
+    <LegalPage title="Privacy Policy" updated="26 October 2026">
       <p>
         Grsshppr (&ldquo;Grsshppr&rdquo;, &ldquo;we&rdquo;, &ldquo;us&rdquo;) is a free, open-source
         mentoring platform at grsshppr.org. This policy explains what personal data we collect, why,
@@ -100,6 +100,12 @@ export default function PrivacyPolicyPage() {
           <li>
             The people you have sessions with can see your name and picture, the session details,
             shared notes, and goals linked to your sessions.
+          </li>
+          <li>
+            <strong className="text-foreground">Your calendar link, if you create one.</strong> Anyone
+            with the link can see the times of your confirmed sessions and the names of the people you
+            meet — never email addresses or goals. We store only a scrambled (hashed) form of the link;
+            you can replace it or turn it off in Settings at any time.
           </li>
         </LegalList>
       </LegalSection>

@@ -30,6 +30,7 @@ core/
 modules/
   notes/          → Shared session notes (opt-in per mentoring pair)
   goals/          → Goal setting + progress tracking (opt-in per mentoring pair)
+  calendar/       → Private calendar subscription feed (opt-in per user, RFC-0012)
 ```
 
 **Rules:**

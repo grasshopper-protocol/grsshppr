@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Fingerprint, Trash, Key } from "@phosphor-icons/react";
 import { authClient } from "@/lib/auth-client";
+import { CalendarFeedSettings } from "@/modules/calendar/feed-settings";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -153,6 +154,8 @@ export default function SettingsPage() {
           {passkeys.length ? "Add another passkey" : "Register a passkey"}
         </Button>
       </div>
+
+      <CalendarFeedSettings />
 
       <div className="mt-10 border-t pt-6">
         <h2 className="text-lg font-semibold tracking-tight text-destructive">
