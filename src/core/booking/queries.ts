@@ -162,7 +162,8 @@ export async function updateSessionStatus(
 ) {
   const [updated] = await executor
     .update(sessions)
-    .set({ status, ...(cancelReason && status === "cancelled" ? { cancelReason } : {}) })
+    // A cancelled session's video call is over: drop the link (RFC-0012 §5).
+    .set({ status, ...(status === "cancelled" ? { videoUrl: null, ...(cancelReason ? { cancelReason } : {}) } : {}) })
     .where(eq(sessions.id, id))
     .returning();
   return updated;

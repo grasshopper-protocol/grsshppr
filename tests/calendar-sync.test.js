@@ -13,6 +13,8 @@ import assert from "node:assert/strict";
 import {
   MAX_SYNC_ATTEMPTS,
   classifyGoogleFailure,
+  eventVideoUrl,
+  failureOutcome,
   googleEventBody,
   googleEventId,
   nextAttempt,
@@ -93,6 +95,13 @@ describe("classifyGoogleFailure", () => {
     assert.equal(classifyGoogleFailure(410), "gone");
     assert.equal(classifyGoogleFailure(409), "conflict");
     assert.equal(classifyGoogleFailure(403, "forbidden"), "permanent");
+    assert.equal(classifyGoogleFailure(403, "quotaExceeded"), "transient");
+    assert.equal(classifyGoogleFailure(403, "insufficientPermissions"), "auth");
+  });
+
+  it("blames our credentials, not the user, for a bad client", () => {
+    assert.equal(classifyGoogleFailure(401, "invalid_client"), "config");
+    assert.equal(classifyGoogleFailure(400, "unauthorized_client"), "config");
     assert.equal(classifyGoogleFailure(400), "permanent");
   });
 });
@@ -103,5 +112,46 @@ describe("nextAttempt", () => {
     assert.equal(nextAttempt(0, now).getTime() - now.getTime(), 3_600_000);
     assert.equal(nextAttempt(2, now).getTime() - now.getTime(), 4 * 3_600_000);
     assert.equal(nextAttempt(MAX_SYNC_ATTEMPTS - 1, now), null);
+  });
+});
+
+describe("failureOutcome", () => {
+  const now = new Date("2026-10-26T00:00:00Z");
+  it("retries transient failures until attempts run out, then parks", () => {
+    assert.deepEqual(failureOutcome("transient", 0, now), { kind: "retry", at: nextAttempt(0, now) });
+    assert.deepEqual(failureOutcome("transient", MAX_SYNC_ATTEMPTS - 1, now), { kind: "park" });
+  });
+
+  it("holds rows for a broken grant and parks what Google will never accept", () => {
+    assert.deepEqual(failureOutcome("auth", 0, now), { kind: "hold" });
+    for (const f of ["permanent", "gone", "conflict"]) assert.deepEqual(failureOutcome(f, 0, now), { kind: "park" }, f);
+  });
+
+  it("retries a credentials problem without holding the user's work", () => {
+    assert.deepEqual(failureOutcome("config", 0, now), { kind: "retry", at: nextAttempt(0, now) });
+  });
+});
+
+describe("eventVideoUrl", () => {
+  it("reads the Meet link from hangoutLink or the video entry point", () => {
+    assert.equal(eventVideoUrl({ hangoutLink: "https://meet.google.com/abc-defg-hij" }), "https://meet.google.com/abc-defg-hij");
+    const entryPoints = [
+      { entryPointType: "phone", uri: "tel:+1-555" },
+      { entryPointType: "video", uri: "https://meet.google.com/xyz" },
+    ];
+    assert.equal(eventVideoUrl({ conferenceData: { entryPoints } }), "https://meet.google.com/xyz");
+  });
+
+  it("returns null while the Meet is pending or for anything that isn't https", () => {
+    assert.equal(eventVideoUrl({}), null);
+    assert.equal(eventVideoUrl({ conferenceData: {} }), null);
+    assert.equal(eventVideoUrl({ hangoutLink: "javascript:alert(1)" }), null);
+    assert.equal(eventVideoUrl({ hangoutLink: "not a url" }), null);
+  });
+
+  it("accepts only Google Meet links", () => {
+    assert.equal(eventVideoUrl({ hangoutLink: "https://evil.example/meet" }), null);
+    assert.equal(eventVideoUrl({ hangoutLink: "https://meet.google.com.evil.example/x" }), null);
+    assert.equal(eventVideoUrl({ hangoutLink: "http://meet.google.com/abc" }), null);
   });
 });

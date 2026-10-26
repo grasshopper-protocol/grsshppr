@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { users } from "@/lib/db/schema";
+import { sessions, users } from "@/lib/db/schema";
 import { sendEmail } from "@/lib/email";
 import { SessionConfirmedEmail, SessionCancelledEmail } from "@/lib/emails/session-emails";
 import { planTransitionEffects, type TransitionTo } from "@/lib/session-transitions";
@@ -29,6 +29,8 @@ export async function runTransitionEffects({
     const actorIsMentor = actorId === session.mentorId;
 
     if (effects.email.template === "confirmed" && mentee?.email) {
+      // Read now: the calendar sync that ran just before may have added a Meet link (RFC-0012 §7).
+      const [current] = await db.select({ videoUrl: sessions.videoUrl }).from(sessions).where(eq(sessions.id, session.id));
       await sendEmail({
         to: mentee.email,
         subject: `Session confirmed with ${mentor?.name}`,
@@ -37,6 +39,7 @@ export async function runTransitionEffects({
           menteeName: mentee.name,
           startsAt: session.startsAt.toISOString(),
           endsAt: session.endsAt.toISOString(),
+          videoUrl: current?.videoUrl,
         }),
       });
     }

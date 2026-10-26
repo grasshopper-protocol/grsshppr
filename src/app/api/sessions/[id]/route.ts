@@ -6,6 +6,7 @@ import { z } from "zod";
 import { safeJson, uuidParam, rateLimit } from "@/lib/api-utils";
 import { runTransitionEffects } from "@/core/booking/transition-effects";
 import { enqueueSessionSync } from "@/modules/calendar/sync-queries";
+import { drainCalendar } from "@/modules/calendar/drain";
 import { db } from "@/lib/db";
 
 const statusSchema = z.object({
@@ -84,8 +85,15 @@ export async function PATCH(
     return row;
   });
 
-  // Emails and notifications — shared with the one-click email route (#140)
-  after(() => runTransitionEffects({ session: existing, to: parsed.data.status, actorId: session.user.id }));
+  // Calendar first, so the confirmation email can carry the Meet link (RFC-0012 §7);
+  // then emails and notifications — shared with the one-click email route (#140)
+  after(async () => {
+    try {
+      await drainCalendar({ sessionId: id }); // time-boxed; never throws
+    } finally {
+      await runTransitionEffects({ session: existing, to: parsed.data.status, actorId: session.user.id });
+    }
+  });
 
   return NextResponse.json({ session: updated });
 }

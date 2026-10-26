@@ -1,6 +1,6 @@
 # ADR-0022: A separate lock column for the calendar outbox
 
-- **Status:** Proposed
+- **Status:** Accepted. #195 was merged on 2026-10-26, before its 48-hour light-track window and with this ADR still Proposed; recorded in the [post-mortem](../postmortems/2026-10-26-calendar-drain-red-main.md). The column is additive and unused until the code that needs it lands.
 - **Date:** 2026-10-26
 - **Discipline:** Engineering
 - **Source RFC:** [RFC-0012](../product/rfc/RFC-0012-calendar-integration.md) §5 · light track ([RFC-0013](../product/rfc/RFC-0013-light-track-schema-changes.md), [ADR-0019](ADR-0019-light-track-schema-changes.md)) · Issue #194
