@@ -13,6 +13,7 @@
     "prepare": "git config core.hooksPath .githooks || true",
     "db:generate": "drizzle-kit generate",
     "db:check": "tsx scripts/check-migrations.ts",
+    "adr:check": "tsx scripts/check-adrs.ts",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
