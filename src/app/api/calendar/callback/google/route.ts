@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
 
   // Same user, same attempt, within 10 minutes, untampered — or nothing.
   const verifier = verifyState(request.cookies.get(OAUTH_STATE_COOKIE)?.value, {
-    appSecret: process.env.BETTER_AUTH_SECRET!,
+    appSecret: process.env.BETTER_AUTH_SECRET,
     state: params.get("state"),
     userId: session.user.id,
     now: Date.now(),

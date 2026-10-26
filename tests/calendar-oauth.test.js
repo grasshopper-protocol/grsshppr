@@ -23,7 +23,7 @@ import {
   verifyState,
 } from "../src/lib/calendar/oauth.js";
 
-const SECRET = "app-secret-for-tests-0123456789";
+const SECRET = "app-secret-for-tests-0123456789abcdef";
 const NOW = 1_800_000_000_000;
 const payload = { state: "st4te", verifier: "v3rifier", userId: "u1", exp: NOW + STATE_TTL_MS };
 const ok = { appSecret: SECRET, state: "st4te", userId: "u1", now: NOW };
@@ -71,12 +71,21 @@ describe("state cookie", () => {
     const [body] = c.split(".");
     const forgedBody = Buffer.from(JSON.stringify({ ...payload, userId: "attacker" })).toString("base64url");
     assert.equal(verifyState(`${forgedBody}.${c.split(".")[1]}`, { ...ok, userId: "attacker" }), null);
-    assert.equal(verifyState(signState(payload, "another-secret"), ok), null);
+    assert.equal(verifyState(signState(payload, "another-app-secret-0123456789abcdef"), ok), null);
     assert.equal(verifyState(`${body}.x`, ok), null);
     assert.equal(verifyState("garbage", ok), null);
     assert.equal(verifyState(undefined, ok), null);
     const notJson = Buffer.from("{not json").toString("base64url");
     assert.equal(verifyState(`${notJson}.${signStateRaw(notJson)}`, ok), null);
+  });
+
+  it("refuses to sign or accept with a missing or placeholder app secret", () => {
+    assert.throws(() => signState(payload, undefined));
+    assert.throws(() => signState(payload, ""));
+    assert.throws(() => signState(payload, "short-secret"));
+    const c = signState(payload, SECRET);
+    assert.equal(verifyState(c, { ...ok, appSecret: undefined }), null);
+    assert.equal(verifyState(c, { ...ok, appSecret: "" }), null);
   });
 });
 

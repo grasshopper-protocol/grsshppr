@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
   const verifier = randomToken();
   const cookie = signState(
     { state, verifier, userId: session.user.id, exp: Date.now() + STATE_TTL_MS },
-    process.env.BETTER_AUTH_SECRET!
+    process.env.BETTER_AUTH_SECRET
   );
   const response = NextResponse.redirect(
     authorizeUrl({ clientId: config.clientId, redirectUri: googleRedirectUri(), state, codeChallenge: pkceChallenge(verifier) })

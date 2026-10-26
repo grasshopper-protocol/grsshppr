@@ -53,12 +53,16 @@ export interface OAuthState {
   exp: number;
 }
 
-function stateKey(appSecret: string): Buffer {
+/** Below this, the secret is missing or a placeholder — refuse rather than sign with it. */
+export const MIN_SECRET_LENGTH = 32;
+
+function stateKey(appSecret: string | undefined): Buffer {
+  if (!appSecret || appSecret.length < MIN_SECRET_LENGTH) throw new Error("App secret is missing or too short");
   return Buffer.from(hkdfSync("sha256", appSecret, "", "grsshppr calendar oauth state v1", 32));
 }
 
 /** The cookie value: base64url(JSON) + "." + HMAC. */
-export function signState(payload: OAuthState, appSecret: string): string {
+export function signState(payload: OAuthState, appSecret: string | undefined): string {
   const body = Buffer.from(JSON.stringify(payload)).toString("base64url");
   const sig = createHmac("sha256", stateKey(appSecret)).update(body).digest("base64url");
   return `${body}.${sig}`;
@@ -71,9 +75,9 @@ export function signState(payload: OAuthState, appSecret: string): string {
  */
 export function verifyState(
   cookie: string | undefined,
-  p: { appSecret: string; state: string | null; userId: string; now: number }
+  p: { appSecret: string | undefined; state: string | null; userId: string; now: number }
 ): string | null {
-  if (!cookie || !p.state) return null;
+  if (!cookie || !p.state || !p.appSecret || p.appSecret.length < MIN_SECRET_LENGTH) return null;
   const [body, sig] = cookie.split(".");
   if (!body || !sig) return null;
   const expected = createHmac("sha256", stateKey(p.appSecret)).update(body).digest("base64url");
