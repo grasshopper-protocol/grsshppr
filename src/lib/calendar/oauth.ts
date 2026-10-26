@@ -92,3 +92,22 @@ export function verifyState(
   if (s1.length !== s2.length || !timingSafeEqual(s1, s2)) return null;
   return payload.verifier;
 }
+
+/**
+ * The account's stable id and email from an ID token received directly from
+ * Google's token endpoint over TLS (OIDC Core §3.1.3.7 lets a client skip the
+ * signature check in exactly that case). Returns null if the claims we rely on
+ * are missing or the token isn't for our client.
+ */
+export function idTokenClaims(idToken: string | undefined, clientId: string): { sub: string; email: string | null } | null {
+  const payload = idToken?.split(".")[1];
+  if (!payload) return null;
+  try {
+    const claims = JSON.parse(Buffer.from(payload, "base64url").toString("utf8"));
+    const audience = Array.isArray(claims.aud) ? claims.aud : [claims.aud];
+    if (typeof claims.sub !== "string" || !claims.sub || !audience.includes(clientId)) return null;
+    return { sub: claims.sub, email: typeof claims.email === "string" ? claims.email : null };
+  } catch {
+    return null;
+  }
+}

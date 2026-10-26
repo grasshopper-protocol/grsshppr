@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CalendarPlus, Check, Copy } from "@phosphor-icons/react";
+import { GoogleCalendarSettings } from "./google-calendar-settings";
 
 type FeedUrls = { https: string; webcal: string; google: string };
 type FeedState =
@@ -152,6 +153,8 @@ export function CalendarFeedSettings() {
           {error}
         </p>
       )}
+
+      <GoogleCalendarSettings />
     </div>
   );
 }

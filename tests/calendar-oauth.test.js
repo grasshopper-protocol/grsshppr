@@ -16,6 +16,7 @@ import {
   STATE_TTL_MS,
   authorizeUrl,
   hasCalendarScope,
+  idTokenClaims,
   pkceChallenge,
   randomToken,
   signState,
@@ -84,3 +85,20 @@ function signStateRaw(body) {
   const key = Buffer.from(hkdfSync("sha256", SECRET, "", "grsshppr calendar oauth state v1", 32));
   return createHmac("sha256", key).update(body).digest("base64url");
 }
+
+describe("idTokenClaims", () => {
+  const token = (claims) => `h.${Buffer.from(JSON.stringify(claims)).toString("base64url")}.sig`;
+
+  it("reads sub and email for our client", () => {
+    assert.deepEqual(idTokenClaims(token({ sub: "123", email: "a@b.test", aud: "cid" }), "cid"), { sub: "123", email: "a@b.test" });
+    assert.deepEqual(idTokenClaims(token({ sub: "123", aud: ["other", "cid"] }), "cid"), { sub: "123", email: null });
+  });
+
+  it("rejects tokens for another client, without a subject, or malformed", () => {
+    assert.equal(idTokenClaims(token({ sub: "123", aud: "someone-else" }), "cid"), null);
+    assert.equal(idTokenClaims(token({ aud: "cid" }), "cid"), null);
+    assert.equal(idTokenClaims("not-a-jwt", "cid"), null);
+    assert.equal(idTokenClaims(`h.${Buffer.from("{bad").toString("base64url")}.s`, "cid"), null);
+    assert.equal(idTokenClaims(undefined, "cid"), null);
+  });
+});
