@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CalendarPlus, Check, Copy } from "@phosphor-icons/react";
-import { GoogleCalendarSettings } from "./google-calendar-settings";
+import { GoogleCalendarSettings, type GoogleCalendarStatus } from "./google-calendar-settings";
 
 type FeedUrls = { https: string; webcal: string; google: string };
 type FeedState =
@@ -14,8 +14,10 @@ type FeedState =
   | { status: "new"; createdAt: string; urls: FeedUrls };
 
 /**
- * Settings → Calendar (RFC-0012 §1): a private subscription link to the user's
- * sessions. The link is shown once, right after it's made; afterwards the user
+ * Settings → Calendar (RFC-0012): Google Calendar first when it's available,
+ * then a private subscription link for other calendar apps (§1) — collapsed
+ * while Google is connected, with a warning if both would put each session in
+ * the same calendar twice. The link is shown once, right after it's made; afterwards the user
  * can make a new one (the old one stops working) or turn it off.
  */
 export function CalendarFeedSettings() {
@@ -23,6 +25,8 @@ export function CalendarFeedSettings() {
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [google, setGoogle] = useState<GoogleCalendarStatus>({ available: false, connected: false });
+  const [showFeed, setShowFeed] = useState(false);
 
   useEffect(() => {
     fetch("/api/calendar/feed")
@@ -74,15 +78,9 @@ export function CalendarFeedSettings() {
   const since = (iso: string) =>
     new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
 
-  return (
-    <div className="mt-10 border-t pt-6">
-      <h2 className="text-lg font-semibold tracking-tight">Calendar</h2>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Subscribe to your sessions from Google Calendar, Apple Calendar or Outlook. Confirmed sessions
-        appear automatically and cancelled ones disappear. Calendar apps refresh subscriptions every few
-        hours.
-      </p>
-
+  const hasFeed = feed.status === "on" || feed.status === "new";
+  const feedControls = (
+    <>
       {feed.status === "loading" && <p className="mt-3 text-sm text-muted-foreground">Loading…</p>}
 
       {feed.status === "off" && (
@@ -154,7 +152,53 @@ export function CalendarFeedSettings() {
         </p>
       )}
 
-      <GoogleCalendarSettings />
-    </div>
+    </>
+  );
+
+  return (
+    <section id="calendar" className="mt-10 scroll-mt-20 border-t pt-6">
+      <h2 className="text-lg font-semibold tracking-tight">Calendar</h2>
+      {google.available ? (
+        <p className="mt-1 text-sm text-muted-foreground">Get your sessions into the calendar you already use.</p>
+      ) : (
+        <p className="mt-1 text-sm text-muted-foreground">
+          Subscribe to your sessions from Google Calendar, Apple Calendar or Outlook. Confirmed sessions appear
+          automatically and cancelled ones disappear. Calendar apps refresh subscriptions every few hours.
+        </p>
+      )}
+
+      <GoogleCalendarSettings onStatus={setGoogle} />
+
+      {google.available ? (
+        <div className="mt-8">
+          <h3 className="text-base font-semibold">Other calendar apps</h3>
+          {google.connected && !hasFeed && !showFeed ? (
+            <button
+              type="button"
+              className="mt-1 text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
+              onClick={() => setShowFeed(true)}
+            >
+              Use another calendar app? Get a subscription link
+            </button>
+          ) : (
+            <>
+              <p className="mt-1 text-sm text-muted-foreground">
+                A private subscription link for Apple Calendar, Outlook and others. These apps check for changes every
+                few hours.
+              </p>
+              {google.connected && hasFeed && (
+                <p role="note" className="mt-3 rounded-md border border-border bg-muted/50 p-3 text-sm">
+                  You&apos;re also subscribed with a calendar link. If that subscription is in the same Google
+                  Calendar, you&apos;ll see each session twice — turn the link off to avoid it.
+                </p>
+              )}
+              {feedControls}
+            </>
+          )}
+        </div>
+      ) : (
+        feedControls
+      )}
+    </section>
   );
 }

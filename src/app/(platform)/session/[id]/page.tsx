@@ -14,6 +14,8 @@ import { SessionNotes } from "@/modules/notes/session-notes";
 import { FeedbackPrompt } from "@/core/booking/feedback-prompt";
 import { feedbackState } from "@/lib/feedback-prompts";
 import { LocalTime } from "@/components/local-time";
+import { isTimeToJoin } from "@/lib/booking-dates";
+import { sessionsInGoogleCalendar } from "@/modules/calendar/connection-queries";
 
 type Params = Promise<{ id: string }>;
 
@@ -49,6 +51,8 @@ export default async function SessionPage({
 
   const start = new Date(session.startsAt);
   const end = new Date(session.endsAt);
+  const now = new Date();
+  const inGoogleCalendar = (await sessionsInGoogleCalendar(userId, [session.id])).has(session.id);
 
   const myRating = session.status === "completed" ? await getMyFeedbackRating(session.id, userId) : null;
   const feedback = feedbackState({
@@ -56,7 +60,7 @@ export default async function SessionPage({
     endsAt: end,
     partnerId: partner.id,
     hasGiven: myRating !== null,
-    now: new Date(),
+    now,
   });
 
   return (
@@ -108,15 +112,17 @@ export default async function SessionPage({
       </div>
 
       {/* The Meet link created on the host's Google Calendar event (RFC-0012 §5) */}
-      {session.status === "confirmed" && session.videoUrl?.startsWith("https://") && end > new Date() && (
+      {/* Primary from 15 minutes before the start: it's the one thing to do then */}
+      {session.status === "confirmed" && session.videoUrl?.startsWith("https://") && end > now && (
         <a
           href={session.videoUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className={cn(buttonVariants({ variant: "outline", className: "mt-4" }))}
+          className={cn(buttonVariants({ variant: isTimeToJoin(start, end, now) ? "default" : "outline", className: "mt-4" }))}
         >
           <VideoCamera size={16} />
           Join video call
+          <span className="sr-only">(opens in a new tab)</span>
         </a>
       )}
 
@@ -141,7 +147,8 @@ export default async function SessionPage({
         isMentor={isMentor}
         mentorSlug={isMentor ? undefined : (await getProfileByUserId(session.mentorId))?.slug}
         cancelReason={session.cancelReason}
-        hasEnded={end <= new Date()}
+        hasEnded={end <= now}
+        inGoogleCalendar={inGoogleCalendar}
       />
 
       <div className="mt-8">

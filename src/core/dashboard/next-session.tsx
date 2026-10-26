@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { CalendarDots } from "@phosphor-icons/react/dist/ssr";
+import { CalendarCheck, CalendarDots, VideoCamera } from "@phosphor-icons/react/dist/ssr";
 import type { Session } from "@/types";
 import { LocalTime } from "@/components/local-time";
 
@@ -8,10 +8,12 @@ export function NextSession({
   session,
   partner,
   isMentor,
+  inGoogleCalendar = false,
 }: {
   session: Session;
   partner: { id: string; name: string; image: string | null };
   isMentor: boolean;
+  inGoogleCalendar?: boolean;
 }) {
   const start = new Date(session.startsAt);
   const now = new Date();
@@ -62,14 +64,33 @@ export function NextSession({
         </div>
         <p className="text-sm font-medium text-foreground">{timeUntil}</p>
       </Link>
-      <div className="mt-2 flex justify-end">
-        <a
-          href={`/api/sessions/${session.id}/ical`}
-          className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
-        >
-          <CalendarDots size={12} />
-          Add to calendar
-        </a>
+      <div className="mt-2 flex flex-wrap items-center justify-end gap-x-4 gap-y-1">
+        {session.videoUrl?.startsWith("https://") && (
+          <a
+            href={session.videoUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-xs font-medium text-foreground hover:underline underline-offset-4"
+          >
+            <VideoCamera size={12} />
+            Join video call
+            <span className="sr-only">(opens in a new tab)</span>
+          </a>
+        )}
+        {inGoogleCalendar ? (
+          <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+            <CalendarCheck size={12} />
+            In your Google Calendar
+          </span>
+        ) : (
+          <a
+            href={`/api/sessions/${session.id}/ical`}
+            className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+          >
+            <CalendarDots size={12} />
+            Add to calendar
+          </a>
+        )}
       </div>
     </div>
   );

@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { CalendarPlus, ArrowClockwise, ArrowsClockwise } from "@phosphor-icons/react";
+import { CalendarCheck, CalendarPlus, ArrowClockwise, ArrowsClockwise } from "@phosphor-icons/react";
 
 export function SessionActions({
   sessionId,
@@ -13,6 +13,7 @@ export function SessionActions({
   mentorSlug,
   cancelReason,
   hasEnded,
+  inGoogleCalendar = false,
 }: {
   sessionId: string;
   status: string;
@@ -20,6 +21,7 @@ export function SessionActions({
   mentorSlug?: string;
   cancelReason?: string | null;
   hasEnded: boolean;
+  inGoogleCalendar?: boolean;
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -60,7 +62,14 @@ export function SessionActions({
 
   return (
     <div className="mt-6 space-y-3">
-      {(status === "confirmed" || status === "completed") && (
+      {(status === "confirmed" || status === "completed") && inGoogleCalendar && (
+        <p className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
+          <CalendarCheck size={16} />
+          In your Google Calendar
+        </p>
+      )}
+
+      {(status === "confirmed" || status === "completed") && !inGoogleCalendar && (
         <a
           href={`/api/sessions/${sessionId}/ical`}
           download

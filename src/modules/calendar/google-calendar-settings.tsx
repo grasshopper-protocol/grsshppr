@@ -1,67 +1,117 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { GoogleLogo } from "@phosphor-icons/react";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { CheckCircle, GoogleLogo } from "@phosphor-icons/react";
 
 type Connection = { email: string | null; status: string; createdAt: string } | null;
 type State = { status: "loading" } | { status: "unavailable" } | { status: "ready"; connection: Connection };
+export type GoogleCalendarStatus = { available: boolean; connected: boolean };
 
+// What came back from Google's screen (?calendar=…). "connected" is shown by the
+// connected state itself; the others only make sense when nothing is connected.
 const OUTCOMES: Record<string, { text: string; error?: boolean }> = {
-  connected: { text: "Google Calendar connected. Your upcoming sessions will appear there shortly." },
-  denied: { text: "Google Calendar wasn't connected — you cancelled on Google's screen." },
-  permission: { text: "Grsshppr needs permission to add events to your calendar. Connect again and keep that box ticked.", error: true },
+  denied: { text: "Google Calendar isn't connected. You can connect it any time." },
+  permission: {
+    text: "Grsshppr needs permission to create and change events on calendars you own. Connect again, and on Google's screen leave that permission ticked.",
+    error: true,
+  },
   failed: { text: "Couldn't connect Google Calendar. Please try again.", error: true },
 };
 
 /**
  * Settings → Calendar → Google Calendar (RFC-0012 Phase 1). Hidden unless the
- * feature is configured on this deployment.
+ * feature is configured on this deployment and this person may connect.
  */
-export function GoogleCalendarSettings() {
+export function GoogleCalendarSettings({ onStatus }: { onStatus?: (s: GoogleCalendarStatus) => void }) {
   const [state, setState] = useState<State>({ status: "loading" });
   const [busy, setBusy] = useState(false);
   const [outcome, setOutcome] = useState<string | null>(null);
+  const [confirming, setConfirming] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     // The result of the Google round trip arrives as ?calendar=…; show it once, then tidy the URL.
     const params = new URLSearchParams(window.location.search);
     const result = params.get("calendar");
-    if (result && OUTCOMES[result]) {
+    if (result) {
       params.delete("calendar");
-      window.history.replaceState(null, "", `${window.location.pathname}${params.size ? `?${params}` : ""}`);
+      window.history.replaceState(null, "", `${window.location.pathname}${params.size ? `?${params}` : ""}${window.location.hash}`);
     }
     fetch("/api/calendar/connection")
       .then((r) => r.json())
       .then((d) => {
         setState(d.available ? { status: "ready", connection: d.connection } : { status: "unavailable" });
-        if (result && OUTCOMES[result]) setOutcome(result);
+        if (result) setOutcome(result);
+        // The section renders after this fetch, so the browser's own #calendar jump missed it.
+        if (window.location.hash === "#calendar") {
+          requestAnimationFrame(() => document.getElementById("calendar")?.scrollIntoView({ block: "start" }));
+        }
       })
       .catch(() => setState({ status: "unavailable" }));
   }, []);
 
+  useEffect(() => {
+    if (state.status === "loading") return;
+    onStatus?.({
+      available: state.status === "ready",
+      connected: state.status === "ready" && state.connection?.status === "active",
+    });
+  }, [state, onStatus]);
+
   if (state.status !== "ready") return null;
 
   async function disconnect() {
-    if (!confirm("Disconnect Google Calendar? Your upcoming sessions will be removed from it. Past sessions stay.")) return;
     setBusy(true);
+    setError(null);
     try {
       const res = await fetch("/api/calendar/connection", { method: "DELETE" });
-      if (res.ok) setState({ status: "ready", connection: null });
+      if (!res.ok) throw new Error();
+      setState({ status: "ready", connection: null });
+      setConfirming(false);
+      setOutcome(null);
+    } catch {
+      setError("Couldn't disconnect. Try again in a moment.");
     } finally {
       setBusy(false);
     }
   }
 
   const c = state.connection;
-  const message = outcome ? OUTCOMES[outcome] : null;
+  const as = c?.email ? <> as <span className="font-medium">{c.email}</span></> : null;
+  // A failed or cancelled reconnect doesn't touch an existing connection: say so, instead of an alarming message.
+  const message =
+    outcome && outcome !== "connected"
+      ? c?.status === "active"
+        ? { text: "Nothing changed — you're still connected." }
+        : OUTCOMES[outcome]
+      : null;
+
+  const disconnectControls = confirming ? (
+    <div className="mt-3 space-y-2 rounded-md border border-border p-3">
+      <p className="text-sm font-medium">Disconnect Google Calendar?</p>
+      <p className="text-sm text-muted-foreground">
+        {c?.status === "active"
+          ? "Grsshppr will stop updating your calendar and remove your upcoming sessions from it. Past sessions stay."
+          : "Grsshppr can't reach your calendar, so upcoming sessions already in it will stay — remove them there if you need to."}
+      </p>
+      <div className="flex flex-wrap gap-2">
+        <Button variant="destructive" disabled={busy} onClick={disconnect}>
+          {busy ? "Disconnecting…" : "Disconnect"}
+        </Button>
+        <Button variant="outline" disabled={busy} onClick={() => setConfirming(false)}>
+          Keep connected
+        </Button>
+      </div>
+    </div>
+  ) : null;
 
   return (
     <div className="mt-6">
-      <h3 className="text-sm font-medium">Google Calendar</h3>
+      <h3 className="text-base font-semibold">Google Calendar</h3>
       {message && (
-        <p role={message.error ? "alert" : "status"} className={`mt-1 text-sm ${message.error ? "text-destructive" : ""}`}>
+        <p role={message.error ? "alert" : "status"} className={cn("mt-1 text-sm", message.error && "text-destructive")}>
           {message.text}
         </p>
       )}
@@ -69,8 +119,8 @@ export function GoogleCalendarSettings() {
       {!c && (
         <>
           <p className="mt-1 text-sm text-muted-foreground">
-            Add your sessions to your own Google Calendar as they&apos;re confirmed, with a Google Meet link.
-            Grsshppr only creates, updates and removes events for your sessions — it doesn&apos;t read your other
+            Sessions appear as soon as they&apos;re confirmed, disappear if they&apos;re cancelled, and come with a
+            Google Meet link. Grsshppr only manages the events for your sessions — it doesn&apos;t read your other
             events, and adds no one&apos;s email address.
           </p>
           <a href="/api/calendar/connect/google" className={cn(buttonVariants({ variant: "outline", className: "mt-3" }))}>
@@ -82,38 +132,50 @@ export function GoogleCalendarSettings() {
 
       {c && c.status === "active" && (
         <>
-          <p className="mt-1 text-sm">
-            Connected{c.email ? <> as <span className="font-medium">{c.email}</span></> : null}. New and changed
-            sessions appear in your calendar automatically.
+          <p role={outcome === "connected" ? "status" : undefined} className="mt-1 flex items-start gap-1.5 text-sm">
+            <CheckCircle size={16} weight="fill" className="mt-0.5 shrink-0 text-success-text" aria-hidden />
+            <span>
+              Connected{as}.{" "}
+              {outcome === "connected"
+                ? "Your upcoming sessions are on their way to your calendar."
+                : "New and changed sessions appear in your calendar automatically."}
+            </span>
           </p>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="mt-2 text-muted-foreground hover:text-destructive"
-            disabled={busy}
-            onClick={disconnect}
-          >
-            Disconnect
-          </Button>
+          {!confirming && (
+            <Button variant="outline" className="mt-3" disabled={busy} onClick={() => setConfirming(true)}>
+              Disconnect
+            </Button>
+          )}
+          {disconnectControls}
         </>
       )}
 
       {c && c.status !== "active" && (
         <>
           <p role="alert" className="mt-1 text-sm text-destructive">
-            Your Google Calendar connection stopped working{c.email ? ` (${c.email})` : ""}. Reconnect to keep your
-            sessions up to date.
+            Grsshppr can&apos;t reach your Google Calendar{c.email ? ` (${c.email})` : ""} — access may have been
+            removed in your Google account. Until you reconnect, new sessions won&apos;t appear and cancelled ones
+            won&apos;t be removed.
           </p>
-          <div className="mt-3 flex gap-2">
-            <a href="/api/calendar/connect/google" className={cn(buttonVariants({ variant: "outline" }))}>
-              <GoogleLogo size={16} />
-              Reconnect
-            </a>
-            <Button variant="ghost" size="sm" className="text-muted-foreground" disabled={busy} onClick={disconnect}>
-              Disconnect
-            </Button>
-          </div>
+          {!confirming && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              <a href="/api/calendar/connect/google" className={cn(buttonVariants({ variant: "default" }))}>
+                <GoogleLogo size={16} />
+                Reconnect
+              </a>
+              <Button variant="outline" disabled={busy} onClick={() => setConfirming(true)}>
+                Disconnect
+              </Button>
+            </div>
+          )}
+          {disconnectControls}
         </>
+      )}
+
+      {error && (
+        <p role="alert" className="mt-2 text-sm text-destructive">
+          {error}
+        </p>
       )}
     </div>
   );
