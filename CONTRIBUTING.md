@@ -136,6 +136,21 @@ buried in a route or component, extract the pure part into a helper under `src/l
 `booking-dates.ts`, `slug.ts`) and test that. Both run in CI and must pass before merge.
 Trivial one-liners don't need tests.
 
+If your change depends on how the database behaves (transactions, constraints,
+cascades, concurrent requests), add an integration test in `integration/`. To run
+them locally you need a **disposable** database whose name contains `test` — the
+suite empties it:
+
+```bash
+docker compose up -d                       # the local Postgres
+docker compose exec db createdb -U grasshopper grasshopper_test
+export INTEGRATION_DATABASE_URL=postgresql://grasshopper:grasshopper@localhost:5432/grasshopper_test
+DATABASE_URL=$INTEGRATION_DATABASE_URL pnpm db:migrate
+pnpm test:integration
+```
+
+CI runs them on every PR regardless.
+
 ### Error Handling
 
 Validate at system boundaries (API inputs, form submissions). Don't defensively code against impossible states.

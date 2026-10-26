@@ -100,6 +100,14 @@ This project follows lazy-senior-dev principles:
   The consumer imports the helper; the test imports the same helper.
 - No test for obvious one-liners. No test doubles unless absolutely necessary.
 - Tests + coverage must pass in CI before merge (`pnpm test:coverage` is a required check).
+- **Integration tests** ([ADR-0021](decisions/ADR-0021-postgres-integration-tests.md)):
+  `integration/*.test.mjs` run against a real Postgres with every migration
+  applied — for behaviour only a database shows (transactions, advisory locks,
+  constraints, cascades, concurrent runs). Run with `pnpm test:integration`;
+  CI's `integration` job runs them on every PR. They **only** use
+  `INTEGRATION_DATABASE_URL` and refuse any database whose name doesn't contain
+  `test`, because each test empties it. Email goes to an in-process fake of the
+  Resend API (see `integration/helpers.mjs`).
 
 ### Pre-commit gate
 - **`pnpm verify`** runs the same static checks Vercel enforces: `typecheck` (`tsc --noEmit`)
