@@ -6,7 +6,8 @@ import { getProfileByUserId } from "@/core/profiles/queries";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { ArrowLeft } from "@phosphor-icons/react/dist/ssr";
+import { ArrowLeft, VideoCamera } from "@phosphor-icons/react/dist/ssr";
+import { buttonVariants } from "@/components/ui/button";
 import { SessionActions } from "./actions";
 import { SessionNotes } from "@/modules/notes/session-notes";
 import { FeedbackPrompt } from "@/core/booking/feedback-prompt";
@@ -104,6 +105,19 @@ export default async function SessionPage({
           </Badge>
         </div>
       </div>
+
+      {/* The Meet link created on the host's Google Calendar event (RFC-0012 §5) */}
+      {session.status === "confirmed" && session.videoUrl?.startsWith("https://") && end > new Date() && (
+        <a
+          href={session.videoUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={buttonVariants({ variant: "outline", className: "mt-4" })}
+        >
+          <VideoCamera size={16} />
+          Join video call
+        </a>
+      )}
 
       {/* Where the feedback email and bell prompt land (ADR-0018) */}
       {feedback === "open" && (

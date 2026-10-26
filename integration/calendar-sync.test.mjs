@@ -90,8 +90,8 @@ describe("calendar sync queue", () => {
     await db.insert(calendarConnections).values([connection("cm", "m"), connection("ce", "e")]);
     await q.enqueueSessionSync(db, { id: "s1", mentorId: "m", menteeId: "e" });
     const [first, second] = await q.claimDueOutbox({ limit: 10, maxAttempts: 5, leaseMs: 0 });
-    await q.failOutbox(first.id, { attempts: 1, nextAttemptAt: null, errorClass: "permanent", maxAttempts: 5 });
-    await q.completeOutbox(second.id);
+    await q.failOutbox(first, { attempts: 1, nextAttemptAt: null, errorClass: "permanent", maxAttempts: 5 });
+    await q.completeOutbox(second);
     const rows = await outbox();
     assert.equal(rows.length, 1);
     assert.equal(rows[0].lastError, "permanent");

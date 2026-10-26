@@ -1,10 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { rateLimit } from "@/lib/api-utils";
 import { hasCalendarScope, idTokenClaims, verifyState } from "@/lib/calendar/oauth";
 import { exchangeCode } from "@/modules/calendar/google-client";
 import { backfillUpcoming, saveConnection } from "@/modules/calendar/connection-queries";
+import { drainCalendar } from "@/modules/calendar/drain";
 import { getCalendarConfig, googleRedirectUri, OAUTH_STATE_COOKIE, OAUTH_STATE_COOKIE_PATH } from "@/modules/calendar/runtime";
 
 // GET /api/calendar/callback/google — Google sends the user back here (RFC-0012 §2, §9)
@@ -48,13 +49,14 @@ export async function GET(request: NextRequest) {
     const claims = idTokenClaims(tokens.id_token, config.clientId);
     if (!claims) return done("failed");
 
-    await saveConnection({
+    const connectionId = await saveConnection({
       userId: session.user.id,
       tokens: { ...tokens, refresh_token: tokens.refresh_token, scope: tokens.scope! },
       claims,
       config,
     });
     await backfillUpcoming(session.user.id);
+    after(() => drainCalendar({ connectionId })); // upcoming sessions appear straight away
     return done("connected");
   } catch {
     console.error("[calendar] Google connect failed during code exchange");
