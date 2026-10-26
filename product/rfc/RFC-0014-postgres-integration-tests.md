@@ -1,6 +1,6 @@
 # RFC-0014: Postgres-backed integration tests in CI
 
-- **Status:** Draft
+- **Status:** Accepted (2026-10-26)
 - **Author:** natos
 - **Created:** 2026-10-26
 - **Discipline:** Engineering (extends the testing policy of RFC-0009 / ADR-0011)
@@ -84,4 +84,7 @@ None.
 
 ## Outcome
 
-_To be filled on acceptance._
+Accepted 2026-10-26 by natos (sole maintainer; lazy consensus per
+[GOVERNANCE.md](../../governance/GOVERNANCE.md)). Decision record:
+[ADR-0021](../../decisions/ADR-0021-postgres-integration-tests.md).
+Implemented in [#187](https://github.com/grasshopper-protocol/grsshppr/pull/187).

@@ -1,6 +1,6 @@
 # ADR-0021: Postgres-backed integration tests as a CI gate
 
-- **Status:** Proposed (becomes Accepted when its implementation PR merges)
+- **Status:** Accepted
 - **Date:** 2026-10-26
 - **Discipline:** Engineering
 - **Source RFC:** [RFC-0014](../product/rfc/RFC-0014-postgres-integration-tests.md)
@@ -41,5 +41,5 @@ against a throwaway Postgres.
 
 ## Links
 
-- RFC: [RFC-0014](../product/rfc/RFC-0014-postgres-integration-tests.md) · Issue: #163 · Implementation PR: _pending_
+- RFC: [RFC-0014](../product/rfc/RFC-0014-postgres-integration-tests.md) · Issue: #163 · Implementation PR: [#187](https://github.com/grasshopper-protocol/grsshppr/pull/187)
 - Related: [ADR-0011](ADR-0011-testing-gate.md), [ADR-0016](ADR-0016-account-deletion-keeps-partner-history.md), [ADR-0017](ADR-0017-feedback-prompt-once.md), [ADR-0020](ADR-0020-one-rating-per-person.md)
