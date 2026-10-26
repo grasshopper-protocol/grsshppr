@@ -10,7 +10,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { randomBytes } from "node:crypto";
-import { calendarConfig } from "../src/lib/calendar/config.js";
+import { calendarConfig, canConnectCalendar } from "../src/lib/calendar/config.js";
 
 const key = randomBytes(32).toString("base64");
 const full = {
@@ -48,5 +48,24 @@ describe("calendarConfig", () => {
   it("accepts a previous key for rotation", () => {
     const c = calendarConfig({ ...full, CALENDAR_TOKEN_ENC_KEY_PREVIOUS: randomBytes(32).toString("base64") });
     assert.equal(c.keys.previous.length, 32);
+  });
+});
+
+describe("canConnectCalendar (soak allow-list)", () => {
+  it("lets everyone connect when no allow-list is set", () => {
+    assert.equal(canConnectCalendar(calendarConfig(full), "anyone@example.test"), true);
+    assert.equal(calendarConfig({ ...full, CALENDAR_SYNC_ALLOWED_USERS: " , " }).allowedEmails, null);
+  });
+
+  it("lets only listed emails connect, ignoring case and spaces", () => {
+    const c = calendarConfig({ ...full, CALENDAR_SYNC_ALLOWED_USERS: " Sam@Example.test, kai@example.test " });
+    assert.deepEqual(c.allowedEmails, ["sam@example.test", "kai@example.test"]);
+    assert.equal(canConnectCalendar(c, "sam@example.TEST"), true);
+    assert.equal(canConnectCalendar(c, "other@example.test"), false);
+    assert.equal(canConnectCalendar(c, null), false);
+  });
+
+  it("lets no one connect when sync is off", () => {
+    assert.equal(canConnectCalendar(calendarConfig({}), "sam@example.test"), false);
   });
 });

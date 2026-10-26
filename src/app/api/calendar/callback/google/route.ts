@@ -2,6 +2,7 @@ import { NextRequest, NextResponse, after } from "next/server";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { rateLimit } from "@/lib/api-utils";
+import { canConnectCalendar } from "@/lib/calendar/config";
 import { hasCalendarScope, idTokenClaims, verifyState } from "@/lib/calendar/oauth";
 import { exchangeCode } from "@/modules/calendar/google-client";
 import { backfillUpcoming, saveConnection } from "@/modules/calendar/connection-queries";
@@ -22,7 +23,7 @@ export async function GET(request: NextRequest) {
   };
 
   const session = await auth.api.getSession({ headers: await headers() });
-  if (!session) return done("failed");
+  if (!session || !canConnectCalendar(config, session.user.email)) return done("failed");
   const params = request.nextUrl.searchParams;
   if (params.get("error")) return done("denied"); // the user cancelled on Google's screen
 

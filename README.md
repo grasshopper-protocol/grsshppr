@@ -89,6 +89,12 @@ See [ENGINEERING.md](ENGINEERING.md) for architecture guidance and [DESIGN.md](D
 | `GOOGLE_CLIENT_SECRET` | No | Google OAuth client secret |
 | `RESEND_API_KEY` | No | Resend API key for transactional emails. Without it in production no email is sent (feedback prompts stay in-app only) |
 | `CRON_SECRET` | **Yes, for scheduled jobs** | Shared secret Vercel sends to the cron endpoints (`openssl rand -hex 32`). Without it the jobs refuse every call and never run |
+| `CALENDAR_SYNC_ENABLED` | No | `true` turns on Google Calendar sync ([RFC-0012](product/rfc/RFC-0012-calendar-integration.md)). Off unless this and the three below are all set |
+| `GOOGLE_CALENDAR_CLIENT_ID` | With sync | OAuth client for the calendar connection (can be the same Google project as sign-in). Redirect URI: `${BETTER_AUTH_URL}/api/calendar/callback/google` |
+| `GOOGLE_CALENDAR_CLIENT_SECRET` | With sync | Its secret |
+| `CALENDAR_TOKEN_ENC_KEY` | With sync | Encrypts stored Google tokens: 32 bytes, `openssl rand -base64 32`. A malformed key stops sync loudly. Keep it: losing it means everyone must reconnect |
+| `CALENDAR_TOKEN_ENC_KEY_PREVIOUS` | No | The old key during a rotation (decrypt only); tokens move to the new key as they're used |
+| `CALENDAR_SYNC_ALLOWED_USERS` | No | Comma-separated emails allowed to connect, for testing before Google verifies your OAuth app. Unset = everyone |
 
 4. Deploy — Vercel auto-detects Next.js
 
@@ -104,8 +110,9 @@ automatically on every merge, set the `MIGRATION_DATABASE_URL` secret for the
 |-----|------------|--------------|
 | `/api/sessions/auto-complete` | 00:00 | Marks confirmed sessions that ended over 24h ago as completed |
 | `/api/feedback/nudge` | 09:00 | Sends each participant of a recently completed session one feedback prompt — in-app and by email — at most once ([ADR-0017](decisions/ADR-0017-feedback-prompt-once.md)) |
+| `/api/calendar/drain` | 03:00 | Backstop for Google Calendar sync: pushes any session changes the instant sync didn't finish (retries, outages). A no-op unless calendar sync is on |
 
-Both require `CRON_SECRET` and are safe to run again by hand (`GET` or `POST`
+All require `CRON_SECRET` and are safe to run again by hand (`GET` or `POST`
 with `Authorization: Bearer $CRON_SECRET`).
 
 ### Self-Hosting (Docker)
@@ -121,6 +128,9 @@ docker compose -f docker-compose.prod.yml exec app \
 ```
 
 The app runs on `http://localhost:3000`. See `Dockerfile` for the multi-stage build.
+
+Docker has no scheduler: call the jobs above once a day from your host's cron,
+e.g. `curl -fsS -H "Authorization: Bearer $CRON_SECRET" http://localhost:3000/api/calendar/drain`.
 
 ## Contributing
 

@@ -489,8 +489,10 @@ third cron. _Fixed by #155 (merged 2026-10-25)._
    `transitionSession()` seam.
 5. Connect / callback / disconnect and settings UI behind `CALENDAR_SYNC_ENABLED`.
 6. Drain (inline + cron), Meet links, confirmation email ordering.
-7. Soak with Google "test users". Note: in Testing mode Google refresh tokens
-   expire after 7 days, so testers reconnect weekly.
+7. Soak with Google "test users" on production, with `CALENDAR_SYNC_ALLOWED_USERS`
+   limiting the Connect button to them (anyone else would hit Google's
+   "access blocked" screen while the app is in Testing mode). Note: in Testing
+   mode Google refresh tokens expire after 7 days, so testers reconnect weekly.
 8. Submit Google OAuth verification (needs the working flow for the demo video);
    enable on the hosted deployment once verified.
 

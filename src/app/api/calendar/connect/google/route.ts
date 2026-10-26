@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { rateLimit } from "@/lib/api-utils";
+import { canConnectCalendar } from "@/lib/calendar/config";
 import { authorizeUrl, pkceChallenge, randomToken, signState, STATE_TTL_MS } from "@/lib/calendar/oauth";
 import { getCalendarConfig, googleRedirectUri, OAUTH_STATE_COOKIE, OAUTH_STATE_COOKIE_PATH } from "@/modules/calendar/runtime";
 
@@ -13,6 +14,7 @@ export async function GET(request: NextRequest) {
   if (!config.enabled) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) return NextResponse.redirect(new URL("/sign-in?callbackUrl=/settings", request.url));
+  if (!canConnectCalendar(config, session.user.email)) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const state = randomToken();
   const verifier = randomToken();

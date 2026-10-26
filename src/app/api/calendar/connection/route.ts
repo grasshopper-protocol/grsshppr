@@ -4,13 +4,17 @@ import { headers } from "next/headers";
 import { rateLimit } from "@/lib/api-utils";
 import { disconnectGoogle, getConnectionSummary } from "@/modules/calendar/connection-queries";
 import { getCalendarConfig, getCleanupConfig } from "@/modules/calendar/runtime";
+import { canConnectCalendar } from "@/lib/calendar/config";
 
 // GET /api/calendar/connection — whether Google push is available, and this user's connection
 export async function GET() {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  if (!getCalendarConfig().enabled) return NextResponse.json({ available: false });
+  const config = getCalendarConfig();
+  if (!config.enabled) return NextResponse.json({ available: false });
   const connection = await getConnectionSummary(session.user.id);
+  // Someone already connected keeps their controls even if the allow-list changes.
+  if (!canConnectCalendar(config, session.user.email) && !connection) return NextResponse.json({ available: false });
   return NextResponse.json({ available: true, connection });
 }
 
