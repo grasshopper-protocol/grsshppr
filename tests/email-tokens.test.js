@@ -131,6 +131,13 @@ describe("signEmailAction / verifyEmailAction", () => {
     assert.ok(verifyEmailAction(second));
   });
 
+  it("rejects a signature of a different length without throwing", () => {
+    const token = signEmailAction("session-len", "confirm");
+    const [encoded, sig] = token.split(".");
+    assert.equal(verifyEmailAction(`${encoded}.${sig.slice(0, -1)}`), null);
+    assert.equal(verifyEmailAction(`${encoded}.${sig}AA`), null);
+  });
+
   it("rejects a token with missing signature segment", () => {
     const token = signEmailAction("s1", "confirm");
     const [encoded] = token.split(".");
