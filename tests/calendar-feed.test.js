@@ -27,6 +27,7 @@ const session = (overrides = {}) => ({
   status: "confirmed",
   startsAt: new Date("2026-10-27T06:00:00Z"),
   endsAt: new Date("2026-10-27T06:30:00Z"),
+  videoUrl: null,
   partnerName: "Ada Mentor",
   role: "mentee",
   ...overrides,
@@ -72,14 +73,23 @@ describe("feedEvents", () => {
 
   it("names the partner, links the session, and carries no emails or goals", () => {
     const [e] = feedEvents([session({ role: "mentor", partnerName: "Sam Mentee" })], "https://www.grsshppr.org");
-    assert.equal(e.summary, "Session with Sam Mentee");
+    assert.equal(e.summary, "Grsshppr session with Sam Mentee");
     assert.equal(e.url, "https://www.grsshppr.org/session/s1");
-    assert.match(e.description, /You're mentoring/);
+    assert.match(e.description, /You're mentoring Sam Mentee\./);
     assert.ok(!/@|goal/i.test(e.summary + e.description.replace("grsshppr.org", "")));
   });
 
-  it("describes a mentee's sessions as learning", () => {
-    assert.match(feedEvents([session()], "https://x.test")[0].description, /You're learning/);
+  it("describes a mentee's sessions from their side", () => {
+    assert.match(feedEvents([session({ partnerName: "Ada" })], "https://x.test")[0].description, /Ada is mentoring you\./);
+  });
+
+  it("carries the video link for confirmed sessions, as a one-tap Location too", () => {
+    const meet = "https://meet.google.com/abc-defg-hij";
+    const [e] = feedEvents([session({ videoUrl: meet })], "https://x.test");
+    assert.equal(e.location, meet);
+    assert.match(e.description, /Join video call: https:\/\/meet\.google\.com\/abc-defg-hij/);
+    const [past] = feedEvents([session({ status: "completed", videoUrl: meet })], "https://x.test");
+    assert.equal(past.location, undefined, "a finished session's call is over");
   });
 });
 

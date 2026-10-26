@@ -77,11 +77,15 @@ describe("googleEventBody", () => {
     assert.deepEqual(host.conferenceData.createRequest, { requestId: "s1", conferenceSolutionKey: { type: "hangoutsMeet" } });
     const withLink = googleEventBody({ ...s, videoUrl: "https://meet.google.com/abc-defg-hij" }, { ...base, isVideoHost: true });
     assert.equal(withLink.conferenceData, undefined);
-    assert.match(withLink.description, /Video call: https:\/\/meet\.google\.com/);
+    assert.match(withLink.description, /Join video call: https:\/\/meet\.google\.com/);
+    assert.equal(withLink.location, "https://meet.google.com/abc-defg-hij", "a one-tap join link in every calendar app");
+    assert.equal(googleEventBody(s, { ...base, isVideoHost: false }).location, undefined);
   });
 
-  it("describes the viewer's role", () => {
-    assert.match(googleEventBody({ ...s, role: "mentor" }, { ...base, isVideoHost: false }).description, /You're mentoring/);
+  it("uses the shared session wording", () => {
+    const body = googleEventBody({ ...s, role: "mentor" }, { ...base, isVideoHost: false });
+    assert.equal(body.summary, "Grsshppr session with Ada Mentor");
+    assert.match(body.description, /You're mentoring Ada Mentor\./);
   });
 });
 

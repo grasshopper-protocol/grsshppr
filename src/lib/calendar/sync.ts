@@ -7,6 +7,7 @@
  */
 
 import { createHash } from "crypto";
+import { sessionEventText } from "./event-text";
 
 export type SyncAction = "create" | "update" | "delete" | "none";
 
@@ -52,12 +53,12 @@ export interface SessionForEvent {
  */
 export function googleEventBody(s: SessionForEvent, p: { baseUrl: string; isVideoHost: boolean; eventId: string }) {
   const sessionUrl = `${p.baseUrl}/session/${s.id}`;
-  const lines = [`${s.role === "mentor" ? "You're mentoring" : "You're learning"} on Grsshppr.`, "", sessionUrl];
-  if (s.videoUrl) lines.push("", `Video call: ${s.videoUrl}`);
+  const { summary, description, location } = sessionEventText({ ...s, sessionUrl });
   return {
     id: p.eventId,
-    summary: `Session with ${s.partnerName}`,
-    description: lines.join("\n"),
+    summary,
+    description,
+    ...(location ? { location } : {}),
     start: { dateTime: s.startsAt.toISOString(), timeZone: "UTC" },
     end: { dateTime: s.endsAt.toISOString(), timeZone: "UTC" },
     visibility: "private",
