@@ -7,8 +7,10 @@ import { createNotification } from "@/core/notifications/queries";
 type Executor = typeof db | Parameters<Parameters<typeof db.transaction>[0]>[0];
 
 /**
- * Queue a reconcile for every active calendar connection of the session's
- * participants (RFC-0012 §5). Call inside the same transaction as the status
+ * Queue a reconcile for every calendar connection of the session's
+ * participants (RFC-0012 §5) — broken ones too: their rows wait (claims skip
+ * them) and run when the user reconnects, so a change made during the outage
+ * isn't lost. Call inside the same transaction as the status
  * change, so a confirmation can't commit without its sync being recorded.
  * Re-queuing an existing pair resets it to "due now" — one row per pair, ever.
  * `exceptConnectionId` leaves one connection out (the one already in sync).
@@ -24,7 +26,6 @@ export async function enqueueSessionSync(
     .where(
       and(
         inArray(calendarConnections.userId, [session.mentorId, session.menteeId]),
-        eq(calendarConnections.status, "active"),
         exceptConnectionId ? ne(calendarConnections.id, exceptConnectionId) : undefined
       )
     );

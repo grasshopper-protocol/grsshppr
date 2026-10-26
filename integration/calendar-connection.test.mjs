@@ -12,7 +12,7 @@ import { configureTestDatabase, startFakeGoogle, resetDatabase, seedUsers, sessi
 configureTestDatabase();
 const google = await startFakeGoogle();
 const { db, closeDb } = await import("../src/lib/db/index.ts");
-const { users, sessions, calendarConnections, calendarOutbox } = await import("../src/lib/db/schema.ts");
+const { users, sessions, calendarConnections, calendarOutbox, notifications } = await import("../src/lib/db/schema.ts");
 const { sql } = await import("drizzle-orm");
 const { envelopeKeyId, keyId } = await import("../src/lib/calendar/token-crypto.ts");
 const conn = await import("../src/modules/calendar/connection-queries.ts");
@@ -85,8 +85,26 @@ describe("calendar connections", () => {
     await db.update(calendarConnections).set({ accessTokenExpiresAt: new Date(0) });
     await assert.rejects(conn.getAccessToken(id, config()), (err) => err instanceof GoogleError && err.failure === "auth");
     const c = await row();
-    assert.deepEqual([c.status, c.lastError], ["error", "auth"]);
+    assert.deepEqual([c.status, c.lastError], ["error", "invalid_grant"]);
     await assert.rejects(conn.getAccessToken(id, config()), (err) => err.failure === "auth", "stays stopped until reconnected");
+  });
+
+  it("tokens we can no longer decrypt ask the user to reconnect instead of retrying silently", async () => {
+    const id = await conn.saveConnection({ userId: "e", tokens: tokens(), claims, config: config(keyA) });
+    await assert.rejects(conn.getAccessToken(id, config(keyB)), (err) => err instanceof GoogleError && err.failure === "auth");
+    const c = await row();
+    assert.deepEqual([c.status, c.lastError], ["error", "undecryptable"]);
+    assert.equal((await db.select().from(notifications)).length, 1);
+  });
+
+  it("two simultaneous first connects leave one readable connection", async () => {
+    await Promise.all([
+      conn.saveConnection({ userId: "e", tokens: tokens("refresh-a"), claims, config: config() }),
+      conn.saveConnection({ userId: "e", tokens: tokens("refresh-b"), claims, config: config() }),
+    ]);
+    const all = await db.select().from(calendarConnections);
+    assert.equal(all.length, 1);
+    assert.equal(await conn.getAccessToken(all[0].id, config()), "access-0", "tokens decrypt under the surviving row's id");
   });
 
   it("disconnecting revokes at Google and deletes the connection and its queue", async () => {

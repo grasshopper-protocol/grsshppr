@@ -5,7 +5,7 @@ import { upsertProfile, getProfileByUserId, deleteProfile } from "@/core/profile
 import { enqueueSessionSync } from "@/modules/calendar/sync-queries";
 import { drainCalendar } from "@/modules/calendar/drain";
 import { disconnectGoogle } from "@/modules/calendar/connection-queries";
-import { getCalendarConfig } from "@/modules/calendar/runtime";
+import { getCleanupConfig } from "@/modules/calendar/runtime";
 import { z } from "zod";
 import { safeJson } from "@/lib/api-utils";
 
@@ -56,7 +56,7 @@ export async function DELETE(request: NextRequest) {
   }
 
   // Revoke the Google Calendar grant before the account goes (ADR-0014 §7)
-  await disconnectGoogle(session.user.id, getCalendarConfig());
+  await disconnectGoogle(session.user.id, getCleanupConfig());
   // Cancelled sessions leave the partner's Google Calendar too (RFC-0012)
   const cancelledIds: string[] = [];
   await deleteProfile(session.user.id, {

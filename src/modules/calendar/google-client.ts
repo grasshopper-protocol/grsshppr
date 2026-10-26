@@ -5,6 +5,9 @@ import { classifyGoogleFailure, type GoogleFailure } from "@/lib/calendar/sync";
 // only so integration tests can point at a local fake; they're never set in production.
 const OAUTH_BASE = () => process.env.GOOGLE_OAUTH_BASE_URL ?? "https://oauth2.googleapis.com";
 const CALENDAR_BASE = () => process.env.GOOGLE_CALENDAR_BASE_URL ?? "https://www.googleapis.com";
+// A hung Google call must not hold up the booking emails that run after the
+// inline sync; a timeout is a network failure, so it's retried later.
+const TIMEOUT_MS = 8_000;
 
 export class GoogleError extends Error {
   constructor(
@@ -32,6 +35,7 @@ async function postForm(path: string, form: Record<string, string>) {
       method: "POST",
       headers: { "content-type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams(form),
+      signal: AbortSignal.timeout(TIMEOUT_MS),
     });
   } catch {
     throw new GoogleError(null, undefined, classifyGoogleFailure(null));
@@ -102,6 +106,7 @@ async function calendarRequest(accessToken: string, method: string, path: string
       method,
       headers: { authorization: `Bearer ${accessToken}`, ...(body ? { "content-type": "application/json" } : {}) },
       body: body ? JSON.stringify(body) : undefined,
+      signal: AbortSignal.timeout(TIMEOUT_MS),
     });
   } catch {
     throw new GoogleError(null, undefined, classifyGoogleFailure(null));

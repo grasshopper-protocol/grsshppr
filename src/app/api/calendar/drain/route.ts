@@ -10,5 +10,6 @@ export async function GET(request: Request) {
   if (!isAuthorizedCronRequest(request.headers.get("authorization"), process.env.CRON_SECRET)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  return NextResponse.json(await drainCalendar({ maxRuns: 20 }));
+  // Stop starting work well inside the function's time limit; the rest waits a day.
+  return NextResponse.json(await drainCalendar({ maxRuns: 20, budgetMs: 45_000 }));
 }

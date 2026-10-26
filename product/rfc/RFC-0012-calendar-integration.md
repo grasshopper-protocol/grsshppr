@@ -369,9 +369,11 @@ Every route except the feed and drain requires a session and acts only on
 `session.user.id` — there are no connection ids in URLs. Mutating routes use
 the existing `rateLimit` helper.
 
-**Disconnect** revokes at Google and deletes the connection (cascading links
-and outbox rows). Events already created stay in the user's calendar; the UI
-says so. **Account deletion** composes the same revoke before
+**Disconnect** removes the user's *upcoming* session events (best effort,
+time-boxed), revokes at Google and deletes the connection (cascading links and
+outbox rows). Past events stay. Unsynced upcoming events would go stale: a later
+cancellation would never reach them. Connecting a different Google account
+disconnects the old one first. **Account deletion** composes the same revoke before
 `deleteProfile()` runs.
 
 **UI** — a "Calendar" section in settings:
@@ -380,8 +382,8 @@ says so. **Account deletion** composes the same revoke before
   *Regenerate*, *Turn off*. Note that clients refresh on their own schedule.
 - **Connect Google Calendar** (Tier B, only when enabled): connect button;
   when connected, the account email, status and *Disconnect*. A short line
-  stating what we write (your own events, no contact details) and that existing
-  events stay after disconnecting.
+  stating what we write (your own events, no contact details) and that
+  disconnecting removes upcoming session events.
 - **Reconnect nudge** when `status = error`, via the existing notification bell
   as an `action` notification.
 - **Session page** shows a *Join video call* link when `video_url` is set.
@@ -562,7 +564,8 @@ Recorded so the research isn't lost; **not** accepted by this RFC.
 - **Token security.** Mitigated by envelope encryption with AAD, scope
   minimisation, revoke on disconnect, no secrets in logs (§9).
 - **Reversibility.** Additive tables; turning Tier B off means revoking
-  connections. Events already written stay in users' calendars by design.
+  connections. Past events stay in users' calendars; upcoming ones are removed
+  when a connection is disconnected.
 
 ## Open questions
 
@@ -600,6 +603,14 @@ Recorded so the research isn't lost; **not** accepted by this RFC.
   reconcile outbox replaces op outbox; no attendees; `video_url` on `sessions`;
   thin REST (no dependencies); `calendar.events.owned` scope; PKCE; AAD on
   token envelopes; daily cron + `after()`; ICS escaping fix.
+- **2026-10-26** — Amended after the UX, product and engineering reviews of the
+  Phase 1 build: disconnecting (and account deletion, and switching Google
+  accounts) removes *upcoming* events instead of leaving them to go stale;
+  sync work is queued for broken connections too, so changes made during an
+  outage run after reconnecting; the outbox gets a separate lock column
+  ([ADR-0022](../../decisions/ADR-0022-outbox-lock-column.md), #194). Meet
+  creation confirmed working under `calendar.events.owned` in a live test, so
+  the `calendar.events` fallback isn't needed.
 
 ## Outcome
 
