@@ -35,6 +35,19 @@ jobs:
       - name: Typecheck
         run: pnpm exec tsc --noEmit
 
+      # Hard gate (RFC-0013): no destructive SQL in a migration without an
+      # approval marker, and schema.ts must match the committed migrations —
+      # `drizzle-kit generate` must have nothing to write.
+      - name: Migrations
+        run: |
+          pnpm db:check
+          pnpm exec drizzle-kit generate
+          if [ -n "$(git status --porcelain drizzle)" ]; then
+            echo "schema.ts has changes with no migration: run pnpm db:generate and commit it."
+            git status --porcelain drizzle
+            exit 1
+          fi
+
       # Advisory until the existing lint debt is cleared, then promote to a hard
       # gate (drop continue-on-error) and add "quality" to branch protection.
       - name: Lint (advisory)

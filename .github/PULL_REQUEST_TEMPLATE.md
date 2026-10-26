@@ -9,6 +9,9 @@ What changed and why. Link the issue / RFC / ADR this traces to.
 ## Type
 
 - [ ] Trivial (bug fix, copy, in-place refactor) — no RFC needed
+- [ ] Light-track schema change ([RFC-0013](../product/rfc/RFC-0013-light-track-schema-changes.md)) —
+      additive only, compatible with the running code, reversible; ADR
+      (Proposed) + generated migration in this PR; open ≥ 48h before merge
 - [ ] Major (new feature/module, schema, dependency, public API, design system,
       governance) — **requires an approved RFC + ADR**
 
@@ -19,6 +22,7 @@ What changed and why. Link the issue / RFC / ADR this traces to.
 - [ ] No undocumented features, no scope smuggling
 - [ ] No new dependency without an RFC (or justification below)
 - [ ] Schema changes ship as generated migrations (not `db:push`) — see
-      [ADR-0003](../decisions/ADR-0003-schema-migrations.md)
+      [ADR-0003](../decisions/ADR-0003-schema-migrations.md); `pnpm db:check` passes
+- [ ] ADRs in this PR are flipped to **Accepted** in its last commit
 - [ ] `pnpm build` passes clean
 - [ ] Non-trivial logic has a runnable check

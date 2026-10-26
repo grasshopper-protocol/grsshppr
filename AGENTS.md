@@ -34,7 +34,10 @@ When acting on this repository, an agent MUST:
 
 - **Write an RFC before any major change.** "Major" = new feature/module,
   schema or data-model change, new dependency, public API change, design-system
-  change, governance change, or reversing a prior ADR.
+  change, governance change, or reversing a prior ADR. Exception: a small,
+  additive schema change that meets [RFC-0013](product/rfc/RFC-0013-light-track-schema-changes.md)'s
+  eligibility rules takes the **light track** — issue + ADR + generated
+  migration in one PR, 48h lazy consensus ([ADR-0019](decisions/ADR-0019-light-track-schema-changes.md)).
 - **Link every change to an issue or spec.** A PR with no linked issue/RFC is
   incomplete.
 - **Record decisions as ADRs.** When a choice is made between alternatives,
@@ -112,6 +115,9 @@ When acting on this repository, an agent MUST:
   an issue and a line in the PR explaining why nothing already-present works.
 - **No schema drift.** Schema changes ship as generated migrations, never as an
   undocumented `push` — see [ADR-0003](decisions/ADR-0003-schema-migrations.md).
+  CI fails if `schema.ts` has changes with no migration, or if a migration
+  contains destructive SQL without an `-- approved-by:` marker
+  ([ADR-0019](decisions/ADR-0019-light-track-schema-changes.md)).
 - **No untested logic.** Non-trivial logic ships with a test and keeps the CI
   coverage gate green — see [ADR-0011](decisions/ADR-0011-testing-gate.md).
 - **No red merges.** Do not merge to `main` while required checks are failing,
@@ -144,7 +150,8 @@ When acting on this repository, an agent MUST:
 |--------|------|
 | Typo, copy, in-place refactor, bug fix | No → Issue + PR |
 | New feature or module | **Yes** |
-| Schema / data-model change | **Yes** |
+| Schema change — additive, meets [RFC-0013](product/rfc/RFC-0013-light-track-schema-changes.md) (new table, nullable column, index, constraint the data already meets, enum value) | No → Issue + ADR + migration (light track, 48h) |
+| Schema / data-model change — anything else (drop, rename, retype, `NOT NULL`, data rewrite, auth tables, new kind of personal data) | **Yes** |
 | New dependency | **Yes** |
 | Public API change | **Yes** |
 | Design-system change (tokens, patterns) | **Yes** |
