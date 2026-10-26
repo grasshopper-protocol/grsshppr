@@ -44,7 +44,7 @@ export function GoogleCalendarSettings() {
   if (state.status !== "ready") return null;
 
   async function disconnect() {
-    if (!confirm("Disconnect Google Calendar? Sessions already added stay in your calendar.")) return;
+    if (!confirm("Disconnect Google Calendar? Your upcoming sessions will be removed from it. Past sessions stay.")) return;
     setBusy(true);
     try {
       const res = await fetch("/api/calendar/connection", { method: "DELETE" });

@@ -8,6 +8,21 @@ export function getCalendarConfig(): CalendarConfig {
   return calendarConfig(process.env);
 }
 
+/**
+ * The configuration for cleaning up a user's Google connection (disconnect,
+ * account deletion): whenever credentials and a key are present, even if sync
+ * is switched off — a grant must still be revoked. Never throws: a broken key
+ * means we can't revoke, not that the account can't be deleted.
+ */
+export function getCleanupConfig(): CalendarConfig {
+  try {
+    return calendarConfig({ ...process.env, CALENDAR_SYNC_ENABLED: "true" });
+  } catch {
+    console.error("[calendar] cleanup without revoking: the token key is invalid");
+    return { enabled: false };
+  }
+}
+
 export function appBaseUrl(): string {
   return process.env.BETTER_AUTH_URL ?? "https://www.grsshppr.org";
 }

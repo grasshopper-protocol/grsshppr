@@ -66,8 +66,11 @@ export async function GET(
   // are only sent to the mentor, so the mentor is the one acting.
   // Calendar first, so the confirmation email can carry the Meet link (RFC-0012 §7).
   after(async () => {
-    await drainCalendar({ sessionId: id });
-    await runTransitionEffects({ session, to: targetStatus, actorId: session.mentorId });
+    try {
+      await drainCalendar({ sessionId: id }); // time-boxed; never throws
+    } finally {
+      await runTransitionEffects({ session, to: targetStatus, actorId: session.mentorId });
+    }
   });
 
   const baseUrl = process.env.BETTER_AUTH_URL ?? "http://localhost:3000";

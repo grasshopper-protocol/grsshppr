@@ -36,10 +36,11 @@ describe("calendar sync queue", () => {
     assert.equal((await outbox()).length, 0);
   });
 
-  it("queues one row per active connection, skipping errored ones", async () => {
+  it("queues a row per connection, broken ones included, but claims only active ones", async () => {
     await db.insert(calendarConnections).values([connection("cm", "m"), connection("ce", "e", "error")]);
-    assert.equal(await q.enqueueSessionSync(db, { id: "s1", mentorId: "m", menteeId: "e" }), 1);
-    assert.deepEqual((await outbox()).map((r) => r.connectionId), ["cm"]);
+    assert.equal(await q.enqueueSessionSync(db, { id: "s1", mentorId: "m", menteeId: "e" }), 2);
+    const claimed = await q.claimDueOutbox({ limit: 10, maxAttempts: 5, leaseMs: 60_000 });
+    assert.deepEqual(claimed.map((r) => r.connectionId), ["cm"], "the broken connection's row waits for a reconnect");
   });
 
   it("re-queuing a pair keeps one row and resets it to due now", async () => {

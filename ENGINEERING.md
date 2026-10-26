@@ -135,7 +135,9 @@ This project follows lazy-senior-dev principles:
 
 ### Calendar sync (RFC-0012)
 - Status changes queue a reconcile row per connected participant in the same transaction (`enqueueSessionSync()`). `drainCalendar()` in `src/modules/calendar/drain.ts` pushes them to Google: inline in `after()` (before the confirmation email, so it carries the Meet link), and from the daily `GET /api/calendar/drain` cron as a backstop.
-- The drain works from the session's *current* status, so rows never run out of order. Transient failures retry with backoff and park after 5 attempts; a broken grant marks the connection `error`, sends one `action` notification to reconnect, and holds its rows until the user reconnects.
+- The drain works from the session's *current* status, so rows never run out of order. Transient failures (including timeouts — every Google call has one) retry with backoff and park after 5 attempts; a broken grant or tokens we can't decrypt mark the connection `error`, send one `action` notification to reconnect, and hold its rows — work is queued for broken connections too, so it all runs after reconnecting. A bad client id/secret is an operator problem and never marks users' connections.
+- The inline drain is time-boxed (10s) and the booking emails run after it even if it fails; the cron stops starting work after 45s.
+- Disconnecting, deleting the account, or switching Google accounts removes the user's *upcoming* events (best effort), revokes the grant and deletes the connection; past events stay.
 - Integration tests run the drain against a fake Google (`startFakeGoogle()` in `integration/helpers.mjs`).
 
 ## What NOT to Do
