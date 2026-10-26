@@ -43,6 +43,7 @@ was made and what would change it.
 | [0019](ADR-0019-light-track-schema-changes.md) | A light track for small, additive schema changes; the ADR lifecycle | Accepted |
 | [0020](ADR-0020-one-rating-per-person.md) | One rating per person per session, enforced by the database | Accepted |
 | [0021](ADR-0021-postgres-integration-tests.md) | Postgres-backed integration tests as a CI gate | Accepted |
+| [0022](ADR-0022-outbox-lock-column.md) | A separate lock column for the calendar outbox | Proposed |
 
 ## Historical log
 

@@ -1,0 +1,1 @@
+ALTER TABLE "calendar_outbox" ADD COLUMN "locked_until" timestamp;
