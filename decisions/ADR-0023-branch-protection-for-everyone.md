@@ -1,6 +1,6 @@
 # ADR-0023: Branch protection applies to everyone; checks, not self-approval
 
-- **Status:** Proposed
+- **Status:** Accepted (2026-10-26; applied to `main` the same day)
 - **Date:** 2026-10-26
 - **Discipline:** Engineering (governance)
 - **Source RFC:** [RFC-0015](../product/rfc/RFC-0015-branch-protection-for-everyone.md) · Issue #204 · Amends [ADR-0012](ADR-0012-change-safety-guardrails.md) rule 4

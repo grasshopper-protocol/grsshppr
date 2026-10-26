@@ -1,6 +1,6 @@
 # RFC-0015: Branch protection that applies to everyone
 
-- **Status:** Discussion
+- **Status:** Accepted
 - **Author:** @natos (drafted with Claude Code)
 - **Created:** 2026-10-26
 - **Discipline:** Engineering (governance)
@@ -79,4 +79,12 @@ None.
 
 ## Outcome
 
-_Filled in when accepted: the ADR, and the date the setting was applied._
+Accepted on 2026-10-26 as [ADR-0023](../../decisions/ADR-0023-branch-protection-for-everyone.md).
+Applied to `main` the same day: "apply to administrators" on; required checks
+`Analyze (javascript-typescript)`, `quality`, `build` and `integration`, with
+the branch up to date; 0 required approving reviews; code-owner review not
+required; force pushes and deletion blocked.
+
+PR #205 merged before its final commit flipped these statuses, through the
+admin bypass this RFC removes. The statuses were corrected in a follow-up PR,
+which was the first merge under the new rule.
