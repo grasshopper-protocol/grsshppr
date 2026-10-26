@@ -44,7 +44,7 @@ was made and what would change it.
 | [0020](ADR-0020-one-rating-per-person.md) | One rating per person per session, enforced by the database | Accepted |
 | [0021](ADR-0021-postgres-integration-tests.md) | Postgres-backed integration tests as a CI gate | Accepted |
 | [0022](ADR-0022-outbox-lock-column.md) | A separate lock column for the calendar outbox | Accepted |
-| [0023](ADR-0023-branch-protection-for-everyone.md) | Branch protection applies to everyone; checks, not self-approval | Proposed |
+| [0023](ADR-0023-branch-protection-for-everyone.md) | Branch protection applies to everyone; checks, not self-approval | Accepted |
 
 ## Historical log
 
