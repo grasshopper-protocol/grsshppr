@@ -46,7 +46,8 @@ Adopt the **five guardrails in AGENTS.md**, enforced by the native pre-commit ho
 3. **Recorded bypass.** `git commit --no-verify` is emergency-only and must be
    noted in the PR; a silent bypass counts as a silent change.
 4. **No red merges.** Don't merge to `main` while required checks fail; promote
-   lint to a hard gate once the lint debt is cleared.
+   lint to a hard gate once the lint debt is cleared. Enforced for everyone,
+   admins included, by [ADR-0023](ADR-0023-branch-protection-for-everyone.md).
 5. **Deploy recovery.** On a broken `main`: revert first, then fix forward on a
    branch, then write a post-mortem in `postmortems/`.
 
