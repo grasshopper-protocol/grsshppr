@@ -5,7 +5,7 @@
  * INTEGRATION_DATABASE_URL, and only if its database name contains "test" —
  * never against DATABASE_URL, so a developer's own database is never touched.
  *
- * Call useTestDatabase() before importing anything from src/, so the app's db
+ * Call configureTestDatabase() before importing anything from src/, so the app's db
  * client and email module pick up the test configuration when they load.
  */
 
@@ -13,7 +13,7 @@ import { createServer } from "node:http";
 
 let fakeEmail;
 
-export function useTestDatabase() {
+export function configureTestDatabase() {
   const url = process.env.INTEGRATION_DATABASE_URL;
   if (!url) throw new Error("Set INTEGRATION_DATABASE_URL to a disposable Postgres database to run integration tests.");
   const name = new URL(url).pathname.slice(1);
@@ -29,7 +29,7 @@ export function useTestDatabase() {
  * "transient" → 503, "perm" → 422, "netdrop" → connection dropped, else 200.
  * Records every request (recipient, idempotency key, status).
  */
-export async function useFakeEmail() {
+export async function startFakeEmail() {
   const sent = [];
   const server = createServer((req, res) => {
     let body = "";

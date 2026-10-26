@@ -5,10 +5,10 @@
 
 import { describe, it, beforeEach, after } from "node:test";
 import assert from "node:assert/strict";
-import { useTestDatabase, useFakeEmail, resetDatabase, seedUsers, sessionRow } from "./helpers.mjs";
+import { configureTestDatabase, startFakeEmail, resetDatabase, seedUsers, sessionRow } from "./helpers.mjs";
 
-useTestDatabase();
-const email = await useFakeEmail();
+configureTestDatabase();
+const email = await startFakeEmail();
 const { db, closeDb } = await import("../src/lib/db/index.ts");
 const { users, sessions, notifications, sessionFeedback } = await import("../src/lib/db/schema.ts");
 const { sql, eq, and } = await import("drizzle-orm");

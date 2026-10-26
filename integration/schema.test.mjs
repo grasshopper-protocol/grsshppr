@@ -6,9 +6,9 @@
 import { describe, it, before, after } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { useTestDatabase, resetDatabase, seedUsers, sessionRow } from "./helpers.mjs";
+import { configureTestDatabase, resetDatabase, seedUsers, sessionRow } from "./helpers.mjs";
 
-useTestDatabase();
+configureTestDatabase();
 const { db, closeDb } = await import("../src/lib/db/index.ts");
 const { users, sessions, sessionFeedback } = await import("../src/lib/db/schema.ts");
 const { sql } = await import("drizzle-orm");
