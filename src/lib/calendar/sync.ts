@@ -94,3 +94,25 @@ export function nextAttempt(attempts: number, now: Date, backoffMs = 60 * 60 * 1
   if (attempts + 1 >= MAX_SYNC_ATTEMPTS) return null;
   return new Date(now.getTime() + backoffMs * 2 ** attempts);
 }
+
+export type FailureOutcome =
+  | { kind: "retry"; at: Date } // transient: try again later
+  | { kind: "park" } // out of attempts, or Google will never accept it: keep for inspection
+  | { kind: "hold" }; // the grant stopped working: wait for the user to reconnect
+
+/** What the drain does with a row whose Google call failed (RFC-0012 §5). */
+export function failureOutcome(failure: GoogleFailure, attempts: number, now: Date): FailureOutcome {
+  if (failure === "auth") return { kind: "hold" };
+  if (failure !== "transient") return { kind: "park" };
+  const at = nextAttempt(attempts, now);
+  return at ? { kind: "retry", at } : { kind: "park" };
+}
+
+/** The Meet link from a Google event, if Google has finished creating one. */
+export function eventVideoUrl(event: {
+  hangoutLink?: string;
+  conferenceData?: { entryPoints?: { entryPointType?: string; uri?: string }[] };
+}): string | null {
+  const uri = event.hangoutLink ?? event.conferenceData?.entryPoints?.find((e) => e.entryPointType === "video")?.uri;
+  return uri?.startsWith("https://") ? uri : null;
+}
