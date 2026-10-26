@@ -1,6 +1,6 @@
 # ADR-0020: One rating per person per session, enforced by the database
 
-- **Status:** Proposed (becomes Accepted when its implementation PR merges)
+- **Status:** Accepted
 - **Date:** 2026-10-26
 - **Discipline:** Engineering
 - **Source RFC:** none — **light track** ([RFC-0013](../product/rfc/RFC-0013-light-track-schema-changes.md), [ADR-0019](ADR-0019-light-track-schema-changes.md))
@@ -54,5 +54,5 @@ average (security review of #165; #162). Nothing in the database stops it.
 
 ## Links
 
-- Issue: [#162](https://github.com/grasshopper-protocol/grsshppr/issues/162) (first use of the light track) · Implementation PR: _pending_
+- Issue: [#162](https://github.com/grasshopper-protocol/grsshppr/issues/162) (first use of the light track) · Implementation PR: [#178](https://github.com/grasshopper-protocol/grsshppr/pull/178) (migration `0001`, applied to production 2026-10-26)
 - Related: [ADR-0018](ADR-0018-one-feedback-window.md) (the feedback rules), [ADR-0019](ADR-0019-light-track-schema-changes.md)
