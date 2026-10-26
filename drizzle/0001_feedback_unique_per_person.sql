@@ -1,0 +1,1 @@
+ALTER TABLE "session_feedback" ADD CONSTRAINT "session_feedback_session_user_unique" UNIQUE("session_id","user_id");

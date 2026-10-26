@@ -5,6 +5,7 @@ import {
   boolean,
   integer,
   pgEnum,
+  unique,
 } from "drizzle-orm/pg-core";
 
 // --- Enums ---
@@ -109,7 +110,10 @@ export const sessionFeedback = pgTable("session_feedback", {
   rating: integer("rating").notNull(), // 1-5
   comment: text("comment"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
-});
+}, (t) => [
+  // One rating per person per session — closes the double-submit race (ADR-0020)
+  unique("session_feedback_session_user_unique").on(t.sessionId, t.userId),
+]);
 
 // --- Module: Goals ---
 
