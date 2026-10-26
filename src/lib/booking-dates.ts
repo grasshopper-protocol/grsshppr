@@ -111,3 +111,27 @@ export function slotsForWeek(
   }
   return result.sort((a, b) => a.startsAt.localeCompare(b.startsAt));
 }
+
+/** A session that occupies the mentor's time. */
+export interface BookedInterval {
+  startsAt: Date;
+  endsAt: Date;
+}
+
+/** Statuses that hold a slot. Cancelled and completed sessions free it (#139). */
+export const SLOT_HOLDING_STATUSES = ["requested", "confirmed"] as const;
+
+/**
+ * Drops every slot that overlaps a booked session. Overlap, not equal start
+ * times: a session that doesn't start on a slot boundary still blocks the
+ * slots it covers (#139). Touching edges (one ends as the next starts) don't
+ * overlap. Pure: no DB, no clock.
+ */
+export function removeBookedSlots(slots: Slot[], booked: BookedInterval[]): Slot[] {
+  if (booked.length === 0) return slots;
+  return slots.filter((slot) => {
+    const start = new Date(slot.startsAt).getTime();
+    const end = new Date(slot.endsAt).getTime();
+    return !booked.some((b) => b.startsAt.getTime() < end && b.endsAt.getTime() > start);
+  });
+}

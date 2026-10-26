@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { eq, and } from "drizzle-orm";
+import { eq, and, gt, inArray, lt } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { availability, sessions } from "@/lib/db/schema";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { rateLimit } from "@/lib/api-utils";
-import { getMonday, slotsForWeek } from "@/lib/booking-dates";
+import { getMonday, slotsForWeek, removeBookedSlots, SLOT_HOLDING_STATUSES } from "@/lib/booking-dates";
 
 // GET /api/availability/[userId]?week=2026-06-23
 // GET /api/availability/[userId]?next=10  (returns next N available slots, scanning up to 4 weeks)
@@ -69,24 +69,14 @@ export async function GET(
     const endMonday = getMonday(effectiveEnd);
     endMonday.setDate(endMonday.getDate() + 7); // include the final partial week
 
-    // Fetch booked times in the window
-    const booked = await db
-      .select({ startsAt: sessions.startsAt })
-      .from(sessions)
-      .where(eq(sessions.mentorId, userId));
-    const bookedTimes = new Set(
-      booked
-        .filter((s) => s.startsAt >= monday && s.startsAt < effectiveEnd)
-        .map((s) => s.startsAt.toISOString())
-    );
-
+    const held = await getHeldSessions(userId, monday, endMonday);
     const collected: { startsAt: string; endsAt: string }[] = [];
 
     while (monday < endMonday) {
-      const weekSlots = slotsForWeek(monday, windows, sessionDuration, timezone);
+      const weekSlots = removeBookedSlots(slotsForWeek(monday, windows, sessionDuration, timezone), held);
       for (const slot of weekSlots) {
         const start = new Date(slot.startsAt);
-        if (start > earliest && start <= effectiveEnd && !bookedTimes.has(start.toISOString())) {
+        if (start > earliest && start <= effectiveEnd) {
           collected.push(slot);
         }
       }
@@ -107,21 +97,27 @@ export async function GET(
   const weekEnd = new Date(monday);
   weekEnd.setDate(weekEnd.getDate() + 7);
 
-  const booked = await db
-    .select({ startsAt: sessions.startsAt })
-    .from(sessions)
-    .where(eq(sessions.mentorId, userId));
-
-  const bookedTimes = new Set(
-    booked
-      .filter((s) => s.startsAt >= monday && s.startsAt < weekEnd)
-      .map((s) => s.startsAt.toISOString())
-  );
-
+  const held = await getHeldSessions(userId, monday, weekEnd);
   const now = new Date();
-  const available = slots.filter(
-    (s) => new Date(s.startsAt) > now && !bookedTimes.has(new Date(s.startsAt).toISOString())
-  );
+  const available = removeBookedSlots(slots, held).filter((s) => new Date(s.startsAt) > now);
 
   return NextResponse.json({ slots: available, timezone, sessionDuration });
+}
+
+/**
+ * The mentor's sessions that hold time in [from, to): requested or confirmed
+ * only — a cancelled session frees its slot (#139).
+ */
+async function getHeldSessions(mentorId: string, from: Date, to: Date) {
+  return db
+    .select({ startsAt: sessions.startsAt, endsAt: sessions.endsAt })
+    .from(sessions)
+    .where(
+      and(
+        eq(sessions.mentorId, mentorId),
+        inArray(sessions.status, [...SLOT_HOLDING_STATUSES]),
+        lt(sessions.startsAt, to),
+        gt(sessions.endsAt, from)
+      )
+    );
 }

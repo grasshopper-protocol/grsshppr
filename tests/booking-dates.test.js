@@ -16,6 +16,7 @@ import {
   zonedTimeToUtc,
   getMonday,
   slotsForWeek,
+  removeBookedSlots,
 } from "../src/lib/booking-dates.js";
 
 // ---------------------------------------------------------------------------
@@ -172,5 +173,35 @@ describe("slotsForWeek", () => {
   it("returns an empty list when no window can fit a session", () => {
     const windows = [{ dayOfWeek: 1, startTime: "09:00", endTime: "09:20" }];
     assert.deepEqual(slotsForWeek(monday, windows, 30, "UTC"), []);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// removeBookedSlots (#139)
+// ---------------------------------------------------------------------------
+
+describe("removeBookedSlots", () => {
+  const slot = (start, end) => ({ startsAt: `2026-10-27T${start}:00.000Z`, endsAt: `2026-10-27T${end}:00.000Z` });
+  const booked = (start, end) => ({ startsAt: new Date(`2026-10-27T${start}:00Z`), endsAt: new Date(`2026-10-27T${end}:00Z`) });
+  const slots = [slot("09:00", "09:30"), slot("09:30", "10:00"), slot("10:00", "10:30")];
+
+  it("keeps every slot when nothing is booked", () => {
+    assert.deepEqual(removeBookedSlots(slots, []), slots);
+  });
+
+  it("removes a slot booked exactly", () => {
+    assert.deepEqual(removeBookedSlots(slots, [booked("09:30", "10:00")]), [slots[0], slots[2]]);
+  });
+
+  it("removes every slot an off-boundary session overlaps", () => {
+    assert.deepEqual(removeBookedSlots(slots, [booked("09:15", "09:45")]), [slots[2]]);
+  });
+
+  it("treats touching edges as free", () => {
+    assert.deepEqual(removeBookedSlots(slots, [booked("08:30", "09:00"), booked("10:30", "11:00")]), slots);
+  });
+
+  it("removes slots inside a longer session", () => {
+    assert.deepEqual(removeBookedSlots(slots, [booked("09:00", "10:30")]), []);
   });
 });
