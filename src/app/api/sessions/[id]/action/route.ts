@@ -3,7 +3,6 @@ import { verifyEmailAction } from "@/lib/email-tokens";
 import { getSessionById, updateSessionStatus } from "@/core/booking/queries";
 import { runTransitionEffects } from "@/core/booking/transition-effects";
 import { enqueueSessionSync } from "@/modules/calendar/sync-queries";
-import { drainCalendar } from "@/modules/calendar/drain";
 import { db } from "@/lib/db";
 
 type Params = Promise<{ id: string }>;
@@ -64,11 +63,7 @@ export async function GET(
   });
   // Same emails and notifications as the in-app buttons (#140). These links
   // are only sent to the mentor, so the mentor is the one acting.
-  // Calendar first, so the confirmation email can carry the Meet link (RFC-0012 §7).
-  after(async () => {
-    await drainCalendar({ sessionId: id });
-    await runTransitionEffects({ session, to: targetStatus, actorId: session.mentorId });
-  });
+  after(() => runTransitionEffects({ session, to: targetStatus, actorId: session.mentorId }));
 
   const baseUrl = process.env.BETTER_AUTH_URL ?? "http://localhost:3000";
   return NextResponse.redirect(`${baseUrl}/session/${id}`);

@@ -6,17 +6,13 @@
  */
 
 export interface BellItem {
-  type?: string;
   priority: string;
   resourceId: string | null;
 }
 
-/** A Google Calendar connection that needs reconnecting (RFC-0012 §7). Its resource is the connection. */
-export const CALENDAR_RECONNECT = "action_required:calendar_reconnect";
-
 export function bellClick(n: BellItem): { href: string | null; markRead: boolean } {
   return {
-    href: n.type === CALENDAR_RECONNECT ? "/settings" : n.resourceId ? `/session/${n.resourceId}` : null,
+    href: n.resourceId ? `/session/${n.resourceId}` : null,
     markRead: n.priority !== "action",
   };
 }

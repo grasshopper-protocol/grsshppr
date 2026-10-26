@@ -9,7 +9,7 @@
 
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { CALENDAR_RECONNECT, bellClick } from "../src/lib/notifications.js";
+import { bellClick } from "../src/lib/notifications.js";
 
 describe("bellClick", () => {
   it("opens the session and marks an info notification read", () => {
@@ -22,12 +22,5 @@ describe("bellClick", () => {
 
   it("marks an info notification without a target read and goes nowhere", () => {
     assert.deepEqual(bellClick({ priority: "info", resourceId: null }), { href: null, markRead: true });
-  });
-
-  it("sends a calendar reconnect to Settings and leaves it unread until reconnected", () => {
-    assert.deepEqual(bellClick({ type: CALENDAR_RECONNECT, priority: "action", resourceId: "conn-1" }), {
-      href: "/settings",
-      markRead: false,
-    });
   });
 });

@@ -133,11 +133,6 @@ This project follows lazy-senior-dev principles:
 - The post-session feedback prompt is issued **once per participant per session** by `issueFeedbackPrompts()` — from the daily cron and when a mentor completes a session ([ADR-0017](decisions/ADR-0017-feedback-prompt-once.md)). Feedback is open from a session's end for 7 days, on every surface ([ADR-0018](decisions/ADR-0018-one-feedback-window.md)), and one rating per person is enforced by the database ([ADR-0020](decisions/ADR-0020-one-rating-per-person.md)).
 - Status changes (confirm, cancel, complete) run the same emails and notifications from the app and from email links (`runTransitionEffects()`).
 
-### Calendar sync (RFC-0012)
-- Status changes queue a reconcile row per connected participant in the same transaction (`enqueueSessionSync()`). `drainCalendar()` in `src/modules/calendar/drain.ts` pushes them to Google: inline in `after()` (before the confirmation email, so it carries the Meet link), and from the daily `GET /api/calendar/drain` cron as a backstop.
-- The drain works from the session's *current* status, so rows never run out of order. Transient failures retry with backoff and park after 5 attempts; a broken grant marks the connection `error`, sends one `action` notification to reconnect, and holds its rows until the user reconnects.
-- Integration tests run the drain against a fake Google (`startFakeGoogle()` in `integration/helpers.mjs`).
-
 ## What NOT to Do
 
 - Don't add auth providers beyond Better Auth without explicit approval

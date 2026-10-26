@@ -146,9 +146,6 @@ export default function PrivacyPolicyPage() {
           connected. We use it only to create, update and delete the events for your Grsshppr sessions
           on your own calendar, with a Google Meet link. Those events are marked private and carry no
           other participant&apos;s contact details, goals or notes. We do not read your other events.
-          When the Google Meet is created on your calendar, we save its link with the session so the
-          other participant can join: it appears on the session page, in their confirmation email
-          and in their own calendar event.
           Your Google access tokens are stored encrypted. You can disconnect in Settings at any time,
           which revokes our access; deleting your account revokes it too. Events already added stay
           in your calendar.

@@ -74,56 +74,23 @@ export function sessionRow(id, mentorId, menteeId, status, endsAgoH) {
 }
 
 /**
- * A stand-in for Google's OAuth endpoints (token exchange, refresh, revoke) and
- * the Calendar events API. A refresh token named "revoked" gets invalid_grant;
- * "revoke-fails" makes /revoke fail. Calendars are keyed by access token, so
- * each connection has its own. Push `{ status, reason }` onto `failNext` to fail
- * the next Calendar call. Records every request.
+ * A stand-in for Google's OAuth endpoints (token exchange, refresh, revoke).
+ * A refresh token named "revoked" gets invalid_grant; "revoke-fails" makes
+ * /revoke fail. Records every request.
  */
 export async function startFakeGoogle() {
   const calls = [];
-  const calendars = new Map(); // access token → Map(event id → event)
-  const failNext = [];
   let issued = 0;
-  let meets = 0;
   const server = createServer((req, res) => {
     let body = "";
     req.on("data", (c) => (body += c));
     req.on("end", () => {
-      const json = (status, payload) => {
-        res.writeHead(status, { "content-type": "application/json" });
-        res.end(payload === undefined ? "" : JSON.stringify(payload));
-      };
-      const url = new URL(req.url, "http://fake");
-      if (url.pathname.startsWith("/calendar/v3/calendars/primary/events")) {
-        const token = (req.headers.authorization ?? "").replace(/^Bearer /, "");
-        const event = body ? JSON.parse(body) : null;
-        calls.push({ path: url.pathname, method: req.method, token, event });
-        const failure = failNext.shift();
-        if (failure) return json(failure.status, { error: { errors: [{ reason: failure.reason ?? "fake" }] } });
-        if (!calendars.has(token)) calendars.set(token, new Map());
-        const events = calendars.get(token);
-        const id = decodeURIComponent(url.pathname.split("/events/")[1] ?? "");
-        const withMeet = (e) =>
-          e.conferenceData?.createRequest ? { ...e, conferenceData: undefined, hangoutLink: `https://meet.google.com/fake-${++meets}` } : e;
-        if (req.method === "POST") {
-          if (events.has(event.id)) return json(409, { error: { errors: [{ reason: "duplicate" }] } });
-          events.set(event.id, { ...withMeet(event), etag: `"1"` });
-          return json(200, events.get(event.id));
-        }
-        if (!events.has(id)) return json(404, { error: { errors: [{ reason: "notFound" }] } });
-        if (req.method === "PATCH") {
-          const prev = events.get(id);
-          events.set(id, { ...prev, ...withMeet(event), hangoutLink: prev.hangoutLink ?? withMeet(event).hangoutLink, etag: `"${Number(prev.etag.slice(1, -1)) + 1}"` });
-          return json(200, events.get(id));
-        }
-        if (req.method === "DELETE") {
-          events.delete(id);
-          return json(204);
-        }
-      }
       const form = Object.fromEntries(new URLSearchParams(body));
       calls.push({ path: req.url, form });
+      const json = (status, payload) => {
+        res.writeHead(status, { "content-type": "application/json" });
+        res.end(JSON.stringify(payload));
+      };
       if (req.url === "/revoke") return form.token === "revoke-fails" ? json(400, { error: "invalid_token" }) : json(200, {});
       if (form.grant_type === "refresh_token") {
         if (form.refresh_token === "revoked") return json(400, { error: "invalid_grant" });
@@ -134,6 +101,5 @@ export async function startFakeGoogle() {
   });
   await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
   process.env.GOOGLE_OAUTH_BASE_URL = `http://127.0.0.1:${server.address().port}`;
-  process.env.GOOGLE_CALENDAR_BASE_URL = process.env.GOOGLE_OAUTH_BASE_URL;
-  return { calls, calendars, failNext, close: () => new Promise((r) => server.close(r)) };
+  return { calls, close: () => new Promise((r) => server.close(r)) };
 }
