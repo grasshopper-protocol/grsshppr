@@ -5,7 +5,7 @@
  * recorded on the row, and a broken grant held until the user reconnects.
  */
 
-import { describe, it, beforeEach, after } from "node:test";
+import { describe, it, beforeEach, after, mock } from "node:test";
 import assert from "node:assert/strict";
 import { randomBytes } from "node:crypto";
 import { configureTestDatabase, startFakeGoogle, resetDatabase, seedUsers, sessionRow } from "./helpers.mjs";
@@ -241,6 +241,18 @@ describe("calendar drain", () => {
     await setStatus("confirmed");
     assert.deepEqual(await drainCalendar({ budgetMs: 0 }), { synced: 0, failed: 0 });
     assert.equal(calendar("m").length, 0);
+  });
+
+  it("finds work queued a moment ago even when the app's clock lags the database's", async () => {
+    await connect("m");
+    await setStatus("confirmed"); // queued with the database's now()
+    mock.timers.enable({ apis: ["Date"], now: Date.now() - 5_000 }); // the app server runs 5s behind
+    try {
+      assert.deepEqual(await drainCalendar({ sessionId: "s1" }), { synced: 1, failed: 0 });
+    } finally {
+      mock.timers.reset();
+    }
+    assert.equal(calendar("m").length, 1);
   });
 
   it("does nothing when calendar sync is switched off", async () => {
