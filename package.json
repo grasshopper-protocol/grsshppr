@@ -55,6 +55,6 @@
     "shadcn": "^4.22.1",
     "tailwindcss": "^4",
     "tsx": "4.23.7",
-    "typescript": "^6"
+    "typescript": "^7"
   }
 }
