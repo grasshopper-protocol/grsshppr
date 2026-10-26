@@ -136,7 +136,12 @@ export function SessionRequestedEmail({
 }
 
 // Mentee receives: session confirmed
-export function SessionConfirmedEmail({ mentorName, menteeName, startsAt }: SessionEmailProps) {
+export function SessionConfirmedEmail({
+  mentorName,
+  menteeName,
+  startsAt,
+  videoUrl,
+}: SessionEmailProps & { videoUrl?: string | null }) {
   return (
     <Layout>
       <Heading as="h2" style={{ fontSize: 20 }}>Session confirmed</Heading>
@@ -145,6 +150,11 @@ export function SessionConfirmedEmail({ mentorName, menteeName, startsAt }: Sess
         <strong>{mentorName}</strong> confirmed your session on{" "}
         <strong>{formatDateTime(startsAt)}</strong>.
       </Text>
+      {videoUrl && (
+        <Text>
+          Video call: <a href={videoUrl}>{videoUrl}</a>
+        </Text>
+      )}
       <Text>You can add it to your calendar from the session page.</Text>
     </Layout>
   );
