@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { verifyEmailAction } from "@/lib/email-tokens";
 import { getSessionById, updateSessionStatus } from "@/core/booking/queries";
+import { runTransitionEffects } from "@/core/booking/transition-effects";
 
 type Params = Promise<{ id: string }>;
 
@@ -54,6 +55,9 @@ export async function GET(
   }
 
   await updateSessionStatus(id, targetStatus);
+  // Same emails and notifications as the in-app buttons (#140). These links
+  // are only sent to the mentor, so the mentor is the one acting.
+  after(() => runTransitionEffects({ session, to: targetStatus, actorId: session.mentorId }));
 
   const baseUrl = process.env.BETTER_AUTH_URL ?? "http://localhost:3000";
   return NextResponse.redirect(`${baseUrl}/session/${id}`);
