@@ -117,9 +117,13 @@ This project follows lazy-senior-dev principles:
 - Error messages: actionable, not apologetic (see DESIGN.md tone section)
 
 ### Data Lifecycle
-- `deleteProfile()` in `src/core/profiles/queries.ts` is the canonical "delete all user data" function
-- When adding a new table or storing new user-associated data, update `deleteProfile()` to clean it up
-- The function deletes data that doesn't cascade automatically, then removes the profile itself
+- `deleteProfile()` in `src/core/profiles/queries.ts` is the canonical account-deletion function ([ADR-0016](decisions/ADR-0016-account-deletion-keeps-partner-history.md)). In one transaction it deletes the user's personal data (profile, availability, goals, the feedback they gave, notifications, sign-in data, calendar feed) — but **keeps partners' history**: shared sessions and their notes are reassigned to the `deleted-user` placeholder, upcoming ones are cancelled with a notification, and feedback prompts naming the user are deleted.
+- When adding a new table or storing new user-associated data, decide which side it falls on — the user's own data (delete it, or cascade from `users`) or shared history (keep it, reassigned) — and update `deleteProfile()` and the Privacy Policy to match.
+
+### Notifications & Feedback
+- The bell lists unread notifications: **action** ones (to do) first, then **info** ones (to know). Info items are marked read when opened; action items when the action is taken.
+- The post-session feedback prompt is issued **once per participant per session** by `issueFeedbackPrompts()` — from the daily cron and when a mentor completes a session ([ADR-0017](decisions/ADR-0017-feedback-prompt-once.md)). Feedback is open from a session's end for 7 days, on every surface ([ADR-0018](decisions/ADR-0018-one-feedback-window.md)), and one rating per person is enforced by the database ([ADR-0020](decisions/ADR-0020-one-rating-per-person.md)).
+- Status changes (confirm, cancel, complete) run the same emails and notifications from the app and from email links (`runTransitionEffects()`).
 
 ## What NOT to Do
 
