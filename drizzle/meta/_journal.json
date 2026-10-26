@@ -29,6 +29,13 @@
       "when": 1792978320579,
       "tag": "0003_calendar_push",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792989751918,
+      "tag": "0004_outbox_lock",
+      "breakpoints": true
     }
   ]
 }

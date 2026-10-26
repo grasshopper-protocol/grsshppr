@@ -214,6 +214,8 @@ export const calendarOutbox = pgTable(
       .references(() => calendarConnections.id, { onDelete: "cascade" }),
     attempts: integer("attempts").notNull().default(0),
     nextAttemptAt: timestamp("next_attempt_at").notNull().defaultNow(),
+    // Held by the drain working this row; re-queuing never touches it (ADR-0022)
+    lockedUntil: timestamp("locked_until"),
     lastError: text("last_error"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
