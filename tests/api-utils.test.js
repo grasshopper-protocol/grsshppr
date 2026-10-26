@@ -70,6 +70,16 @@ describe("rateLimit", () => {
     assert.equal(blocked.status, 429);
   });
 
+  it("limits by an explicit key regardless of IP", () => {
+    // Calendar feeds are polled from shared provider IPs; each feed gets its own bucket.
+    const a = reqWithIp("10.0.0.9");
+    const b = reqWithIp("10.0.0.10");
+    rateLimit(a, { limit: 1, windowMs: 60_000, key: "feed:abc" });
+    const blocked = rateLimit(b, { limit: 1, windowMs: 60_000, key: "feed:abc" });
+    assert.equal(blocked?.status, 429, "same key, different IP: shares the limit");
+    assert.equal(rateLimit(a, { limit: 1, windowMs: 60_000, key: "feed:def" }), null, "other key: own limit");
+  });
+
   it("tracks limits per IP independently", () => {
     const a = reqWithIp("10.0.0.3");
     const b = reqWithIp("10.0.0.4");

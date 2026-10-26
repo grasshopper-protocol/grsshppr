@@ -142,6 +142,18 @@ export const sessionGoals = pgTable("session_goals", {
     .references(() => goals.id, { onDelete: "cascade" }),
 }, (t) => [{ pk: { columns: [t.sessionId, t.goalId] } }]);
 
+// --- Module: Calendar (RFC-0012) ---
+
+// Phase 0: a private, per-user subscription feed. Only the token's SHA-256
+// hash is stored; the URL is shown to the user once.
+export const calendarFeeds = pgTable("calendar_feeds", {
+  userId: text("user_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  tokenHash: text("token_hash").notNull().unique(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 // --- Core: Notifications ---
 
 export const notifications = pgTable("notifications", {

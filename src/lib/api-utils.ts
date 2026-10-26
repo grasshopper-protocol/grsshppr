@@ -16,18 +16,21 @@ export const uuidParam = z.string().uuid();
 // Ceiling: won't stop distributed attacks across many instances. Upgrade path: @upstash/ratelimit.
 const hitMap = new Map<string, number[]>();
 
+// Pass `key` to limit by something other than the client IP — e.g. per calendar
+// feed, whose requests come from shared calendar-provider servers.
 export function rateLimit(
   request: NextRequest,
-  { limit = 10, windowMs = 60_000 }: { limit?: number; windowMs?: number } = {}
+  { limit = 10, windowMs = 60_000, key }: { limit?: number; windowMs?: number; key?: string } = {}
 ): NextResponse | null {
-  const ip =
+  const bucket =
+    key ??
     request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
     request.headers.get("x-real-ip") ??
     "unknown";
   const now = Date.now();
-  const hits = hitMap.get(ip)?.filter((t) => t > now - windowMs) ?? [];
+  const hits = hitMap.get(bucket)?.filter((t) => t > now - windowMs) ?? [];
   hits.push(now);
-  hitMap.set(ip, hits);
+  hitMap.set(bucket, hits);
 
   if (hits.length > limit && process.env.NODE_ENV !== "development") {
     return NextResponse.json(
