@@ -95,6 +95,13 @@ describe("classifyGoogleFailure", () => {
     assert.equal(classifyGoogleFailure(410), "gone");
     assert.equal(classifyGoogleFailure(409), "conflict");
     assert.equal(classifyGoogleFailure(403, "forbidden"), "permanent");
+    assert.equal(classifyGoogleFailure(403, "quotaExceeded"), "transient");
+    assert.equal(classifyGoogleFailure(403, "insufficientPermissions"), "auth");
+  });
+
+  it("blames our credentials, not the user, for a bad client", () => {
+    assert.equal(classifyGoogleFailure(401, "invalid_client"), "config");
+    assert.equal(classifyGoogleFailure(400, "unauthorized_client"), "config");
     assert.equal(classifyGoogleFailure(400), "permanent");
   });
 });
@@ -119,6 +126,10 @@ describe("failureOutcome", () => {
     assert.deepEqual(failureOutcome("auth", 0, now), { kind: "hold" });
     for (const f of ["permanent", "gone", "conflict"]) assert.deepEqual(failureOutcome(f, 0, now), { kind: "park" }, f);
   });
+
+  it("retries a credentials problem without holding the user's work", () => {
+    assert.deepEqual(failureOutcome("config", 0, now), { kind: "retry", at: nextAttempt(0, now) });
+  });
 });
 
 describe("eventVideoUrl", () => {
@@ -135,5 +146,12 @@ describe("eventVideoUrl", () => {
     assert.equal(eventVideoUrl({}), null);
     assert.equal(eventVideoUrl({ conferenceData: {} }), null);
     assert.equal(eventVideoUrl({ hangoutLink: "javascript:alert(1)" }), null);
+    assert.equal(eventVideoUrl({ hangoutLink: "not a url" }), null);
+  });
+
+  it("accepts only Google Meet links", () => {
+    assert.equal(eventVideoUrl({ hangoutLink: "https://evil.example/meet" }), null);
+    assert.equal(eventVideoUrl({ hangoutLink: "https://meet.google.com.evil.example/x" }), null);
+    assert.equal(eventVideoUrl({ hangoutLink: "http://meet.google.com/abc" }), null);
   });
 });

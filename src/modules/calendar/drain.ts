@@ -39,9 +39,16 @@ const BATCH = 25;
  * row's failure is recorded on the row.
  *
  * Loops until nothing is due, so the reconcile that a new Meet link queues for
- * the other participant runs in the same drain. `maxRuns` bounds it.
+ * the other participant runs in the same drain. `maxRuns` and `budgetMs` bound
+ * it: no new batch or row starts after the budget, and every Google call has
+ * its own timeout, so the work queued behind it (the booking emails, the end
+ * of the cron's time limit) always gets its turn. What's left runs next time.
  */
-export async function drainCalendar(scope: { sessionId?: string; connectionId?: string; maxRuns?: number } = {}) {
+export async function drainCalendar(
+  scope: { sessionId?: string; connectionId?: string; maxRuns?: number; budgetMs?: number } = {}
+) {
+  const { maxRuns = 3, budgetMs = 10_000, ...filter } = scope;
+  const deadline = Date.now() + budgetMs;
   const result = { synced: 0, failed: 0 };
   let config: CalendarConfig;
   try {
@@ -52,16 +59,18 @@ export async function drainCalendar(scope: { sessionId?: string; connectionId?: 
   }
   if (!config.enabled) return result;
 
-  for (let run = 0; run < (scope.maxRuns ?? 3); run++) {
+  for (let run = 0; run < maxRuns && Date.now() < deadline; run++) {
     let rows: OutboxRow[];
     try {
-      rows = await claimDueOutbox({ limit: BATCH, maxAttempts: MAX_SYNC_ATTEMPTS, leaseMs: LEASE_MS, ...scope });
+      rows = await claimDueOutbox({ limit: BATCH, maxAttempts: MAX_SYNC_ATTEMPTS, leaseMs: LEASE_MS, ...filter });
     } catch (err) {
       console.error("[calendar] drain could not claim work", err instanceof Error ? err.message : "");
       return result;
     }
     if (rows.length === 0) break;
     for (const row of rows) {
+      // Out of time: unstarted rows keep their lease and run on a later drain.
+      if (Date.now() >= deadline) break;
       if (await syncRow(row, config)) result.synced++;
       else result.failed++;
     }
@@ -82,7 +91,7 @@ async function syncRow(row: OutboxRow, config: Enabled): Promise<boolean> {
     try {
       const outcome = failureOutcome(failure, row.attempts, new Date());
       if (outcome.kind === "hold") {
-        await markConnectionError(row.connectionId, "auth");
+        await markConnectionError(row.connectionId, err instanceof GoogleError ? (err.reason ?? "auth") : "auth");
         await releaseOutbox(row, failure);
       } else {
         await failOutbox(row, {

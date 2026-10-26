@@ -5,7 +5,7 @@
  * recorded on the row, and a broken grant held until the user reconnects.
  */
 
-import { describe, it, beforeEach, after } from "node:test";
+import { describe, it, beforeEach, after, mock } from "node:test";
 import assert from "node:assert/strict";
 import { randomBytes } from "node:crypto";
 import { configureTestDatabase, startFakeGoogle, resetDatabase, seedUsers, sessionRow } from "./helpers.mjs";
@@ -22,23 +22,24 @@ const { db, closeDb } = await import("../src/lib/db/index.ts");
 const { users, sessions, calendarConnections, calendarOutbox, calendarEventLinks, notifications } = await import("../src/lib/db/schema.ts");
 const { sql, eq } = await import("drizzle-orm");
 const { drainCalendar } = await import("../src/modules/calendar/drain.ts");
-const { saveConnection } = await import("../src/modules/calendar/connection-queries.ts");
+const { saveConnection, disconnectGoogle } = await import("../src/modules/calendar/connection-queries.ts");
+const { updateSessionStatus } = await import("../src/core/booking/queries.ts");
 const { getCalendarConfig } = await import("../src/modules/calendar/runtime.ts");
 const q = await import("../src/modules/calendar/sync-queries.ts");
 const { googleEventId } = await import("../src/lib/calendar/sync.ts");
 
-const connect = (userId) =>
+const connect = (userId, account = userId) =>
   saveConnection({
     userId,
-    tokens: { access_token: `access-${userId}`, refresh_token: `refresh-${userId}`, expires_in: 3600, scope: "calendar" },
-    claims: { sub: `sub-${userId}`, email: `${userId}@example.test` },
+    tokens: { access_token: `access-${account}`, refresh_token: `refresh-${account}`, expires_in: 3600, scope: "calendar" },
+    claims: { sub: `sub-${account}`, email: `${account}@example.test` },
     config: getCalendarConfig(),
   });
 const setStatus = async (status) => {
   await db.update(sessions).set({ status }).where(eq(sessions.id, "s1"));
   await q.enqueueSessionSync(db, { id: "s1", mentorId: "m", menteeId: "e" });
 };
-const calendar = (userId) => [...(google.calendars.get(`access-${userId}`)?.values() ?? [])];
+const calendar = (account) => [...(google.calendars.get(`access-${account}`)?.values() ?? [])];
 const session = async () => (await db.select().from(sessions).where(eq(sessions.id, "s1")))[0];
 const outbox = () => db.select().from(calendarOutbox);
 const links = () => db.select().from(calendarEventLinks);
@@ -180,6 +181,78 @@ describe("calendar drain", () => {
     await q.completeOutbox(claimed);
     const [row] = await outbox();
     assert.ok(row, "the cancel's reconcile is still queued");
+  });
+
+  it("a cancellation made while the connection was broken reaches the calendar after reconnecting", async () => {
+    const connectionId = await connect("m");
+    await setStatus("confirmed");
+    await drainCalendar({ sessionId: "s1" });
+    await q.markConnectionError(connectionId, "invalid_grant");
+    await setStatus("cancelled"); // queued for the broken connection, waiting
+    assert.deepEqual(await drainCalendar({ sessionId: "s1" }), { synced: 0, failed: 0 });
+    assert.equal(calendar("m").length, 1);
+
+    await connect("m");
+    await drainCalendar({ sessionId: "s1" });
+    assert.equal(calendar("m").length, 0, "the stale event is gone");
+  });
+
+  it("reconnecting a different Google account clears the old calendar and fills the new one", async () => {
+    await connect("m");
+    await setStatus("confirmed");
+    await drainCalendar({ sessionId: "s1" });
+    assert.equal(calendar("m").length, 1);
+
+    const connectionId = await connect("m", "m-work");
+    assert.equal(calendar("m").length, 0, "upcoming event removed from the old calendar");
+    await q.enqueueSessionSync(db, { id: "s1", mentorId: "m", menteeId: "e" }); // the callback's backfill
+    await drainCalendar({ connectionId });
+    assert.equal(calendar("m-work").length, 1);
+    assert.equal((await links())[0].connectionId, connectionId);
+  });
+
+  it("disconnecting removes upcoming events, keeps past ones, and clears the reconnect nudge", async () => {
+    const connectionId = await connect("m");
+    await db.insert(sessions).values(sessionRow("s2", "m", "e", "confirmed", 24)); // ended yesterday
+    await setStatus("confirmed");
+    await q.enqueueSessionSync(db, { id: "s2", mentorId: "m", menteeId: "e" });
+    await drainCalendar();
+    assert.equal(calendar("m").length, 2);
+    await db.insert(notifications).values({ id: "n1", userId: "m", type: "action_required:calendar_reconnect", message: "x", resourceId: connectionId, priority: "action" });
+
+    await disconnectGoogle("m", getCalendarConfig());
+    assert.deepEqual(calendar("m").map((e) => e.summary), ["Session with Emery"], "only the past event stays");
+    assert.equal(calendar("m")[0].id, googleEventId("s2", connectionId));
+    assert.equal((await db.select().from(calendarConnections)).length, 0);
+    assert.equal((await db.select().from(notifications))[0].read, true);
+  });
+
+  it("cancelling clears the session's video link", async () => {
+    await connect("m");
+    await setStatus("confirmed");
+    await drainCalendar({ sessionId: "s1" });
+    assert.ok((await session()).videoUrl);
+    await updateSessionStatus("s1", "cancelled");
+    assert.equal((await session()).videoUrl, null);
+  });
+
+  it("stops starting work once its time budget is spent", async () => {
+    await connect("m");
+    await setStatus("confirmed");
+    assert.deepEqual(await drainCalendar({ budgetMs: 0 }), { synced: 0, failed: 0 });
+    assert.equal(calendar("m").length, 0);
+  });
+
+  it("finds work queued a moment ago even when the app's clock lags the database's", async () => {
+    await connect("m");
+    await setStatus("confirmed"); // queued with the database's now()
+    mock.timers.enable({ apis: ["Date"], now: Date.now() - 5_000 }); // the app server runs 5s behind
+    try {
+      assert.deepEqual(await drainCalendar({ sessionId: "s1" }), { synced: 1, failed: 0 });
+    } finally {
+      mock.timers.reset();
+    }
+    assert.equal(calendar("m").length, 1);
   });
 
   it("does nothing when calendar sync is switched off", async () => {

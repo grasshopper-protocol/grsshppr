@@ -88,8 +88,11 @@ export async function PATCH(
   // Calendar first, so the confirmation email can carry the Meet link (RFC-0012 §7);
   // then emails and notifications — shared with the one-click email route (#140)
   after(async () => {
-    await drainCalendar({ sessionId: id });
-    await runTransitionEffects({ session: existing, to: parsed.data.status, actorId: session.user.id });
+    try {
+      await drainCalendar({ sessionId: id }); // time-boxed; never throws
+    } finally {
+      await runTransitionEffects({ session: existing, to: parsed.data.status, actorId: session.user.id });
+    }
   });
 
   return NextResponse.json({ session: updated });

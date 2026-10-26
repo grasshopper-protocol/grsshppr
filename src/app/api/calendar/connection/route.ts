@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { rateLimit } from "@/lib/api-utils";
 import { disconnectGoogle, getConnectionSummary } from "@/modules/calendar/connection-queries";
-import { getCalendarConfig } from "@/modules/calendar/runtime";
+import { getCalendarConfig, getCleanupConfig } from "@/modules/calendar/runtime";
 
 // GET /api/calendar/connection — whether Google push is available, and this user's connection
 export async function GET() {
@@ -20,6 +20,6 @@ export async function DELETE(request: NextRequest) {
   if (limited) return limited;
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  await disconnectGoogle(session.user.id, getCalendarConfig());
+  await disconnectGoogle(session.user.id, getCleanupConfig());
   return NextResponse.json({ connection: null });
 }

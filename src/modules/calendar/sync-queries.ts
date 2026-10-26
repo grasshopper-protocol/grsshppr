@@ -7,8 +7,10 @@ import { createNotification } from "@/core/notifications/queries";
 type Executor = typeof db | Parameters<Parameters<typeof db.transaction>[0]>[0];
 
 /**
- * Queue a reconcile for every active calendar connection of the session's
- * participants (RFC-0012 §5). Call inside the same transaction as the status
+ * Queue a reconcile for every calendar connection of the session's
+ * participants (RFC-0012 §5) — broken ones too: their rows wait (claims skip
+ * them) and run when the user reconnects, so a change made during the outage
+ * isn't lost. Call inside the same transaction as the status
  * change, so a confirmation can't commit without its sync being recorded.
  * Re-queuing an existing pair resets it to "due now" — one row per pair, ever.
  * `exceptConnectionId` leaves one connection out (the one already in sync).
@@ -24,7 +26,6 @@ export async function enqueueSessionSync(
     .where(
       and(
         inArray(calendarConnections.userId, [session.mentorId, session.menteeId]),
-        eq(calendarConnections.status, "active"),
         exceptConnectionId ? ne(calendarConnections.id, exceptConnectionId) : undefined
       )
     );
@@ -54,7 +55,16 @@ export async function claimDueOutbox(p: {
   sessionId?: string;
   connectionId?: string;
 }) {
-  const now = p.now ?? new Date();
+  // One clock: rows are queued with the database's now(), so "due" is judged by
+  // it too. The app server's clock can lag the database's by milliseconds or
+  // more (and has coarser precision), which made a just-queued row look not
+  // yet due to the inline drain. `now` is only passed by tests.
+  const now = p.now ?? sql`now()`;
+  // Millisecond precision, so the value read back into a JS Date matches the
+  // stored one exactly — completeOutbox() compares them to detect a re-queue.
+  const leaseEnd = p.now
+    ? new Date(p.now.getTime() + p.leaseMs)
+    : sql`date_trunc('milliseconds', now() + ${p.leaseMs} * interval '1 millisecond')`;
   return db.transaction(async (tx) => {
     const due = await tx
       .select({ id: calendarOutbox.id })
@@ -77,7 +87,7 @@ export async function claimDueOutbox(p: {
     if (due.length === 0) return [];
     return tx
       .update(calendarOutbox)
-      .set({ nextAttemptAt: new Date(now.getTime() + p.leaseMs) })
+      .set({ nextAttemptAt: leaseEnd })
       .where(inArray(calendarOutbox.id, due.map((d) => d.id)))
       .returning();
   });
@@ -98,7 +108,7 @@ export async function completeOutbox(row: Claimed) {
 
 /** Give a claimed row back without counting an attempt (its connection needs reconnecting). */
 export async function releaseOutbox(row: Claimed, errorClass: string) {
-  await db.update(calendarOutbox).set({ nextAttemptAt: new Date(), lastError: errorClass }).where(stillOurs(row));
+  await db.update(calendarOutbox).set({ nextAttemptAt: sql`now()`, lastError: errorClass }).where(stillOurs(row));
 }
 
 /** Failed: record the error class and when to try again (null = park it). */
