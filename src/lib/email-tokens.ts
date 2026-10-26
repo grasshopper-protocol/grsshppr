@@ -1,4 +1,4 @@
-import { createHmac } from "crypto";
+import { createHmac, timingSafeEqual } from "crypto";
 
 const SECRET = process.env.BETTER_AUTH_SECRET!;
 const EXPIRY_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
@@ -25,7 +25,11 @@ export function verifyEmailAction(token: string): TokenPayload | null {
   if (!encoded || !sig) return null;
 
   const expectedSig = createHmac("sha256", SECRET).update(encoded).digest("base64url");
-  if (sig !== expectedSig) return null;
+  // Constant-time comparison, so response timing can't leak how much of a
+  // forged signature matched (#141). Unequal lengths are a mismatch.
+  const given = Buffer.from(sig);
+  const expected = Buffer.from(expectedSig);
+  if (given.length !== expected.length || !timingSafeEqual(given, expected)) return null;
 
   try {
     const payload = JSON.parse(Buffer.from(encoded, "base64url").toString()) as TokenPayload;
