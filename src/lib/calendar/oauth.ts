@@ -53,12 +53,16 @@ export interface OAuthState {
   exp: number;
 }
 
-function stateKey(appSecret: string): Buffer {
+/** Below this, the secret is missing or a placeholder — refuse rather than sign with it. */
+export const MIN_SECRET_LENGTH = 32;
+
+function stateKey(appSecret: string | undefined): Buffer {
+  if (!appSecret || appSecret.length < MIN_SECRET_LENGTH) throw new Error("App secret is missing or too short");
   return Buffer.from(hkdfSync("sha256", appSecret, "", "grsshppr calendar oauth state v1", 32));
 }
 
 /** The cookie value: base64url(JSON) + "." + HMAC. */
-export function signState(payload: OAuthState, appSecret: string): string {
+export function signState(payload: OAuthState, appSecret: string | undefined): string {
   const body = Buffer.from(JSON.stringify(payload)).toString("base64url");
   const sig = createHmac("sha256", stateKey(appSecret)).update(body).digest("base64url");
   return `${body}.${sig}`;
@@ -71,9 +75,9 @@ export function signState(payload: OAuthState, appSecret: string): string {
  */
 export function verifyState(
   cookie: string | undefined,
-  p: { appSecret: string; state: string | null; userId: string; now: number }
+  p: { appSecret: string | undefined; state: string | null; userId: string; now: number }
 ): string | null {
-  if (!cookie || !p.state) return null;
+  if (!cookie || !p.state || !p.appSecret || p.appSecret.length < MIN_SECRET_LENGTH) return null;
   const [body, sig] = cookie.split(".");
   if (!body || !sig) return null;
   const expected = createHmac("sha256", stateKey(p.appSecret)).update(body).digest("base64url");
@@ -91,4 +95,23 @@ export function verifyState(
   const s2 = Buffer.from(p.state);
   if (s1.length !== s2.length || !timingSafeEqual(s1, s2)) return null;
   return payload.verifier;
+}
+
+/**
+ * The account's stable id and email from an ID token received directly from
+ * Google's token endpoint over TLS (OIDC Core §3.1.3.7 lets a client skip the
+ * signature check in exactly that case). Returns null if the claims we rely on
+ * are missing or the token isn't for our client.
+ */
+export function idTokenClaims(idToken: string | undefined, clientId: string): { sub: string; email: string | null } | null {
+  const payload = idToken?.split(".")[1];
+  if (!payload) return null;
+  try {
+    const claims = JSON.parse(Buffer.from(payload, "base64url").toString("utf8"));
+    const audience = Array.isArray(claims.aud) ? claims.aud : [claims.aud];
+    if (typeof claims.sub !== "string" || !claims.sub || !audience.includes(clientId)) return null;
+    return { sub: claims.sub, email: typeof claims.email === "string" ? claims.email : null };
+  } catch {
+    return null;
+  }
 }

@@ -3,6 +3,8 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { upsertProfile, getProfileByUserId, deleteProfile } from "@/core/profiles/queries";
 import { enqueueSessionSync } from "@/modules/calendar/sync-queries";
+import { disconnectGoogle } from "@/modules/calendar/connection-queries";
+import { getCalendarConfig } from "@/modules/calendar/runtime";
 import { z } from "zod";
 import { safeJson } from "@/lib/api-utils";
 
@@ -52,6 +54,8 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "Name doesn't match" }, { status: 400 });
   }
 
+  // Revoke the Google Calendar grant before the account goes (ADR-0014 §7)
+  await disconnectGoogle(session.user.id, getCalendarConfig());
   // Cancelled sessions leave the partner's Google Calendar too (RFC-0012)
   await deleteProfile(session.user.id, {
     onSessionsCancelled: async (tx, cancelled) => {

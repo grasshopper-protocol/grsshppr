@@ -16,13 +16,14 @@ import {
   STATE_TTL_MS,
   authorizeUrl,
   hasCalendarScope,
+  idTokenClaims,
   pkceChallenge,
   randomToken,
   signState,
   verifyState,
 } from "../src/lib/calendar/oauth.js";
 
-const SECRET = "app-secret-for-tests-0123456789";
+const SECRET = "app-secret-for-tests-0123456789abcdef";
 const NOW = 1_800_000_000_000;
 const payload = { state: "st4te", verifier: "v3rifier", userId: "u1", exp: NOW + STATE_TTL_MS };
 const ok = { appSecret: SECRET, state: "st4te", userId: "u1", now: NOW };
@@ -70,12 +71,21 @@ describe("state cookie", () => {
     const [body] = c.split(".");
     const forgedBody = Buffer.from(JSON.stringify({ ...payload, userId: "attacker" })).toString("base64url");
     assert.equal(verifyState(`${forgedBody}.${c.split(".")[1]}`, { ...ok, userId: "attacker" }), null);
-    assert.equal(verifyState(signState(payload, "another-secret"), ok), null);
+    assert.equal(verifyState(signState(payload, "another-app-secret-0123456789abcdef"), ok), null);
     assert.equal(verifyState(`${body}.x`, ok), null);
     assert.equal(verifyState("garbage", ok), null);
     assert.equal(verifyState(undefined, ok), null);
     const notJson = Buffer.from("{not json").toString("base64url");
     assert.equal(verifyState(`${notJson}.${signStateRaw(notJson)}`, ok), null);
+  });
+
+  it("refuses to sign or accept with a missing or placeholder app secret", () => {
+    assert.throws(() => signState(payload, undefined));
+    assert.throws(() => signState(payload, ""));
+    assert.throws(() => signState(payload, "short-secret"));
+    const c = signState(payload, SECRET);
+    assert.equal(verifyState(c, { ...ok, appSecret: undefined }), null);
+    assert.equal(verifyState(c, { ...ok, appSecret: "" }), null);
   });
 });
 
@@ -84,3 +94,20 @@ function signStateRaw(body) {
   const key = Buffer.from(hkdfSync("sha256", SECRET, "", "grsshppr calendar oauth state v1", 32));
   return createHmac("sha256", key).update(body).digest("base64url");
 }
+
+describe("idTokenClaims", () => {
+  const token = (claims) => `h.${Buffer.from(JSON.stringify(claims)).toString("base64url")}.sig`;
+
+  it("reads sub and email for our client", () => {
+    assert.deepEqual(idTokenClaims(token({ sub: "123", email: "a@b.test", aud: "cid" }), "cid"), { sub: "123", email: "a@b.test" });
+    assert.deepEqual(idTokenClaims(token({ sub: "123", aud: ["other", "cid"] }), "cid"), { sub: "123", email: null });
+  });
+
+  it("rejects tokens for another client, without a subject, or malformed", () => {
+    assert.equal(idTokenClaims(token({ sub: "123", aud: "someone-else" }), "cid"), null);
+    assert.equal(idTokenClaims(token({ aud: "cid" }), "cid"), null);
+    assert.equal(idTokenClaims("not-a-jwt", "cid"), null);
+    assert.equal(idTokenClaims(`h.${Buffer.from("{bad").toString("base64url")}.s`, "cid"), null);
+    assert.equal(idTokenClaims(undefined, "cid"), null);
+  });
+});

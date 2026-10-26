@@ -141,11 +141,14 @@ export default function PrivacyPolicyPage() {
           use them only to create and identify your account.
         </p>
         <p>
-          When Google Calendar integration becomes available and you choose to connect your
-          calendar, Grsshppr will only create, update and delete the events for your Grsshppr
-          sessions on your own calendar. Those events carry no other participant&apos;s contact
-          details. We do not read your other events, and you can disconnect at any time, which
-          revokes our access.
+          If you connect your Google Calendar, Grsshppr asks only for permission to manage events on
+          calendars you own, plus your Google account&apos;s email address to show which calendar is
+          connected. We use it only to create, update and delete the events for your Grsshppr sessions
+          on your own calendar, with a Google Meet link. Those events are marked private and carry no
+          other participant&apos;s contact details, goals or notes. We do not read your other events.
+          Your Google access tokens are stored encrypted. You can disconnect in Settings at any time,
+          which revokes our access; deleting your account revokes it too. Events already added stay
+          in your calendar.
         </p>
         <p>
           Grsshppr&apos;s use and transfer of information received from Google APIs to any other app
