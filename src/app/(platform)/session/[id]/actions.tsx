@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { CalendarCheck, CalendarPlus, ArrowClockwise, ArrowsClockwise } from "@phosphor-icons/react";
+import { CalendarCheck, CalendarPlus, ArrowClockwise, ArrowsClockwise, GoogleLogo } from "@phosphor-icons/react";
 
 export function SessionActions({
   sessionId,
@@ -14,6 +14,7 @@ export function SessionActions({
   cancelReason,
   hasEnded,
   inGoogleCalendar = false,
+  canConnectCalendar = false,
 }: {
   sessionId: string;
   status: string;
@@ -22,6 +23,7 @@ export function SessionActions({
   cancelReason?: string | null;
   hasEnded: boolean;
   inGoogleCalendar?: boolean;
+  canConnectCalendar?: boolean;
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -70,14 +72,25 @@ export function SessionActions({
       )}
 
       {(status === "confirmed" || status === "completed") && !inGoogleCalendar && (
-        <a
-          href={`/api/sessions/${sessionId}/ical`}
-          download
-          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
-        >
-          <CalendarPlus size={16} />
-          Add to calendar
-        </a>
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+          {canConnectCalendar && status === "confirmed" && (
+            <a
+              href="/api/calendar/connect/google"
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground hover:underline underline-offset-4"
+            >
+              <GoogleLogo size={16} />
+              Add to Google Calendar
+            </a>
+          )}
+          <a
+            href={`/api/sessions/${sessionId}/ical`}
+            download
+            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+          >
+            <CalendarPlus size={16} />
+            {canConnectCalendar && status === "confirmed" ? "Download calendar file" : "Add to calendar"}
+          </a>
+        </div>
       )}
 
       {status === "completed" && !isMentor && mentorSlug && (

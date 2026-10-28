@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { CalendarCheck, CalendarDots, VideoCamera } from "@phosphor-icons/react/dist/ssr";
+import { CalendarCheck, CalendarDots, GoogleLogo, VideoCamera } from "@phosphor-icons/react/dist/ssr";
 import type { Session } from "@/types";
 import { LocalTime } from "@/components/local-time";
 
@@ -9,11 +9,14 @@ export function NextSession({
   partner,
   isMentor,
   inGoogleCalendar = false,
+  canConnectCalendar = false,
 }: {
   session: Session;
   partner: { id: string; name: string; image: string | null };
   isMentor: boolean;
   inGoogleCalendar?: boolean;
+  /** Offer "Add to Google Calendar" (connect, then it's added automatically) next to the file download. */
+  canConnectCalendar?: boolean;
 }) {
   const start = new Date(session.startsAt);
   const now = new Date();
@@ -83,13 +86,24 @@ export function NextSession({
             In your Google Calendar
           </span>
         ) : (
-          <a
-            href={`/api/sessions/${session.id}/ical`}
-            className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
-          >
-            <CalendarDots size={12} />
-            Add to calendar
-          </a>
+          <>
+            {canConnectCalendar && (
+              <a
+                href="/api/calendar/connect/google"
+                className="inline-flex items-center gap-1 text-xs font-medium text-foreground hover:underline underline-offset-4"
+              >
+                <GoogleLogo size={12} />
+                Add to Google Calendar
+              </a>
+            )}
+            <a
+              href={`/api/sessions/${session.id}/ical`}
+              className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+            >
+              <CalendarDots size={12} />
+              {canConnectCalendar ? "Download calendar file" : "Add to calendar"}
+            </a>
+          </>
         )}
       </div>
     </div>

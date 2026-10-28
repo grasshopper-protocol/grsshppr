@@ -2,7 +2,8 @@ import { and, eq, gt, inArray, or } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { calendarConnections, calendarEventLinks, sessions } from "@/lib/db/schema";
 import { decryptToken, encryptToken, needsReencryption } from "@/lib/calendar/token-crypto";
-import type { CalendarConfig } from "@/lib/calendar/config";
+import { canConnectCalendar, type CalendarConfig } from "@/lib/calendar/config";
+import { getCalendarConfig } from "./runtime";
 import { deleteEvent, GoogleError, refreshAccessToken, revokeToken, type GoogleTokens } from "./google-client";
 import { enqueueSessionSync, markConnectionError } from "./sync-queries";
 import { CALENDAR_RECONNECT } from "@/lib/notifications";
@@ -17,6 +18,22 @@ export async function getConnectionSummary(userId: string) {
     .from(calendarConnections)
     .where(eq(calendarConnections.userId, userId));
   return row ?? null;
+}
+
+/**
+ * Whether to invite this person to connect Google Calendar: sync is on, they're
+ * allowed to connect (the soak allow-list), and they have no connection yet. A
+ * broken connection gets the reconnect notification instead.
+ */
+export async function shouldOfferCalendarConnect(user: { id: string; email: string }): Promise<boolean> {
+  let config: CalendarConfig;
+  try {
+    config = getCalendarConfig();
+  } catch {
+    return false;
+  }
+  if (!canConnectCalendar(config, user.email)) return false;
+  return (await getConnectionSummary(user.id)) === null;
 }
 
 /**
