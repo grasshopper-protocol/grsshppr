@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { rateLimit } from "@/lib/api-utils";
 import { canConnectCalendar } from "@/lib/calendar/config";
+import { safeReturnPath } from "@/lib/calendar/return-path";
 import { authorizeUrl, pkceChallenge, randomToken, signState, STATE_TTL_MS } from "@/lib/calendar/oauth";
 import { getCalendarConfig, googleRedirectUri, OAUTH_STATE_COOKIE, OAUTH_STATE_COOKIE_PATH } from "@/modules/calendar/runtime";
 
@@ -19,7 +20,13 @@ export async function GET(request: NextRequest) {
   const state = randomToken();
   const verifier = randomToken();
   const cookie = signState(
-    { state, verifier, userId: session.user.id, exp: Date.now() + STATE_TTL_MS },
+    {
+      state,
+      verifier,
+      userId: session.user.id,
+      exp: Date.now() + STATE_TTL_MS,
+      returnTo: safeReturnPath(request.nextUrl.searchParams.get("returnTo")),
+    },
     process.env.BETTER_AUTH_SECRET
   );
   const response = NextResponse.redirect(

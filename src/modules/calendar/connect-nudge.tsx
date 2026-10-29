@@ -1,8 +1,10 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
+import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
+import { connectGoogleHref } from "@/lib/calendar/return-path";
 import { CalendarCheck, GoogleLogo, X } from "@phosphor-icons/react";
 
 const COPY = {
@@ -38,6 +40,7 @@ const subscribe = (fn: () => void) => {
  */
 export function CalendarConnectNudge({ place }: { place: keyof typeof COPY }) {
   const dismissed = useSyncExternalStore(subscribe, () => read(keyFor(place)), () => true);
+  const pathname = usePathname();
   if (dismissed) return null;
   const copy = COPY[place];
 
@@ -56,7 +59,7 @@ export function CalendarConnectNudge({ place }: { place: keyof typeof COPY }) {
       <div className="min-w-0 flex-1">
         <p className="text-sm font-medium">{copy.title}</p>
         <p className="mt-0.5 text-sm text-muted-foreground">{copy.body}</p>
-        <a href="/api/calendar/connect/google" className={cn(buttonVariants({ variant: "outline", size: "sm", className: "mt-3" }))}>
+        <a href={connectGoogleHref(pathname)} className={cn(buttonVariants({ variant: "outline", size: "sm", className: "mt-3" }))}>
           <GoogleLogo size={14} />
           Connect Google Calendar
         </a>

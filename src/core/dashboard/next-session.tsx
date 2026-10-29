@@ -3,6 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CalendarCheck, CalendarDots, GoogleLogo, VideoCamera } from "@phosphor-icons/react/dist/ssr";
 import type { Session } from "@/types";
 import { LocalTime } from "@/components/local-time";
+import { connectGoogleHref } from "@/lib/calendar/return-path";
 
 export function NextSession({
   session,
@@ -89,7 +90,7 @@ export function NextSession({
           <>
             {canConnectCalendar && (
               <a
-                href="/api/calendar/connect/google"
+                href={connectGoogleHref("/dashboard")}
                 className="inline-flex items-center gap-1 text-xs font-medium text-foreground hover:underline underline-offset-4"
               >
                 <GoogleLogo size={12} />

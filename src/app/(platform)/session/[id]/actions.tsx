@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { connectGoogleHref } from "@/lib/calendar/return-path";
 import { CalendarCheck, CalendarPlus, ArrowClockwise, ArrowsClockwise, GoogleLogo } from "@phosphor-icons/react";
 
 export function SessionActions({
@@ -75,7 +76,7 @@ export function SessionActions({
         <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
           {canConnectCalendar && status === "confirmed" && (
             <a
-              href="/api/calendar/connect/google"
+              href={connectGoogleHref(`/session/${sessionId}`)}
               className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground hover:underline underline-offset-4"
             >
               <GoogleLogo size={16} />
