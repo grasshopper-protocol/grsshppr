@@ -132,6 +132,7 @@ export function CalendarFeedSettings() {
           <Button
             variant="outline"
             size="sm"
+            className="min-h-11"
             disabled={busy}
             onClick={() => {
               if (feed.status === "on" && !confirm("Make a new link? The current one will stop working.")) return;
@@ -140,7 +141,7 @@ export function CalendarFeedSettings() {
           >
             Make a new link
           </Button>
-          <Button variant="ghost" size="sm" disabled={busy} onClick={turnOff} className="text-muted-foreground hover:text-destructive">
+          <Button variant="ghost" size="sm" disabled={busy} onClick={turnOff} className="min-h-11 text-muted-foreground hover:text-destructive">
             Turn off
           </Button>
         </div>

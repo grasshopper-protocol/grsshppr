@@ -70,7 +70,7 @@ export function NotificationBell() {
             >
               <span className={n.priority === "action" ? "text-sm font-medium" : "text-sm"}>{n.message}</span>
               <span className="text-xs text-muted-foreground">
-                {new Date(n.createdAt).toLocaleDateString("en-US", {
+                {new Date(n.createdAt).toLocaleDateString(undefined, {
                   month: "short",
                   day: "numeric",
                   hour: "numeric",
