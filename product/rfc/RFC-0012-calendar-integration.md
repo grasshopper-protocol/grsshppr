@@ -493,7 +493,9 @@ third cron. _Fixed by #155 (merged 2026-10-25)._
    limiting the Connect button to them (anyone else would hit Google's
    "access blocked" screen while the app is in Testing mode). Note: in Testing
    mode Google refresh tokens expire after 7 days, so testers reconnect weekly.
-8. Submit Google OAuth verification (needs the working flow for the demo video);
+8. Submit Google OAuth verification (needs the working flow for the demo video;
+   checklist, scope justification and video shot list in
+   [product/google-oauth-verification.md](../google-oauth-verification.md));
    enable on the hosted deployment once verified.
 
 ## Direction: Tier C and Microsoft (follow-up RFC)

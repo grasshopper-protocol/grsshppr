@@ -15,7 +15,7 @@ import { FeedbackPrompt } from "@/core/booking/feedback-prompt";
 import { feedbackState } from "@/lib/feedback-prompts";
 import { LocalTime } from "@/components/local-time";
 import { isTimeToJoin } from "@/lib/booking-dates";
-import { sessionsInGoogleCalendar } from "@/modules/calendar/connection-queries";
+import { sessionsInGoogleCalendar, shouldOfferCalendarConnect } from "@/modules/calendar/connection-queries";
 
 type Params = Promise<{ id: string }>;
 
@@ -52,7 +52,10 @@ export default async function SessionPage({
   const start = new Date(session.startsAt);
   const end = new Date(session.endsAt);
   const now = new Date();
-  const inGoogleCalendar = (await sessionsInGoogleCalendar(userId, [session.id])).has(session.id);
+  const [inGoogleCalendar, canConnectCalendar] = await Promise.all([
+    sessionsInGoogleCalendar(userId, [session.id]).then((s) => s.has(session.id)),
+    shouldOfferCalendarConnect(authSession.user),
+  ]);
 
   const myRating = session.status === "completed" ? await getMyFeedbackRating(session.id, userId) : null;
   const feedback = feedbackState({
@@ -149,6 +152,7 @@ export default async function SessionPage({
         cancelReason={session.cancelReason}
         hasEnded={end <= now}
         inGoogleCalendar={inGoogleCalendar}
+        canConnectCalendar={canConnectCalendar}
       />
 
       <div className="mt-8">
