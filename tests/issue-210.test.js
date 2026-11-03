@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { LocalTime } from "../src/components/local-time.tsx";
-import { CalendarFeedActions } from "../src/modules/calendar/feed-settings.tsx";
+import { CalendarFeedActions } from "../src/modules/calendar/feed-actions.tsx";
 
 describe("calendar locale and touch target regression", () => {
   it("renders the LocalTime placeholder in en-US UTC, whatever the viewer's locale", () => {

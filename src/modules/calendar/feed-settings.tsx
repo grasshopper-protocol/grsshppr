@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { CalendarFeedActions } from "@/modules/calendar/feed-actions";
 import { Input } from "@/components/ui/input";
 import { CalendarPlus, Check, Copy } from "@phosphor-icons/react";
 import { GoogleCalendarSettings, type GoogleCalendarStatus } from "./google-calendar-settings";
@@ -12,28 +13,6 @@ type FeedState =
   | { status: "off" }
   | { status: "on"; createdAt: string }
   | { status: "new"; createdAt: string; urls: FeedUrls };
-
-/** The two actions for a live link. Exported so a render test can check their touch targets. */
-export function CalendarFeedActions({
-  busy,
-  onMakeNew,
-  onTurnOff,
-}: {
-  busy: boolean;
-  onMakeNew: () => void;
-  onTurnOff: () => void;
-}) {
-  return (
-    <div className="mt-3 flex flex-wrap gap-2">
-      <Button variant="outline" size="sm" className="min-h-11" disabled={busy} onClick={onMakeNew}>
-        Make a new link
-      </Button>
-      <Button variant="ghost" size="sm" disabled={busy} onClick={onTurnOff} className="min-h-11 text-muted-foreground hover:text-destructive">
-        Turn off
-      </Button>
-    </div>
-  );
-}
 
 /**
  * Settings → Calendar (RFC-0012): Google Calendar first when it's available,
