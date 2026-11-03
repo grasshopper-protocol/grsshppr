@@ -13,6 +13,28 @@ type FeedState =
   | { status: "on"; createdAt: string }
   | { status: "new"; createdAt: string; urls: FeedUrls };
 
+/** The two actions for a live link. Exported so a render test can check their touch targets. */
+export function CalendarFeedActions({
+  busy,
+  onMakeNew,
+  onTurnOff,
+}: {
+  busy: boolean;
+  onMakeNew: () => void;
+  onTurnOff: () => void;
+}) {
+  return (
+    <div className="mt-3 flex flex-wrap gap-2">
+      <Button variant="outline" size="sm" className="min-h-11" disabled={busy} onClick={onMakeNew}>
+        Make a new link
+      </Button>
+      <Button variant="ghost" size="sm" disabled={busy} onClick={onTurnOff} className="min-h-11 text-muted-foreground hover:text-destructive">
+        Turn off
+      </Button>
+    </div>
+  );
+}
+
 /**
  * Settings → Calendar (RFC-0012): Google Calendar first when it's available,
  * then a private subscription link for other calendar apps (§1) — collapsed
@@ -128,23 +150,14 @@ export function CalendarFeedSettings() {
       )}
 
       {(feed.status === "on" || feed.status === "new") && (
-        <div className="mt-3 flex flex-wrap gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="min-h-11"
-            disabled={busy}
-            onClick={() => {
-              if (feed.status === "on" && !confirm("Make a new link? The current one will stop working.")) return;
-              createLink();
-            }}
-          >
-            Make a new link
-          </Button>
-          <Button variant="ghost" size="sm" disabled={busy} onClick={turnOff} className="min-h-11 text-muted-foreground hover:text-destructive">
-            Turn off
-          </Button>
-        </div>
+        <CalendarFeedActions
+          busy={busy}
+          onMakeNew={() => {
+            if (feed.status === "on" && !confirm("Make a new link? The current one will stop working.")) return;
+            createLink();
+          }}
+          onTurnOff={turnOff}
+        />
       )}
 
       {error && (

@@ -23,7 +23,7 @@ export function LocalTime({
 }) {
   const inBrowser = useSyncExternalStore(subscribe, () => true, () => false);
   const date = new Date(value);
-  const text = date.toLocaleString(undefined, inBrowser ? options : { ...options, timeZone: "UTC" });
+  const text = date.toLocaleString(inBrowser ? undefined : "en-US", inBrowser ? options : { ...options, timeZone: "UTC" });
   return (
     <time
       dateTime={date.toISOString()}
