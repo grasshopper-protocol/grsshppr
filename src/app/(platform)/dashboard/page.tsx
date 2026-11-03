@@ -16,7 +16,8 @@ import { FeedbackPrompt } from "@/core/booking/feedback-prompt";
 import { ProfileNudge } from "@/components/profile-nudge";
 import { StatCard } from "@/core/dashboard/stat-card";
 import { NextSession, NextSessionEmpty } from "@/core/dashboard/next-session";
-import { sessionsInGoogleCalendar } from "@/modules/calendar/connection-queries";
+import { sessionsInGoogleCalendar, shouldOfferCalendarConnect } from "@/modules/calendar/connection-queries";
+import { CalendarConnectNudge } from "@/modules/calendar/connect-nudge";
 import { CalendarDots, PencilSimple, ArrowRight, Fire } from "@phosphor-icons/react/dist/ssr";
 import { LocalTime } from "@/components/local-time";
 
@@ -35,9 +36,12 @@ export default async function DashboardPage() {
 
   const isMentor = profile.role === "mentor";
   // Already pushed to their Google Calendar? Then don't offer a second copy (.ics).
-  const nextInGoogleCalendar = nextSession
-    ? (await sessionsInGoogleCalendar(session.user.id, [nextSession.session.id])).has(nextSession.session.id)
-    : false;
+  const [nextInGoogleCalendar, offerCalendarConnect] = await Promise.all([
+    nextSession
+      ? sessionsInGoogleCalendar(session.user.id, [nextSession.session.id]).then((s) => s.has(nextSession.session.id))
+      : false,
+    shouldOfferCalendarConnect(session.user),
+  ]);
 
   if (isMentor) {
     return (
@@ -48,6 +52,7 @@ export default async function DashboardPage() {
         needsFeedback={needsFeedback}
         nextSession={nextSession}
         nextInGoogleCalendar={nextInGoogleCalendar}
+        offerCalendarConnect={offerCalendarConnect}
       />
     );
   }
@@ -60,6 +65,7 @@ export default async function DashboardPage() {
       needsFeedback={needsFeedback}
       nextSession={nextSession}
       nextInGoogleCalendar={nextInGoogleCalendar}
+      offerCalendarConnect={offerCalendarConnect}
     />
   );
 }
@@ -71,6 +77,7 @@ async function MentorDashboard({
   needsFeedback,
   nextSession,
   nextInGoogleCalendar,
+  offerCalendarConnect,
 }: {
   userId: string;
   profile: { role: "mentor" | "mentee"; bio: string | null; headline: string | null; expertise: string[] | null };
@@ -78,6 +85,7 @@ async function MentorDashboard({
   needsFeedback: Awaited<ReturnType<typeof getSessionsNeedingFeedback>>;
   nextSession: Awaited<ReturnType<typeof getNextUpcomingSession>>;
   nextInGoogleCalendar: boolean;
+  offerCalendarConnect: boolean;
 }) {
   const [stats, allSessions, weekSessions, repeatRate, menteeStats, myMentors, lastSessionMap] = await Promise.all([
     getMentorStats(userId),
@@ -106,6 +114,12 @@ async function MentorDashboard({
         hasAvailability={windows.length > 0}
       />
 
+      {offerCalendarConnect && (
+        <div className="mt-6">
+          <CalendarConnectNudge place="dashboard" />
+        </div>
+      )}
+
       {/* Stats */}
       <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <StatCard icon="sessions" label="Sessions" value={stats.completedSessions} />
@@ -124,7 +138,7 @@ async function MentorDashboard({
         <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Next up</h2>
         <div className="mt-3">
           {nextSession ? (
-            <NextSession session={nextSession.session} partner={nextSession.partner} isMentor inGoogleCalendar={nextInGoogleCalendar} />
+            <NextSession session={nextSession.session} partner={nextSession.partner} isMentor inGoogleCalendar={nextInGoogleCalendar} canConnectCalendar={offerCalendarConnect} />
           ) : (
             <NextSessionEmpty isMentor />
           )}
@@ -307,6 +321,7 @@ async function MenteeDashboard({
   needsFeedback,
   nextSession,
   nextInGoogleCalendar,
+  offerCalendarConnect,
 }: {
   userId: string;
   profile: { role: "mentor" | "mentee"; bio: string | null; headline: string | null; expertise: string[] | null };
@@ -314,6 +329,7 @@ async function MenteeDashboard({
   needsFeedback: Awaited<ReturnType<typeof getSessionsNeedingFeedback>>;
   nextSession: Awaited<ReturnType<typeof getNextUpcomingSession>>;
   nextInGoogleCalendar: boolean;
+  offerCalendarConnect: boolean;
 }) {
   const [stats, allSessions, mentors, lastSessionMap] = await Promise.all([
     getMenteeStats(userId),
@@ -339,6 +355,12 @@ async function MenteeDashboard({
         hasAvailability={windows.length > 0}
       />
 
+      {offerCalendarConnect && (
+        <div className="mt-6">
+          <CalendarConnectNudge place="dashboard" />
+        </div>
+      )}
+
       {/* Stats */}
       <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <StatCard
@@ -362,7 +384,7 @@ async function MenteeDashboard({
         <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Next up</h2>
         <div className="mt-3">
           {nextSession ? (
-            <NextSession session={nextSession.session} partner={nextSession.partner} isMentor={false} inGoogleCalendar={nextInGoogleCalendar} />
+            <NextSession session={nextSession.session} partner={nextSession.partner} isMentor={false} inGoogleCalendar={nextInGoogleCalendar} canConnectCalendar={offerCalendarConnect} />
           ) : (
             <NextSessionEmpty isMentor={false} />
           )}

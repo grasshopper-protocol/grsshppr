@@ -55,7 +55,14 @@ describe("PKCE and the authorise URL", () => {
 
 describe("state cookie", () => {
   it("returns the PKCE verifier for the same user, state and time window", () => {
-    assert.equal(verifyState(signState(payload, SECRET), ok), "v3rifier");
+    assert.deepEqual(verifyState(signState(payload, SECRET), ok), { verifier: "v3rifier", returnTo: null });
+  });
+
+  it("carries the page to return to, but only one we accept", () => {
+    const back = (returnTo) => verifyState(signState({ ...payload, returnTo }, SECRET), ok)?.returnTo;
+    assert.equal(back("/dashboard"), "/dashboard");
+    assert.equal(back("/session/3f2b1c9e-0d4a-4b7e-9a1f-1234567890ab"), "/session/3f2b1c9e-0d4a-4b7e-9a1f-1234567890ab");
+    assert.equal(back("https://evil.example"), null);
   });
 
   it("rejects another user, another state, an expired cookie and a missing state", () => {

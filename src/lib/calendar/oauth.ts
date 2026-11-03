@@ -11,6 +11,7 @@
  */
 
 import { createHash, createHmac, hkdfSync, randomBytes, timingSafeEqual } from "crypto";
+import { safeReturnPath } from "./return-path";
 
 export const GOOGLE_AUTHORIZE_URL = "https://accounts.google.com/o/oauth2/v2/auth";
 export const CALENDAR_SCOPE = "https://www.googleapis.com/auth/calendar.events.owned";
@@ -51,6 +52,8 @@ export interface OAuthState {
   verifier: string;
   userId: string;
   exp: number;
+  /** The page to return to after a successful connect; validated before signing and after. */
+  returnTo?: string | null;
 }
 
 /** Below this, the secret is missing or a placeholder — refuse rather than sign with it. */
@@ -69,14 +72,14 @@ export function signState(payload: OAuthState, appSecret: string | undefined): s
 }
 
 /**
- * Validate the callback against the cookie. Returns the PKCE verifier on
- * success, or null for any failure (bad signature, expired, other user,
- * state mismatch, malformed) — callers don't learn which.
+ * Validate the callback against the cookie. Returns the PKCE verifier and the
+ * page to return to on success, or null for any failure (bad signature,
+ * expired, other user, state mismatch, malformed) — callers don't learn which.
  */
 export function verifyState(
   cookie: string | undefined,
   p: { appSecret: string | undefined; state: string | null; userId: string; now: number }
-): string | null {
+): { verifier: string; returnTo: string | null } | null {
   if (!cookie || !p.state || !p.appSecret || p.appSecret.length < MIN_SECRET_LENGTH) return null;
   const [body, sig] = cookie.split(".");
   if (!body || !sig) return null;
@@ -94,7 +97,7 @@ export function verifyState(
   const s1 = Buffer.from(payload.state);
   const s2 = Buffer.from(p.state);
   if (s1.length !== s2.length || !timingSafeEqual(s1, s2)) return null;
-  return payload.verifier;
+  return { verifier: payload.verifier, returnTo: safeReturnPath(payload.returnTo) };
 }
 
 /**

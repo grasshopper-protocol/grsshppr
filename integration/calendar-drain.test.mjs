@@ -22,7 +22,7 @@ const { db, closeDb } = await import("../src/lib/db/index.ts");
 const { users, sessions, calendarConnections, calendarOutbox, calendarEventLinks, notifications } = await import("../src/lib/db/schema.ts");
 const { sql, eq } = await import("drizzle-orm");
 const { drainCalendar } = await import("../src/modules/calendar/drain.ts");
-const { saveConnection, disconnectGoogle, sessionsInGoogleCalendar } = await import("../src/modules/calendar/connection-queries.ts");
+const { saveConnection, disconnectGoogle, sessionsInGoogleCalendar, shouldOfferCalendarConnect } = await import("../src/modules/calendar/connection-queries.ts");
 const { updateSessionStatus } = await import("../src/core/booking/queries.ts");
 const { getCalendarConfig } = await import("../src/modules/calendar/runtime.ts");
 const q = await import("../src/modules/calendar/sync-queries.ts");
@@ -264,6 +264,27 @@ describe("calendar drain", () => {
     assert.equal((await sessionsInGoogleCalendar("m", [])).size, 0);
     await q.markConnectionError(connectionId, "invalid_grant");
     assert.equal((await sessionsInGoogleCalendar("m", ["s1"])).size, 0, "a broken connection can't vouch for its events");
+  });
+
+  it("invites only people who can connect and haven't", async () => {
+    const m = { id: "m", email: "m@example.test" };
+    assert.equal(await shouldOfferCalendarConnect(m), true);
+    process.env.CALENDAR_SYNC_ALLOWED_USERS = "someone-else@example.test";
+    try {
+      assert.equal(await shouldOfferCalendarConnect(m), false, "not on the soak allow-list");
+    } finally {
+      delete process.env.CALENDAR_SYNC_ALLOWED_USERS;
+    }
+    const connectionId = await connect("m");
+    assert.equal(await shouldOfferCalendarConnect(m), false, "already connected");
+    await q.markConnectionError(connectionId, "invalid_grant");
+    assert.equal(await shouldOfferCalendarConnect(m), false, "broken: the reconnect notification handles it");
+    process.env.CALENDAR_SYNC_ENABLED = "false";
+    try {
+      assert.equal(await shouldOfferCalendarConnect({ id: "e", email: "e@example.test" }), false, "sync off");
+    } finally {
+      process.env.CALENDAR_SYNC_ENABLED = "true";
+    }
   });
 
   it("does nothing when calendar sync is switched off", async () => {

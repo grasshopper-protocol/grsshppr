@@ -16,8 +16,11 @@ export async function GET(request: NextRequest) {
   const config = getCalendarConfig();
   if (!config.enabled) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const done = (outcome: "connected" | "denied" | "permission" | "failed") => {
-    const response = NextResponse.redirect(new URL(`/settings?calendar=${outcome}#calendar`, request.url));
+  // Success goes back to the page the person started from; anything else to
+  // Settings, which explains what went wrong and offers to try again.
+  const done = (outcome: "connected" | "denied" | "permission" | "failed", returnTo: string | null = null) => {
+    const target = outcome === "connected" && returnTo ? `${returnTo}?calendar=connected` : `/settings?calendar=${outcome}#calendar`;
+    const response = NextResponse.redirect(new URL(target, request.url));
     response.cookies.set(OAUTH_STATE_COOKIE, "", { path: OAUTH_STATE_COOKIE_PATH, maxAge: 0 });
     return response;
   };
@@ -28,19 +31,19 @@ export async function GET(request: NextRequest) {
   if (params.get("error")) return done("denied"); // the user cancelled on Google's screen
 
   // Same user, same attempt, within 10 minutes, untampered — or nothing.
-  const verifier = verifyState(request.cookies.get(OAUTH_STATE_COOKIE)?.value, {
+  const verified = verifyState(request.cookies.get(OAUTH_STATE_COOKIE)?.value, {
     appSecret: process.env.BETTER_AUTH_SECRET,
     state: params.get("state"),
     userId: session.user.id,
     now: Date.now(),
   });
   const code = params.get("code");
-  if (!verifier || !code) return done("failed");
+  if (!verified || !code) return done("failed");
 
   try {
     const tokens = await exchangeCode({
       code,
-      verifier,
+      verifier: verified.verifier,
       redirectUri: googleRedirectUri(),
       clientId: config.clientId,
       clientSecret: config.clientSecret,
@@ -58,7 +61,7 @@ export async function GET(request: NextRequest) {
     });
     await backfillUpcoming(session.user.id);
     after(() => drainCalendar({ connectionId })); // upcoming sessions appear straight away
-    return done("connected");
+    return done("connected", verified.returnTo);
   } catch {
     console.error("[calendar] Google connect failed during code exchange");
     return done("failed");

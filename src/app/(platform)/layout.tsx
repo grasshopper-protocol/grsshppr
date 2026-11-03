@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Compass, SquaresFour, CalendarDots } from "@phosphor-icons/react/dist/ssr";
@@ -5,6 +6,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "@/components/user-menu";
 import { MobileNav } from "@/components/mobile-nav";
 import { NotificationBell } from "@/components/notification-bell";
+import { CalendarConnectedNotice } from "@/modules/calendar/connected-notice";
 
 export default function PlatformLayout({
   children,
@@ -53,7 +55,12 @@ export default function PlatformLayout({
         </nav>
       </header>
       <main className="flex-1">
-        <div className="mx-auto max-w-5xl px-4 py-8">{children}</div>
+        <div className="mx-auto max-w-5xl px-4 py-8">
+          <Suspense>
+            <CalendarConnectedNotice />
+          </Suspense>
+          {children}
+        </div>
       </main>
     </>
   );

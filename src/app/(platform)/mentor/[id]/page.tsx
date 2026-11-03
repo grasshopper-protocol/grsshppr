@@ -20,6 +20,8 @@ import {
   SignIn,
 } from "@phosphor-icons/react/dist/ssr";
 import { BookSessionForm } from "@/core/booking/book-session-form";
+import { shouldOfferCalendarConnect } from "@/modules/calendar/connection-queries";
+import { CalendarConnectNudge } from "@/modules/calendar/connect-nudge";
 import { LocalTime } from "@/components/local-time";
 
 type Params = Promise<{ id: string }>;
@@ -85,6 +87,13 @@ export default async function MentorProfilePage({
   }
 
   const session = await auth.api.getSession({ headers: await headers() });
+  // Booking is the moment the calendar matters: invite people who could connect it (RFC-0012).
+  const offerCalendarConnect = session ? await shouldOfferCalendarConnect(session.user) : false;
+  const calendarNudge = offerCalendarConnect && (
+    <div className="mt-4">
+      <CalendarConnectNudge place="booking" />
+    </div>
+  );
   const isLoggedIn = !!session;
 
   const { profile, user } = data;
@@ -259,7 +268,10 @@ export default async function MentorProfilePage({
                 Sign in to book a session
               </Link>
             ) : profile.available ? (
-              <BookSessionForm mentorId={user.id} />
+              <>
+                <BookSessionForm mentorId={user.id} />
+                {calendarNudge}
+              </>
             ) : (
               <p className="text-sm text-muted-foreground">
                 Not taking new mentees right now.
@@ -304,7 +316,12 @@ export default async function MentorProfilePage({
                       </span>
                     </p>
                   )}
-                  {profile.available && <BookSessionForm mentorId={user.id} />}
+                  {profile.available && (
+                    <>
+                      <BookSessionForm mentorId={user.id} />
+                      {calendarNudge}
+                    </>
+                  )}
                 </>
               )}
             </div>
