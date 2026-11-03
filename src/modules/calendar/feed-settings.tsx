@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { CalendarFeedActions } from "@/modules/calendar/feed-actions";
 import { Input } from "@/components/ui/input";
 import { CalendarPlus, Check, Copy } from "@phosphor-icons/react";
 import { GoogleCalendarSettings, type GoogleCalendarStatus } from "./google-calendar-settings";
@@ -128,22 +129,14 @@ export function CalendarFeedSettings() {
       )}
 
       {(feed.status === "on" || feed.status === "new") && (
-        <div className="mt-3 flex flex-wrap gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={busy}
-            onClick={() => {
-              if (feed.status === "on" && !confirm("Make a new link? The current one will stop working.")) return;
-              createLink();
-            }}
-          >
-            Make a new link
-          </Button>
-          <Button variant="ghost" size="sm" disabled={busy} onClick={turnOff} className="text-muted-foreground hover:text-destructive">
-            Turn off
-          </Button>
-        </div>
+        <CalendarFeedActions
+          busy={busy}
+          onMakeNew={() => {
+            if (feed.status === "on" && !confirm("Make a new link? The current one will stop working.")) return;
+            createLink();
+          }}
+          onTurnOff={turnOff}
+        />
       )}
 
       {error && (
